@@ -66,14 +66,15 @@ const UserControl = {
 
   getCurrentRole() {
     try {
-      const saved = (localStorage.getItem(this.CURRENT_USER_KEY) || 'ADMIN').toUpperCase();
+      // Prioritize sessionStorage so fresh link/tab access starts cleared as VIEWER
+      const saved = (sessionStorage.getItem(this.CURRENT_USER_KEY) || localStorage.getItem(this.CURRENT_USER_KEY) || 'VIEWER').toUpperCase();
       if (this.ROLES[saved]) {
         return this.ROLES[saved];
       }
       if (saved === 'STAFF') return this.ROLES.OFFICER;
-      return this.ROLES.ADMIN;
+      return this.ROLES.VIEWER;
     } catch (e) {
-      return this.ROLES.ADMIN;
+      return this.ROLES.VIEWER;
     }
   },
 
@@ -86,12 +87,27 @@ const UserControl = {
     const key = roleId.toUpperCase();
     let target = this.ROLES[key];
     if (!target && key === 'STAFF') target = this.ROLES.OFFICER;
-    if (!target) target = this.ROLES.ADMIN;
+    if (!target) target = this.ROLES.VIEWER;
 
     try {
+      sessionStorage.setItem(this.CURRENT_USER_KEY, target.id);
       localStorage.setItem(this.CURRENT_USER_KEY, target.id);
       if (typeof auditLogger !== 'undefined') {
         auditLogger.log('AUTH_SWITCH', 'SYS', `បានប្តូរសិទ្ធិប្រើប្រាស់ទៅជា ${target.titleKh}`);
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
+  },
+
+  clearUser() {
+    try {
+      sessionStorage.removeItem(this.CURRENT_USER_KEY);
+      localStorage.removeItem(this.CURRENT_USER_KEY);
+      localStorage.removeItem('STAFF_CONTROL_REMEMBERED_USER');
+      if (typeof auditLogger !== 'undefined') {
+        auditLogger.log('AUTH_LOGOUT', 'SYS', 'បានសម្អាតគណនី និងចាកចេញពីប្រព័ន្ធ');
       }
       return true;
     } catch (e) {

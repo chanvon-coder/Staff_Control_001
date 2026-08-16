@@ -26,6 +26,9 @@ class StaffApp {
   }
 
   init() {
+    // 1. Clear previous user session on every link access / page load
+    UserControl.clearUser();
+
     // Initialize Subsystems
     userformController.init();
     if (typeof multiFilter !== 'undefined') {
@@ -42,6 +45,11 @@ class StaffApp {
     
     // Initial Render
     this.refreshAll();
+
+    // 2. Request login again automatically on each click/access link
+    setTimeout(() => {
+      this.openAuthModal();
+    }, 180);
   }
 
   refreshAll() {
@@ -1076,19 +1084,27 @@ class StaffApp {
     }
   }
 
-  /* ---------------- Auth & Login Dialog (User Accounts Droplist & Auto-Remember) ---------------- */
+  /* ---------------- Auth & Login Dialog (User Accounts Droplist & Secure Password) ---------------- */
   openAuthModal() {
     this.populateAuthUserDropdown();
+    const passInput = document.getElementById('auth-login-password');
+    if (passInput) passInput.value = '';
+
     const modal = document.getElementById('auth-login-modal');
     if (modal) {
       modal.classList.add('open');
       this.refreshIcons();
+      if (passInput) {
+        setTimeout(() => passInput.focus(), 150);
+      }
     }
   }
 
   closeAuthModal() {
     const modal = document.getElementById('auth-login-modal');
     if (modal) modal.classList.remove('open');
+    const passInput = document.getElementById('auth-login-password');
+    if (passInput) passInput.value = '';
   }
 
   populateAuthUserDropdown() {
@@ -1106,57 +1122,66 @@ class StaffApp {
       ];
     }
 
+    // Output clean options WITHOUT exposing password attributes in DOM
     select.innerHTML = users.map(u => {
-      return `<option value="${u.username}" data-role="${u.role}" data-password="${u.password || ''}">${u.username}</option>`;
+      return `<option value="${u.username}" data-role="${u.role}">${u.username}</option>`;
     }).join('');
 
-    // Remembered user logic
-    const rememberedUser = localStorage.getItem('STAFF_CONTROL_REMEMBERED_USER') || localStorage.getItem('STAFF_CONTROL_CURRENT_ROLE') || 'admin';
-    const found = users.find(u => u.username.toLowerCase() === rememberedUser.toLowerCase() || u.role.toLowerCase() === rememberedUser.toLowerCase());
-    
-    if (found) {
-      select.value = found.username;
-      this.handleAuthUserSelected(found.username);
-    } else if (users.length > 0) {
-      select.value = users[0].username;
-      this.handleAuthUserSelected(users[0].username);
-    }
+    // Clear password input immediately
+    const passInput = document.getElementById('auth-login-password');
+    if (passInput) passInput.value = '';
   }
 
   handleAuthUserSelected(username) {
     if (!username) return;
-    localStorage.setItem('STAFF_CONTROL_REMEMBERED_USER', username);
-
-    let users = [];
-    if (typeof settingsModalController !== 'undefined' && settingsModalController.getUserAccounts) {
-      users = settingsModalController.getUserAccounts();
-    }
-    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    // Always clear password field when user changes account selection (do not expose or auto-fill)
     const passInput = document.getElementById('auth-login-password');
-    if (passInput && user && user.password) {
-      passInput.value = user.password;
+    if (passInput) {
+      passInput.value = '';
+      passInput.focus();
     }
   }
 
   handleAuthLogin() {
     const usernameSelect = document.getElementById('auth-login-username');
     const usernameInput = usernameSelect ? usernameSelect.value.trim() : 'admin';
-    const passwordInput = document.getElementById('auth-login-password')?.value.trim();
+    const passInput = document.getElementById('auth-login-password');
+    const passwordInput = passInput ? passInput.value.trim() : '';
 
     if (!usernameInput) {
       alert('សូមជ្រើសរើសឈ្មោះគណនី (Please select account)');
       return;
     }
 
-    // Save remembered user
-    localStorage.setItem('STAFF_CONTROL_REMEMBERED_USER', usernameInput);
-
-    let matchedRole = 'ADMIN';
     let users = [];
     if (typeof settingsModalController !== 'undefined' && settingsModalController.getUserAccounts) {
       users = settingsModalController.getUserAccounts();
+    } else {
+      users = [
+        { username: 'admin', fullName: 'System Administrator', role: 'ADMIN', password: 'Password123!' },
+        { username: 'staff', fullName: 'Document Officer', role: 'OFFICER', password: 'StaffSecret2026' },
+        { username: 'viewer', fullName: 'Guest Viewer', role: 'VIEWER', password: 'ViewerPass123' }
+      ];
     }
+
     const user = users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+
+    // Secure Password Validation (Do not let user bypass without matching password if set)
+    if (user && user.password) {
+      if (!passwordInput || passwordInput !== user.password) {
+        alert('❌ លេខសម្ងាត់មិនត្រឹមត្រូវទេ! សូមបញ្ចូលលេខសម្ងាត់ឲ្យបានត្រឹមត្រូវ។ (Incorrect password)');
+        if (passInput) {
+          passInput.value = '';
+          passInput.focus();
+        }
+        return;
+      }
+    }
+
+    // Always clear password input after authentication
+    if (passInput) passInput.value = '';
+
+    let matchedRole = 'ADMIN';
     if (user && user.role) {
       matchedRole = user.role.toUpperCase();
     } else {
@@ -1172,6 +1197,17 @@ class StaffApp {
     this.renderStaffTable();
     this.closeAuthModal();
     this.showToast(`ស្វាគមន៍! បានចូលប្រព័ន្ធជា ${UserControl.getCurrentRole().titleKh} (${usernameInput})`, 'success');
+  }
+
+  handleLogout() {
+    UserControl.clearUser();
+    this.updateRoleBadge();
+    this.renderStaffTable();
+    this.closeAllHeaderDroplists();
+    this.showToast('🚪 បានសម្អាតគណនី និងចាកចេញពីប្រព័ន្ធ (Session Cleared & Logged Out)', 'info');
+    setTimeout(() => {
+      this.openAuthModal();
+    }, 200);
   }
 
   /* ---------------- Settings Controlled Lists UI ---------------- */
@@ -1343,6 +1379,13 @@ class StaffApp {
     if (roleTag) {
       roleTag.textContent = role.id;
       roleTag.style.color = isViewer ? '#2563eb' : '#059669';
+    }
+    const nameEl = document.getElementById('user-profile-display-name');
+    if (nameEl) {
+      if (isViewer) nameEl.textContent = 'អ្នកមើលទិន្នន័យ (Viewer)';
+      else if (role.id === 'ADMIN') nameEl.textContent = 'អ្នកគ្រប់គ្រង (Admin)';
+      else if (role.id === 'OFFICER') nameEl.textContent = 'មន្ត្រីទិន្នន័យ (Staff)';
+      else nameEl.textContent = role.titleKh;
     }
     const avatar = document.getElementById('user-avatar-initial');
     if (avatar) {

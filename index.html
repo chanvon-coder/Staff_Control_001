@@ -142,19 +142,19 @@
                 <i data-lucide="shield-check"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">ប្តូរគណនី ឬសិទ្ធិ (Switch Role)</div>
+                <div class="nav-item-title">ចូលប្រព័ន្ធ / ប្តូរគណនី (Login / Switch)</div>
                 <div class="nav-item-desc">Admin, Officer, Viewer</div>
               </div>
             </button>
 
-            <!-- Logout -->
-            <button class="nav-droplist-item" onclick="app.openAuthModal(); app.closeAllHeaderDroplists();" style="border-top: 1px solid var(--border-color);">
+            <!-- Logout / Clear User -->
+            <button class="nav-droplist-item" onclick="app.handleLogout();" style="border-top: 1px solid var(--border-color);">
               <div class="nav-item-icon-box" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
                 <i data-lucide="log-out"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title" style="color: #ef4444;">ចាកចេញ / ចូលថ្មី (Login/Logout)</div>
-                <div class="nav-item-desc">គ្រប់គ្រងសម័យចូលប្រើប្រាស់</div>
+                <div class="nav-item-title" style="color: #ef4444;">ចាកចេញ និងសម្អាត (Logout / Clear)</div>
+                <div class="nav-item-desc">សម្អាតគណនីត្រឡប់ជា Viewer ធម្មតា</div>
               </div>
             </button>
           </div>
@@ -1962,7 +1962,7 @@
             <div class="auth-input-icon">
               <i data-lucide="lock"></i>
             </div>
-            <input type="password" class="auth-input-field" id="auth-login-password" placeholder="បញ្ចូលលេខសម្ងាត់" value="Password123!" style="width: 100%;">
+            <input type="password" class="auth-input-field" id="auth-login-password" placeholder="បញ្ចូលលេខសម្ងាត់ (Enter Password)" value="" autocomplete="current-password" style="width: 100%;">
           </div>
         </div>
 

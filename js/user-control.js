@@ -103,11 +103,12 @@ const UserControl = {
 
   clearUser() {
     try {
-      sessionStorage.removeItem(this.CURRENT_USER_KEY);
+      sessionStorage.clear();
       localStorage.removeItem(this.CURRENT_USER_KEY);
       localStorage.removeItem('STAFF_CONTROL_REMEMBERED_USER');
+      localStorage.removeItem('STAFF_CONTROL_FILTER_COLLAPSED');
       if (typeof auditLogger !== 'undefined') {
-        auditLogger.log('AUTH_LOGOUT', 'SYS', 'បានសម្អាតគណនី និងចាកចេញពីប្រព័ន្ធ');
+        auditLogger.log('AUTH_LOGOUT', 'SYS', 'បានសម្អាត Cache, Session និងចាកចេញពីប្រព័ន្ធ');
       }
       return true;
     } catch (e) {

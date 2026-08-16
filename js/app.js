@@ -1200,11 +1200,42 @@ class StaffApp {
   }
 
   handleLogout() {
+    // 1. Clear all session, user and temporary storage cache
     UserControl.clearUser();
+    
+    // 2. Reset all filters and search cache
+    this.resetAllFilters();
+    this.currentPage = 1;
+
+    // 3. Clear and close all open forms and modals
+    if (typeof userformController !== 'undefined') {
+      userformController.clearForm();
+      userformController.selectedRecordNo = null;
+      userformController.currentAttachments = [];
+      userformController.closeModal();
+    }
+    if (typeof settingsModalController !== 'undefined') {
+      settingsModalController.closeModal();
+    }
+    this.closeImportModal();
+    const editHeaderModal = document.getElementById('edit-table-header-modal');
+    if (editHeaderModal) editHeaderModal.classList.remove('open');
+
+    // 4. Close all dropdowns & side docks
+    this.closeAllHeaderDroplists();
+    this.closeRightNavDock();
+
+    // 5. Reset Tab to Dashboard and refresh view
+    this.switchTab('dashboard');
     this.updateRoleBadge();
     this.renderStaffTable();
-    this.closeAllHeaderDroplists();
-    this.showToast('🚪 បានសម្អាតគណនី និងចាកចេញពីប្រព័ន្ធ (Session Cleared & Logged Out)', 'info');
+
+    // 6. Clear password input in auth modal
+    const passInput = document.getElementById('auth-login-password');
+    if (passInput) passInput.value = '';
+
+    // 7. Show toast and prompt fresh login modal
+    this.showToast('🧹 បានសម្អាត Cache, Session និងទិន្នន័យបណ្តោះអាសន្នទាំងអស់ (All cache & session cleared)', 'info');
     setTimeout(() => {
       this.openAuthModal();
     }, 200);

@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Control & Document Management System</title>
+  <meta name="description" content="Professional Staff Management and Document Control System built on the 22-field Excel Book1 structure with Khmer and English support.">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/khmer-fonts.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Lucide Icons, Chart.js & SheetJS (XLSX) CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+  <!-- ==================== TOP ROW: BRAND & SYSTEM ACTIONS HEADER ==================== -->
+  <header class="app-header">
+    <div class="header-container">
+      <!-- Left: Brand Section (Document Control) -->
+      <div class="brand-section">
+        <div class="brand-logo">
+          <i data-lucide="landmark"></i>
+        </div>
+        <div class="brand-titles">
+          <h1>
+            <span id="header-app-title-text">DocuControl</span>
+            <span class="brand-badge" id="header-app-badge-text">PRO</span>
+          </h1>
+          <div class="brand-sub" id="header-app-sub-text">Enterprise Document Control & Archival</div>
+        </div>
+      </div>
+
+      <!-- Right: System Actions & Navigation Droplists (All on Top Row) -->
+      <div class="header-right-nav-group">
+        
+        <!-- 1. System Actions & Tools Droplist -->
+        <div class="nav-droplist-wrapper" id="actions-droplist-wrapper">
+          <button class="nav-droplist-trigger" id="actions-droplist-trigger" type="button" onclick="app.toggleActionsDroplist(event)" title="ឧបករណ៍ & ទិន្នន័យ (System Actions & Tools)" style="min-width: 175px;">
+            <div class="nav-current-item">
+              <span class="nav-current-icon-box" style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9;">
+                <i data-lucide="wrench"></i>
+              </span>
+              <div class="nav-current-text-group">
+                <span class="nav-current-label">ឧបករណ៍ (Tools)</span>
+                <span class="nav-current-sub">Import, Backup, CSV</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-down" class="nav-droplist-arrow"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="nav-droplist-menu" id="actions-droplist-menu" style="width: 290px;">
+            <div class="nav-droplist-menu-header">
+              <i data-lucide="wrench"></i>
+              <span>ឧបករណ៍ប្រព័ន្ធ (System Actions)</span>
+            </div>
+
+            <!-- Import -->
+            <button class="nav-droplist-item" onclick="app.openImportModal(); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                <i data-lucide="upload"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">នាំចូលទិន្នន័យ (Import)</div>
+                <div class="nav-item-desc">នាំចូលពី Excel / CSV & Template</div>
+              </div>
+            </button>
+
+            <!-- Backup -->
+            <button class="nav-droplist-item" onclick="ExcelHandler.exportFullWorkbook(); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                <i data-lucide="database"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">បម្រុងទុកទិន្នន័យ (Backup)</div>
+                <div class="nav-item-desc">ទាញយកឯកសារ Excel (.xlsx)</div>
+              </div>
+            </button>
+
+            <!-- CSV -->
+            <button class="nav-droplist-item" onclick="ExcelHandler.exportToCSV(); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                <i data-lucide="file-text"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ទាញយក CSV (Export CSV)</div>
+                <div class="nav-item-desc">ឯកសារអត្ថបទ UTF-8 Support</div>
+              </div>
+            </button>
+
+            <!-- Settings -->
+            <button class="nav-droplist-item" onclick="settingsModalController.openModal('branding'); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(147, 51, 234, 0.12); color: #9333ea;">
+                <i data-lucide="settings"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ការកំណត់ប្រព័ន្ធ (Settings)</div>
+                <div class="nav-item-desc">គ្រប់គ្រងឈ្មោះស្ថាប័ន & Cloud</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. System Admin & Theme Droplist -->
+        <div class="nav-droplist-wrapper" id="admin-droplist-wrapper">
+          <button class="nav-droplist-trigger" id="admin-droplist-trigger" type="button" onclick="app.toggleAdminDroplist(event)" title="គណនី & រចនាបថ (Admin Profile & Theme)" style="min-width: 175px;">
+            <div class="nav-current-item">
+              <div class="user-profile-avatar" id="user-avatar-initial" style="width: 28px; height: 28px; font-size: 0.8rem;">S</div>
+              <div class="nav-current-text-group">
+                <span class="nav-current-label" id="user-profile-display-name">System Admin...</span>
+                <span class="nav-current-sub" id="user-profile-role-tag" style="color: #059669; font-weight: 700;">ADMIN</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-down" class="nav-droplist-arrow"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="nav-droplist-menu" id="admin-droplist-menu" style="width: 275px;">
+            <div class="nav-droplist-menu-header">
+              <i data-lucide="user-check"></i>
+              <span>គណនី & ប្រព័ន្ធ (Account & Theme)</span>
+            </div>
+
+            <!-- Theme Toggle Option -->
+            <button class="nav-droplist-item" onclick="app.toggleTheme(); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                <i data-lucide="sun" id="theme-icon-menu"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ប្តូរពន្លឺ / ងងឹត (Theme)</div>
+                <div class="nav-item-desc">Toggle Light / Dark Mode</div>
+              </div>
+            </button>
+
+            <!-- Switch User / Login -->
+            <button class="nav-droplist-item" onclick="app.openAuthModal(); app.closeAllHeaderDroplists();">
+              <div class="nav-item-icon-box" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ប្តូរគណនី ឬសិទ្ធិ (Switch Role)</div>
+                <div class="nav-item-desc">Admin, Officer, Viewer</div>
+              </div>
+            </button>
+
+            <!-- Logout -->
+            <button class="nav-droplist-item" onclick="app.openAuthModal(); app.closeAllHeaderDroplists();" style="border-top: 1px solid var(--border-color);">
+              <div class="nav-item-icon-box" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
+                <i data-lucide="log-out"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title" style="color: #ef4444;">ចាកចេញ / ចូលថ្មី (Login/Logout)</div>
+                <div class="nav-item-desc">គ្រប់គ្រងសម័យចូលប្រើប្រាស់</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Navigation Drop List (Rightmost) -->
+        <div class="nav-droplist-wrapper" id="nav-droplist-wrapper">
+          <button class="nav-droplist-trigger" id="nav-droplist-trigger" type="button" onclick="app.toggleNavDroplist(event)">
+            <div class="nav-current-item">
+              <span class="nav-current-icon-box" id="nav-current-icon-box">
+                <i data-lucide="layout-dashboard" id="nav-current-icon"></i>
+              </span>
+              <div class="nav-current-text-group">
+                <span class="nav-current-label" id="nav-current-label">ផ្ទាំងសង្ខេប (Dashboard)</span>
+                <span class="nav-current-sub" id="nav-current-sub">ទិដ្ឋភាពរួម & ស្ថិតិទិន្នន័យ</span>
+              </div>
+            </div>
+            <i data-lucide="chevron-down" class="nav-droplist-arrow" id="nav-droplist-arrow"></i>
+          </button>
+
+          <!-- Dropdown Menu -->
+          <div class="nav-droplist-menu" id="nav-droplist-menu">
+            <div class="nav-droplist-menu-header">
+              <i data-lucide="compass"></i>
+              <span>ជ្រើសរើសទំព័រទិន្នន័យ (Navigate Page)</span>
+            </div>
+
+            <button class="nav-droplist-item active" data-tab="dashboard" onclick="app.switchTab('dashboard')">
+              <div class="nav-item-icon-box" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
+                <i data-lucide="layout-dashboard"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ផ្ទាំងសង្ខេប (Dashboard)</div>
+                <div class="nav-item-desc">ទិដ្ឋភាពទូទៅ និងក្រាហ្វិកវិភាគទិន្នន័យ</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="database" onclick="app.switchTab('database')">
+              <div class="nav-item-icon-box" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                <i data-lucide="users"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ទិន្នន័យបុគ្គលិក (Staff Data)</div>
+                <div class="nav-item-desc">តារាងមេ ២២ ជួរឈរ & តម្រងពហុកម្រិត</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="documents" onclick="app.switchTab('documents')">
+              <div class="nav-item-icon-box" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                <i data-lucide="file-check"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">តាមដានឯកសារ (Documents)</div>
+                <div class="nav-item-desc">កាលវិភាគឯកសារ & ឯកសារយោង</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="settings" onclick="app.switchTab('settings')">
+              <div class="nav-item-icon-box" style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9;">
+                <i data-lucide="sliders"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ការកំណត់ (Settings)</div>
+                <div class="nav-item-desc">Cloud Sync, Droplist & បញ្ជីយោង</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="logs" onclick="app.switchTab('logs')">
+              <div class="nav-item-icon-box" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;">
+                <i data-lucide="history"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">កំណត់ត្រា (Audit Log)</div>
+                <div class="nav-item-desc">ប្រវត្តិកែប្រែ និងសកម្មភាពសុវត្ថិភាព</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== SUB ROW: QUICK STAT PILL BAR ==================== -->
+  <div class="top-utility-bar">
+    <div class="top-utility-container" style="justify-content: flex-start;">
+      
+      <!-- 4 Quick Stat Counter Pills -->
+      <div class="stat-pills-group">
+        <!-- Pill 1: Total Records (Blue) -->
+        <div class="stat-pill" style="--pill-color: #3b82f6; --pill-bg: #eff6ff;">
+          <div class="stat-pill-icon">
+            <i data-lucide="copy"></i>
+          </div>
+          <div class="stat-pill-content">
+            <span class="stat-pill-num" id="pill-total-records">4</span>
+            <span class="stat-pill-label">TOTAL RECORDS</span>
+          </div>
+        </div>
+
+        <!-- Pill 2: Doc Types / Department (Yellow/Amber) -->
+        <div class="stat-pill" style="--pill-color: #f59e0b; --pill-bg: #fffbeb;">
+          <div class="stat-pill-icon">
+            <i data-lucide="tag"></i>
+          </div>
+          <div class="stat-pill-content">
+            <span class="stat-pill-num" id="pill-doc-types">9</span>
+            <span class="stat-pill-label">DOC TYPES</span>
+          </div>
+        </div>
+
+        <!-- Pill 3: Attached Files / Active Docs (Purple) -->
+        <div class="stat-pill" style="--pill-color: #a855f7; --pill-bg: #faf5ff;">
+          <div class="stat-pill-icon">
+            <i data-lucide="paperclip"></i>
+          </div>
+          <div class="stat-pill-content">
+            <span class="stat-pill-num" id="pill-attached-files">4</span>
+            <span class="stat-pill-label">ATTACHED FILES</span>
+          </div>
+        </div>
+
+        <!-- Pill 4: Active Records (Emerald) -->
+        <div class="stat-pill" style="--pill-color: #10b981; --pill-bg: #ecfdf5;">
+          <div class="stat-pill-icon">
+            <i data-lucide="check-circle-2"></i>
+          </div>
+          <div class="stat-pill-content">
+            <span class="stat-pill-num" id="pill-active-records">0</span>
+            <span class="stat-pill-label">ACTIVE STAFF</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== AUTO-HIDE RIGHT-SIDE NAVIGATION DOCK ==================== -->
+  <aside class="right-autohide-nav-dock" id="right-autohide-nav-dock" title="ម៉ឺនុយរុករកស្វ័យប្រវត្ត (Auto-Hide Nav)">
+    <!-- Slim Pinned Tab Handle on Right Edge -->
+    <div class="right-nav-handle" id="right-nav-handle" onclick="app.toggleRightNavDock()">
+      <i data-lucide="chevron-left" class="handle-arrow"></i>
+      <span class="handle-text">📑 ម៉ឺនុយទំព័រ (Nav Menu)</span>
+      <span class="handle-glow-dot"></span>
+    </div>
+
+    <!-- Expanded Slide-Out Navigation Card -->
+    <div class="right-nav-content">
+      <div class="right-nav-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div class="right-nav-header-icon">
+            <i data-lucide="compass"></i>
+          </div>
+          <div>
+            <div class="right-nav-title">មជ្ឈមណ្ឌលរុករក</div>
+            <div class="right-nav-sub">Auto-Hide Navigation Dock</div>
+          </div>
+        </div>
+        <button class="right-nav-close-btn" type="button" onclick="app.closeRightNavDock()" title="បង្រួមចូលវិញ (Collapse)">
+          ✕
+        </button>
+      </div>
+
+      <div class="right-nav-items-list">
+        <button class="right-nav-item active" data-tab="dashboard" onclick="app.switchTab('dashboard')">
+          <div class="right-nav-item-icon" style="color: #4f46e5; background: rgba(79, 70, 229, 0.12);">
+            <i data-lucide="layout-dashboard"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">ផ្ទាំងសង្ខេប</span>
+            <span class="right-nav-en">Dashboard</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="database" onclick="app.switchTab('database')">
+          <div class="right-nav-item-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12);">
+            <i data-lucide="users"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">ទិន្នន័យបុគ្គលិក</span>
+            <span class="right-nav-en">Staff Data</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="documents" onclick="app.switchTab('documents')">
+          <div class="right-nav-item-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.12);">
+            <i data-lucide="file-check"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">តាមដានឯកសារ</span>
+            <span class="right-nav-en">Documents</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="settings" onclick="app.switchTab('settings')">
+          <div class="right-nav-item-icon" style="color: #0ea5e9; background: rgba(14, 165, 233, 0.12);">
+            <i data-lucide="sliders"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">ការកំណត់</span>
+            <span class="right-nav-en">Settings</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="logs" onclick="app.switchTab('logs')">
+          <div class="right-nav-item-icon" style="color: #a855f7; background: rgba(168, 85, 247, 0.12);">
+            <i data-lucide="history"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">កំណត់ត្រា</span>
+            <span class="right-nav-en">Audit Log</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div class="right-nav-actions">
+        <div class="right-nav-actions-label">ផ្លូវកាត់រហ័ស (Quick Actions)</div>
+        <button class="btn btn-primary btn-sm" type="button" style="width: 100%; justify-content: center;" onclick="userformController.openNew(); app.closeRightNavDock();">
+          <i data-lucide="user-plus"></i> <span>ចុះឈ្មោះបុគ្គលិកថ្មី</span>
+        </button>
+        <button class="btn btn-secondary btn-sm" type="button" style="width: 100%; justify-content: center; margin-top: 0.45rem;" onclick="app.openImportModal(); app.closeRightNavDock();">
+          <i data-lucide="upload"></i> <span>នាំចូលពី Excel</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="main-content">
+
+    <!-- ==================== TAB 1: DASHBOARD ==================== -->
+    <section class="tab-pane active" id="tab-dashboard">
+      <!-- KPI Metric Cards Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card" style="--card-accent: #2563eb; --icon-bg: #eff6ff; --icon-color: #2563eb;">
+          <div class="metric-info">
+            <h3>បុគ្គលិកសរុប</h3>
+            <div class="metric-num" id="metric-total-staff">0</div>
+            <div class="metric-label-en">Total Staff</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="users"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #059669; --icon-bg: #ecfdf5; --icon-color: #059669;">
+          <div class="metric-info">
+            <h3>បុគ្គលិកកំពុងដំណើរការ</h3>
+            <div class="metric-num" id="metric-active-staff">0</div>
+            <div class="metric-label-en">Active Staff</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="user-check"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #d97706; --icon-bg: #fffbeb; --icon-color: #d97706;">
+          <div class="metric-info">
+            <h3>សំណើរង់ចាំដំណើរការ</h3>
+            <div class="metric-num" id="metric-pending-records">0</div>
+            <div class="metric-label-en">Pending Records</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="clock"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #4f46e5; --icon-bg: #eef2ff; --icon-color: #4f46e5;">
+          <div class="metric-info">
+            <h3>សំណើបានបញ្ចប់</h3>
+            <div class="metric-num" id="metric-completed-records">0</div>
+            <div class="metric-label-en">Completed</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="badge-check"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #dc2626; --icon-bg: #fef2f2; --icon-color: #dc2626;">
+          <div class="metric-info">
+            <h3>ផុតសុពលភាព</h3>
+            <div class="metric-num" id="metric-expired-records">0</div>
+            <div class="metric-label-en">Expired Records</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="alert-triangle"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #4b5563; --icon-bg: #f3f4f6; --icon-color: #4b5563;">
+          <div class="metric-info">
+            <h3>បានបិទប្រព័ន្ធ</h3>
+            <div class="metric-num" id="metric-closed-records">0</div>
+            <div class="metric-label-en">Closed Records</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="lock"></i>
+          </div>
+        </div>
+
+        <div class="metric-card" style="--card-accent: #9333ea; --icon-bg: #faf5ff; --icon-color: #9333ea;">
+          <div class="metric-info">
+            <h3>ខ្វះព័ត៌មាន/ឯកសារ</h3>
+            <div class="metric-num" id="metric-missing-records">0</div>
+            <div class="metric-label-en">Missing Information</div>
+          </div>
+          <div class="metric-icon">
+            <i data-lucide="file-question"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-grid">
+        <!-- Staff by Department -->
+        <div class="chart-card chart-card-lg">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="building-2"></i>
+              <span>ចំនួនបុគ្គលិកតាមអង្គភាព (Staff by Department)</span>
+            </h2>
+          </div>
+          <div class="chart-body">
+            <canvas id="chart-department"></canvas>
+          </div>
+        </div>
+
+        <!-- Status Distribution -->
+        <div class="chart-card chart-card-sm">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="pie-chart"></i>
+              <span>ស្ថានភាពបុគ្គលិក (Staff Status)</span>
+            </h2>
+          </div>
+          <div class="chart-body">
+            <canvas id="chart-status"></canvas>
+          </div>
+        </div>
+
+        <!-- Gender Ratio -->
+        <div class="chart-card chart-card-sm">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="users-2"></i>
+              <span>សមាមាត្រភេទ (Staff by Gender)</span>
+            </h2>
+          </div>
+          <div class="chart-body">
+            <canvas id="chart-gender"></canvas>
+          </div>
+        </div>
+
+        <!-- Records by Year -->
+        <div class="chart-card chart-card-lg">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="calendar"></i>
+              <span>កំណត់ត្រាបុគ្គលិកតាមឆ្នាំ (Staff by Annual Year)</span>
+            </h2>
+          </div>
+          <div class="chart-body">
+            <canvas id="chart-year"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: MASTER DATABASE ==================== -->
+    <section class="tab-pane" id="tab-database">
+      
+      <!-- Action Toolbar -->
+      <div class="action-toolbar">
+        <div class="search-filter-group" style="flex: 1;">
+          <!-- Search Box (Global Multi-Field Search) -->
+          <div class="search-input-box" style="flex: 1;">
+            <i data-lucide="search"></i>
+            <input type="text" id="table-search-input" placeholder="ស្វែងរកតាម អត្តលេខ, ឈ្មោះ, អង្គភាព, ការិយាល័យ, តួនាទី, ប្រកាសលេខ, ឯកសារយោង... (Search any field)">
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="button-group">
+          <button class="btn btn-secondary btn-sm" onclick="app.resetAllFilters()" title="សម្អាតតម្រងទាំងអស់ (Reset All Filters)">
+            <i data-lucide="rotate-ccw"></i>
+            <span>សម្អាត (Reset)</span>
+          </button>
+          <button class="btn btn-success" onclick="userformController.openNew()" id="btn-open-new-staff">
+            <i data-lucide="user-plus"></i>
+            <span>ចុះឈ្មោះបុគ្គលិកថ្មី (New)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Advanced Multi-Dimension Filter Bar (Glassmorphic Dashboard Bar) -->
+      <div class="advanced-filter-card" id="advanced-filter-container">
+        <!-- Filter Top Action Bar -->
+        <div class="filter-card-topbar">
+          <div class="filter-title-wrap" onclick="app.toggleFilterCardCollapse()" style="cursor: pointer;" title="ចុចដើម្បីលាក់/បង្ហាញផ្ទាំងតម្រង (Toggle Filter Card)">
+            <div class="filter-icon-badge">
+              <i data-lucide="filter" style="width: 16px; height: 16px; color: var(--primary);"></i>
+            </div>
+            <div>
+              <span class="filter-main-title">តម្រងទិន្នន័យពហុកម្រិត</span>
+              <span class="filter-sub-title">Advanced Multi-Dimension Filters</span>
+            </div>
+            <span class="active-filter-badge" id="active-filter-count-badge">តម្រងសកម្ម: 0</span>
+          </div>
+
+          <div class="filter-actions-wrap">
+            <!-- Auto-Hide / Collapse Filter Button -->
+            <button type="button" class="btn-toggle-filter-collapse" id="btn-toggle-filter-collapse" onclick="app.toggleFilterCardCollapse()" title="លាក់ ឬបង្ហាញផ្ទាំងតម្រងទិន្នន័យ">
+              <i data-lucide="chevrons-up" id="icon-filter-collapse" style="width: 14px; height: 14px;"></i>
+              <span id="text-filter-collapse">លាក់តម្រង (Auto-Hide)</span>
+            </button>
+
+            <button type="button" class="btn btn-sm" id="btn-toggle-alert-filter" onclick="app.toggleAlertOnlyFilter()" style="background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); font-weight: 700; border-radius: var(--radius-full); padding: 0.35rem 0.85rem; font-size: 0.78rem;" title="ចុចដើម្បីបង្ហាញតែទិន្នន័យដែលមាន Alert កាលបរិច្ឆេទ">
+              <i data-lucide="bell-ring" style="width: 14px; height: 14px;"></i>
+              <span id="alert-filter-btn-text">🔔 សំណើមាន Alert (<span id="alert-active-count">0</span>)</span>
+            </button>
+
+            <button type="button" class="btn-clear-filters" id="btn-clear-all-filters" onclick="app.resetAllFilters()" title="សម្អាតតម្រង និងការស្វែងរកទាំងអស់">
+              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+              <span>🧹 សម្អាតតម្រងទាំងអស់ (Clear All Filters)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 9 Balanced Dimension Input Cards (With Checkbox Droplists & Text/Date Filters) -->
+        <div class="filter-dimensions-grid">
+          <!-- 1. Department Multi-Select Droplist -->
+          <div id="filter-dept-container"></div>
+
+          <!-- 2. Office Multi-Select Droplist -->
+          <div id="filter-office-container"></div>
+
+          <!-- 3. Position Multi-Select Droplist -->
+          <div id="filter-position-container"></div>
+
+          <!-- 4. Annual Period Multi-Select Droplist -->
+          <div id="filter-annual-container"></div>
+
+          <!-- 5. Reason for Request Multi-Select Droplist -->
+          <div id="filter-reason-container"></div>
+
+          <!-- 6. Prakas No. Text Filter -->
+          <div class="filter-input-card">
+            <label class="filter-input-label" for="filter-prakas-input">
+              <i data-lucide="scroll" style="color: #14b8a6;"></i>
+              <span>ប្រកាសលេខ (Prakas No.)</span>
+            </label>
+            <input type="text" id="filter-prakas-input" class="filter-text-input" placeholder="វាយលេខប្រកាស...">
+          </div>
+
+          <!-- 7. Request Date Filter -->
+          <div class="filter-input-card">
+            <label class="filter-input-label" for="filter-reqdate-input">
+              <i data-lucide="calendar-plus" style="color: #0284c7;"></i>
+              <span>ថ្ងៃស្នើសុំ (Request Date)</span>
+            </label>
+            <input type="date" id="filter-reqdate-input" class="filter-date-input">
+          </div>
+
+          <!-- 8. End Date Filter -->
+          <div class="filter-input-card">
+            <label class="filter-input-label" for="filter-enddate-input">
+              <i data-lucide="calendar-check" style="color: #ea580c;"></i>
+              <span>ថ្ងៃបញ្ចប់ (End Date)</span>
+            </label>
+            <input type="date" id="filter-enddate-input" class="filter-date-input">
+          </div>
+
+          <!-- 9. Status Multi-Select Droplist -->
+          <div id="filter-status-container"></div>
+        </div>
+      </div>
+
+      <!-- Quick Status Filter Chips -->
+      <div class="quick-filter-chips">
+        <button class="filter-chip active" data-status="ALL">
+          <span>ទាំងអស់ (All)</span>
+          <span class="chip-count" id="count-chip-ALL">0</span>
+        </button>
+        <button class="filter-chip" data-status="active">
+          <span>🟢 កំពុងដំណើរការ (Active)</span>
+          <span class="chip-count" id="count-chip-active">0</span>
+        </button>
+        <button class="filter-chip" data-status="pending">
+          <span>⏳ រង់ចាំ (Pending)</span>
+          <span class="chip-count" id="count-chip-pending">0</span>
+        </button>
+        <button class="filter-chip" data-status="completed">
+          <span>✅ បានបញ្ចប់ (Completed)</span>
+          <span class="chip-count" id="count-chip-completed">0</span>
+        </button>
+        <button class="filter-chip" data-status="expired">
+          <span>⚠️ ផុតកំណត់ (Expired)</span>
+          <span class="chip-count" id="count-chip-expired">0</span>
+        </button>
+        <button class="filter-chip" data-status="closed">
+          <span>🔒 បិទប្រព័ន្ធ (Closed)</span>
+          <span class="chip-count" id="count-chip-closed">0</span>
+        </button>
+        <button class="filter-chip" data-status="missing">
+          <span>📋 ខ្វះព័ត៌មាន (Missing)</span>
+          <span class="chip-count" id="count-chip-missing">0</span>
+        </button>
+      </div>
+
+      <!-- Master 22-Column Staff Table -->
+      <div class="table-card">
+        <div class="table-header-bar">
+          <!-- Left Zone: Table Main Title -->
+          <div class="table-header-left">
+            <i data-lucide="table" style="color: var(--primary);"></i>
+            <span id="table-header-left-title">តារាងគ្រប់គ្រងទិន្នន័យ</span>
+            <button class="icon-btn" style="width: 24px; height: 24px;" onclick="app.openEditTableHeaderModal()" title="កែសម្រួលចំណងជើងក្បាលតារាង (Edit Header Titles: Left, Middle, Right)">
+              <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
+            </button>
+          </div>
+
+          <!-- Middle Zone: Department / Organization Center Banner -->
+          <div class="table-header-middle">
+            <i data-lucide="building-2" style="width: 14px; height: 14px; color: var(--primary);"></i>
+            <span id="table-header-middle-title">អគ្គនាយកដ្ឋានពន្ធដារ • General Department of Taxation</span>
+          </div>
+
+          <!-- Right Zone: Meta Tag & Live Record Counter -->
+          <div class="table-header-right">
+            <span class="status-badge status-active" id="table-header-right-tag" style="font-size: 0.72rem;">Book1 Master Control</span>
+            <div id="table-records-info" style="font-size: 0.8rem; color: var(--text-secondary);">
+              បង្ហាញ 0 នៃ 0 កំណត់ត្រា
+            </div>
+          </div>
+        </div>
+
+        <div class="table-scroll-wrap">
+          <table class="staff-table" id="master-staff-table">
+            <thead>
+              <!-- Dynamically populated 22 columns header from dataStore.getMasterFields() -->
+            </thead>
+            <tbody id="staff-table-body">
+              <!-- Dynamically populated records -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer Pagination -->
+        <div class="table-footer-bar">
+          <div>ទំព័រ (Page): <strong id="current-page-num">1 / 1</strong></div>
+          <div class="pagination-controls">
+            <button class="btn btn-secondary btn-sm" onclick="app.currentPage = Math.max(1, app.currentPage - 1); app.renderStaffTable();">◀ មុន (Prev)</button>
+            <button class="btn btn-secondary btn-sm" onclick="app.currentPage++; app.renderStaffTable();">បន្ទាប់ (Next) ▶</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: DOCUMENT CONTROL ==================== -->
+    <section class="tab-pane" id="tab-documents">
+      <div class="chart-header" style="margin-bottom: 1.25rem;">
+        <h2>
+          <i data-lucide="folder-kanban"></i>
+          <span>ផ្ទាំងតាមដានឯកសារ និងលិខិតបទដ្ឋានបុគ្គលិក (Staff Document & Request Tracking)</span>
+        </h2>
+      </div>
+
+      <div class="doc-timeline-grid" id="doc-timeline-container">
+        <!-- Dynamically populated cards -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: SETTINGS ==================== -->
+    <section class="tab-pane" id="tab-settings">
+      <div class="chart-header" style="margin-bottom: 1.25rem;">
+        <h2>
+          <i data-lucide="sliders"></i>
+          <span>ការកំណត់ប្រព័ន្ធ (System Settings & Cloud Integration)</span>
+        </h2>
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-success btn-sm" onclick="ExcelHandler.downloadImportTemplate()" title="ទាញយកទម្រង់គំរូ Excel ២២ ជួរឈរ">
+            <i data-lucide="download"></i>
+            <span>ទាញយកទម្រង់គំរូ (.xlsx)</span>
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="app.openImportModal()" title="នាំចូលទិន្នន័យពី Excel">
+            <i data-lucide="upload"></i>
+            <span>នាំចូលទិន្នន័យ (Import)</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="settingsModalController.openModal('branding')">
+            <i data-lucide="settings-2"></i>
+            <span>ការកំណត់កម្រិតខ្ពស់</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 1. EXCEL TEMPLATE, DATA IMPORT & BACKUP HUB -->
+      <div class="cloud-sync-card" style="margin-bottom: 1.5rem;">
+        <div class="settings-card-header" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+          <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+            <i data-lucide="file-spreadsheet" style="color: #10b981;"></i>
+            <span>ទម្រង់គំរូ Excel, ការនាំចូល & បម្រុងទុកទិន្នន័យ (Excel Template, Import & Export Hub)</span>
+          </h3>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <!-- 1. Download Official Template Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="download" style="color: #10b981; width: 18px; height: 18px;"></i>
+                <span>ទម្រង់គំរូផ្លូវការ ២២ ជួរឈរ</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                ទាញយកឯកសារ Excel Template Book1 ដែលមាន ២២ ជួរឈរពេញលេញ និងទិន្នន័យយោងអង្គភាព។
+              </p>
+            </div>
+            <button class="btn btn-success btn-sm" onclick="ExcelHandler.downloadImportTemplate()" style="width: 100%;">
+              <i data-lucide="download"></i>
+              <span>ទាញយកទម្រង់គំរូ (.xlsx)</span>
+            </button>
+          </div>
+
+          <!-- 2. Import Data Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="upload" style="color: var(--primary); width: 18px; height: 18px;"></i>
+                <span>នាំចូលទិន្នន័យ (Import Data)</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                នាំចូលឯកសារ Excel ឬ CSV ចូលទៅក្នុងប្រព័ន្ធដោយផ្ទាល់ ជាមួយផ្ទាំង Preview និងជម្រើស Append/Overwrite។
+              </p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="app.openImportModal()" style="width: 100%;">
+              <i data-lucide="upload"></i>
+              <span>បើកផ្ទាំងនាំចូលទិន្នន័យ</span>
+            </button>
+          </div>
+
+          <!-- 3. Export / Backup Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="database" style="color: #6366f1; width: 18px; height: 18px;"></i>
+                <span>បម្រុងទុកទិន្នន័យ (Backup)</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                ទាញយកទិន្នន័យទាំងអស់ជាឯកសារពហុសន្លឹក Multi-Sheet (.xlsx) រួមមាន Data, Setting, Log, Dashboard។
+              </p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="ExcelHandler.exportFullWorkbook()" style="width: 100%;">
+              <i data-lucide="database"></i>
+              <span>Backup Database (.xlsx)</span>
+            </button>
+          </div>
+
+          <!-- 4. Table Header 3-Zone Titles Editor Card -->
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="heading" style="color: #f59e0b; width: 18px; height: 18px;"></i>
+                <span>ចំណងជើងក្បាលតារាង ៣ តំបន់</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
+                កែសម្រួលចំណងជើងខាងឆ្វេង (Left Title), កណ្តាល (Middle Title), និងស្លាកខាងស្តាំ (Right Tag) នៃតារាងទិន្នន័យ។
+              </p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="app.openEditTableHeaderModal()" style="width: 100%;">
+              <i data-lucide="edit-2"></i>
+              <span>កែសម្រួលចំណងជើង</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GOOGLE SHEET & DRIVE CLOUD SYNC CARD (EXACT SCREENSHOT 2 MATCH + AUTO-TRANSFER) -->
+      <div class="cloud-sync-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #10b981; display: flex; align-items: center; justify-content: center;">
+              <i data-lucide="cloud-upload" style="width: 20px; height: 20px;"></i>
+            </div>
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.15rem;">
+                មជ្ឈមណ្ឌលផ្ទេរទិន្នន័យស្វ័យប្រវត្ត (Google Sheets & Drive Auto-Transfer)
+              </h3>
+              <div style="font-size: 0.76rem; color: var(--text-muted);">
+                Auto-sync & transfer staff records directly to your Google Sheet & Drive folder on every entry
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <div id="cloud-sync-live-status">
+              <span class="status-badge status-active">🟢 ភ្ជាប់ជោគជ័យ (Auto-Synced)</span>
+            </div>
+            <span id="cloud-last-sync-time" style="font-size: 0.72rem; color: var(--text-muted);"></span>
+          </div>
+        </div>
+
+        <div class="cloud-info-box">
+          <i data-lucide="info"></i>
+          <div>
+            <strong style="font-size: 0.9rem;">កំណត់ទិន្នន័យចែករំលែករបស់អ្នក</strong><br>
+            សូម Copy Link ពី Google Sheet និង Google Drive Folder របស់អ្នកដាក់ទីនេះ។ <strong>ចំណាំ៖</strong> សូមប្រាកដថាអ្នកបាន Share វាក្នុងសិទ្ធិ Editor (Anyone with the link) មុននឹងភ្ជាប់។
+          </div>
+        </div>
+
+        <!-- Sheet URL Input -->
+        <div class="cloud-input-group">
+          <label class="cloud-input-label">
+            <span style="color: #10b981;">📊</span>
+            <span>តំណភ្ជាប់ Google Sheet (Sheet URL)</span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="url" class="cloud-input-control" id="input-google-sheet-url" value="https://docs.google.com/spreadsheets/d/1-5lKK7XmR-nv6wkRPOG0H2uYYvdRWyDgZyZKfLUphwg/edit?usp=sharing" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="CloudSyncService.openGoogleSheet()" title="បើកមើល Google Sheet ក្នុង Tab ថ្មី">
+              <i data-lucide="external-link"></i> <span>បើក Sheet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Drive URL Input -->
+        <div class="cloud-input-group">
+          <label class="cloud-input-label">
+            <span style="color: #f59e0b;">📁</span>
+            <span>តំណភ្ជាប់ Google Drive Folder (Folder URL)</span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="url" class="cloud-input-control" id="input-google-drive-url" value="https://drive.google.com/drive/u/0/folders/1-m73KVElNmUx4gRm3UmbONMjomPKf7L3" placeholder="https://drive.google.com/drive/folders/...">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="CloudSyncService.openGoogleDrive()" title="បើកមើល Google Drive Folder ក្នុង Tab ថ្មី">
+              <i data-lucide="external-link"></i> <span>បើក Drive</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Google Apps Script Webhook URL (Optional for direct REST API webhook) -->
+        <div class="cloud-input-group">
+          <label class="cloud-input-label">
+            <span style="color: #6366f1;">⚡</span>
+            <span>តំណភ្ជាប់ Google Apps Script Webhook (Webhook URL) <small style="color: var(--text-muted); font-weight: normal;">(ស្រេចចិត្ត / Optional Web App URL)</small></span>
+          </label>
+          <input type="url" class="cloud-input-control" id="input-google-webhook-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+
+        <!-- Auto-Sync Checkbox & Action Toolbar -->
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.25rem; flex-wrap: wrap; gap: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.84rem; font-weight: 700; color: var(--text-primary);">
+            <input type="checkbox" id="chk-auto-cloud-sync" checked style="width: 17px; height: 17px; accent-color: var(--primary);">
+            <span>🔄 ផ្ទេរទិន្នន័យដោយស្វ័យប្រវត្តរាល់ពេលបញ្ចូល ឬកែប្រែទិន្នន័យ (Auto-Transfer Data on Entry/Update)</span>
+          </label>
+
+          <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+            <button class="btn btn-success btn-sm" type="button" onclick="CloudSyncService.copyDataForGoogleSheetClipboard()" title="ចម្លងទិន្នន័យទាំងអស់ដើម្បីបិទភ្ជាប់ (Paste) ក្នុង Google Sheet">
+              <i data-lucide="clipboard-copy"></i> <span>📋 ចម្លងទិន្នន័យដាក់ Sheet (Copy & Paste)</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="CloudSyncService.openAppsScriptModal()" title="មើលកូដ Google Apps Script សម្រាប់ដំឡើងការផ្ទេរស្វ័យប្រវត្ត">
+              <i data-lucide="code"></i> <span>📜 កូដ Apps Script (Webhook)</span>
+            </button>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="CloudSyncService.testConnection()" title="ធ្វើតេស្តការតភ្ជាប់ Webhook">
+              <i data-lucide="activity"></i> <span>🔍 ធ្វើតេស្តការតភ្ជាប់ (Test)</span>
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="CloudSyncService.syncAllRecords()">
+              <i data-lucide="send"></i> <span>ផ្ទេរទិន្នន័យទាំងអស់ (Sync All)</span>
+            </button>
+            <button class="btn-cloud-save" type="button" onclick="app.saveCloudSyncSettings()">
+              <i data-lucide="save"></i>
+              <span>រក្សាទុកការកំណត់</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== EXCEL IMPORT / EXPORT TEMPLATE FOR SETTINGS LISTS ==================== -->
+      <div class="settings-excel-hub-card">
+        <div class="settings-excel-hub-info">
+          <div class="settings-excel-hub-icon">
+            <i data-lucide="file-spreadsheet" style="width: 26px; height: 26px; color: #10b981;"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 0.98rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+              📥 នាំចូលបញ្ជីជ្រើសរើសពី Excel (Import Department, Office & Position from Excel)
+            </h3>
+            <p style="font-size: 0.79rem; color: var(--text-muted); margin: 0;">
+              ទាញយកគំរូ Excel បំពេញឈ្មោះ អង្គភាព (Departments), ការិយាល័យ (Offices), តួនាទី (Positions), ប្រចាំឆ្នាំ, មូលហេតុនៃសំណើ ហើយនាំចូលដោយស្វ័យប្រវត្តក្នុង ១ វិនាទី
+            </p>
+          </div>
+        </div>
+
+        <div class="settings-excel-hub-actions">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="ExcelHandler.downloadSettingsImportTemplate()" title="ទាញយកឯកសារគំរូ Excel (.xlsx) ដែលមានគំរូស្រាប់">
+            <i data-lucide="download"></i> <span>ទាញយកគំរូ Excel (Download Template)</span>
+          </button>
+          
+          <button type="button" class="btn btn-secondary btn-sm" onclick="ExcelHandler.downloadSettingsCSVTemplate()" title="ទាញយកឯកសារគំរូ CSV (.csv) UTF-8">
+            <i data-lucide="file-text"></i> <span>ទាញយកគំរូ CSV</span>
+          </button>
+
+          <label class="btn btn-success btn-sm" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 0.45rem;" title="ជ្រើសរើសឯកសារ Excel ឬ CSV ដើម្បីនាំចូល">
+            <i data-lucide="upload"></i> <span>📤 នាំចូលពី Excel/CSV (Import Now)</span>
+            <input type="file" id="settings-excel-import-file" accept=".xlsx, .xls, .csv" style="display: none;" onchange="ExcelHandler.handleSettingsFileUpload(this)">
+          </label>
+        </div>
+      </div>
+
+      <!-- Controlled Dropdown Lists Grid -->
+      <div class="settings-grid">
+        <!-- Departments -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>🏢 អង្គភាព (Departments)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-departments"></ul>
+          <div class="settings-add-form">
+            <input type="text" class="form-control" id="input-add-departments" placeholder="បញ្ចូលឈ្មោះអង្គភាពថ្មី...">
+            <button class="btn btn-primary btn-sm" id="btn-add-departments">បន្ថែម</button>
+          </div>
+        </div>
+
+        <!-- Offices -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>🚪 ការិយាល័យ (Offices)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-offices"></ul>
+          <div class="settings-add-form">
+            <input type="text" class="form-control" id="input-add-offices" placeholder="បញ្ចូលឈ្មោះការិយាល័យថ្មី...">
+            <button class="btn btn-primary btn-sm" id="btn-add-offices">បន្ថែម</button>
+          </div>
+        </div>
+
+        <!-- Positions -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>🎖️ តួនាទី (Positions)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-positions"></ul>
+          <div class="settings-add-form">
+            <input type="text" class="form-control" id="input-add-positions" placeholder="បញ្ចូលតួនាទីថ្មី...">
+            <button class="btn btn-primary btn-sm" id="btn-add-positions">បន្ថែម</button>
+          </div>
+        </div>
+
+        <!-- Request Reasons with Alert Options (Option | Request Date Alert | End Date Alert) -->
+        <div class="settings-card settings-card-wide" style="grid-column: span 2;">
+          <div class="settings-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 1.25rem;">📝</span>
+              <h3>មូលហេតុនៃសំណើ & ការកំណត់រោទ៍កាលបរិច្ឆេទ (Request Reasons & Date Alert Options)</h3>
+            </div>
+            <span class="status-badge status-active" style="font-size: 0.72rem;">⚡ 15 / 30 / 60 ថ្ងៃ (Date Alert Rules)</span>
+          </div>
+
+          <div class="table-scroll-wrap" style="max-height: 320px; overflow-y: auto; margin-bottom: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
+            <table class="settings-rules-table">
+              <thead>
+                <tr>
+                  <th style="width: 44%;">Option (មូលហេតុនៃសំណើ)</th>
+                  <th style="width: 24%;">Request Date Alert (ថ្ងៃស្នើសុំ)</th>
+                  <th style="width: 24%;">End Date Alert (ថ្ងៃបញ្ចប់)</th>
+                  <th style="width: 8%; text-align: center;">លុប</th>
+                </tr>
+              </thead>
+              <tbody id="rules-requestReasons-tbody">
+                <!-- Dynamically Rendered by app.renderSettingsLists() -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="settings-add-reason-grid">
+            <input type="text" class="form-control" id="input-add-reason-name" placeholder="បញ្ចូលមូលហេតុថ្មី (e.g. ស្នើសុំបន្តការសិក្សា)...">
+            
+            <select class="form-control" id="select-add-reason-req-alert" title="កម្រិត Alert ថ្ងៃស្នើសុំ (Request Date Alert)">
+              <option value="">-- គ្មាន Alert ថ្ងៃស្នើសុំ --</option>
+              <option value="15">Request Date: 15 ថ្ងៃ (15 Days)</option>
+              <option value="30">Request Date: 30 ថ្ងៃ (30 Days)</option>
+              <option value="60">Request Date: 60 ថ្ងៃ (60 Days)</option>
+            </select>
+
+            <select class="form-control" id="select-add-reason-end-alert" title="កម្រិត Alert ថ្ងៃបញ្ចប់ (End Date Alert)">
+              <option value="">-- គ្មាន Alert ថ្ងៃបញ្ចប់ --</option>
+              <option value="15">End Date: 15 ថ្ងៃ (15 Days)</option>
+              <option value="30">End Date: 30 ថ្ងៃ (30 Days)</option>
+              <option value="60">End Date: 60 ថ្ងៃ (60 Days)</option>
+            </select>
+
+            <button class="btn btn-primary" id="btn-add-reason-rule" style="white-space: nowrap;">
+              <i data-lucide="plus"></i> <span>បន្ថែម</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Annual Periods -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>📅 ប្រចាំឆ្នាំ (Annual Periods)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-annualPeriods"></ul>
+          <div class="settings-add-form">
+            <input type="text" class="form-control" id="input-add-annualPeriods" placeholder="បញ្ចូលឆ្នាំ (e.g. 2027)...">
+            <button class="btn btn-primary btn-sm" id="btn-add-annualPeriods">បន្ថែម</button>
+          </div>
+        </div>
+
+        <!-- Genders -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>🚻 ភេទ (Genders)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-genders"></ul>
+        </div>
+
+        <!-- Remarks / Notes Controlled List -->
+        <div class="settings-card">
+          <div class="settings-card-header">
+            <h3>💬 កំណត់សម្គាល់ (Remarks & Notes)</h3>
+          </div>
+          <ul class="settings-item-list" id="list-remarks"></ul>
+          <div class="settings-add-form">
+            <input type="text" class="form-control" id="input-add-remarks" placeholder="បញ្ចូលកំណត់សម្គាល់ថ្មី...">
+            <button class="btn btn-primary btn-sm" id="btn-add-remarks">បន្ថែម</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 22 MASTER COLUMNS HEADER CUSTOMIZATION EDITOR ==================== -->
+      <div class="table-card" style="margin-top: 1.5rem;">
+        <div class="table-header-bar" style="background: var(--bg-card); padding: 1rem 1.25rem;">
+          <div class="table-title">
+            <i data-lucide="edit-3"></i>
+            <span>កែសម្រួលឈ្មោះជួរឈរទាំង ២២ នៃមូលដ្ឋានទិន្នន័យ (Master 22-Column Headers Customization)</span>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="
+              if (confirm('តើអ្នកពិតជាចង់កំណត់ឈ្មោះជួរឈរទាំងអស់ឡើងវិញតាមលំនាំដើម Book1 មែនទេ?')) {
+                SettingsManager.resetHeadersToDefault();
+                SettingsManager.renderHeadersEditor('headers-editor-tbody');
+                app.refreshAll();
+                app.showToast('បានកំណត់ឈ្មោះជួរឈរឡើងវិញតាមលំនាំដើម Book1 ជោគជ័យ', 'info');
+              }
+            ">
+              <i data-lucide="rotate-ccw"></i> <span>កំណត់ឡើងវិញតាមលំនាំដើម (Reset Book1)</span>
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" onclick="
+              SettingsManager.collectAndSaveHeadersFromEditor();
+              app.showToast('បានរក្សាទុកឈ្មោះជួរឈរទាំង ២២ ដោយជោគជ័យ!', 'success');
+            ">
+              <i data-lucide="save"></i> <span>រក្សាទុកឈ្មោះជួរឈរ (Save Headers)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-scroll-wrap">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th style="width: 60px; text-align: center;">ល.រ (No.)</th>
+                <th style="width: 140px;">Field Key</th>
+                <th>ឈ្មោះជួរឈរខ្មែរ (Khmer Header Title)</th>
+                <th>ឈ្មោះជួរឈរអង់គ្លេស (English Header Title)</th>
+                <th style="width: 140px; text-align: center;">តម្រឹម (Align)</th>
+                <th style="width: 130px; text-align: center;">លក្ខខណ្ឌ (Rule)</th>
+              </tr>
+            </thead>
+            <tbody id="headers-editor-tbody">
+              <!-- Dynamically populated from SettingsManager.renderHeadersEditor() -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 5: AUDIT LOG ==================== -->
+    <section class="tab-pane" id="tab-logs">
+      <div class="chart-header" style="margin-bottom: 1.25rem;">
+        <h2>
+          <i data-lucide="shield-check"></i>
+          <span>កំណត់ត្រាសកម្មភាព និងសវនកម្មប្រព័ន្ធ (System Audit Trail & Logs)</span>
+        </h2>
+        <button class="btn btn-danger btn-sm" id="btn-clear-logs">
+          <i data-lucide="trash-2"></i>
+          <span>សម្អាតកំណត់ត្រាទាំងអស់ (Clear Logs)</span>
+        </button>
+      </div>
+
+      <div class="log-timeline" id="audit-logs-container">
+        <!-- Populated dynamically -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== SYSTEM SETTINGS & MANAGEMENT MODAL ==================== -->
+  <div class="modal-backdrop" id="settings-management-modal">
+    <div class="settings-management-dialog">
+      <!-- Modal Header -->
+      <div class="settings-modal-header">
+        <h2>
+          <i data-lucide="sliders"></i>
+          <span>System Settings & Management</span>
+        </h2>
+        <button class="modal-close-btn" onclick="settingsModalController.closeModal()" title="Close">✕</button>
+      </div>
+
+      <!-- Settings Navigation Tabs (Exact 4 Tabs from Image) -->
+      <div class="settings-tabs-bar">
+        <button class="settings-nav-tab active" data-setting-tab="branding" onclick="settingsModalController.switchModalTab('branding')">
+          <i data-lucide="layout"></i>
+          <span>App Name & Branding</span>
+        </button>
+
+        <button class="settings-nav-tab" data-setting-tab="theme" onclick="settingsModalController.switchModalTab('theme')">
+          <i data-lucide="palette"></i>
+          <span>Theme & Colors</span>
+        </button>
+
+        <button class="settings-nav-tab" data-setting-tab="doctypes" onclick="settingsModalController.switchModalTab('doctypes')">
+          <i data-lucide="tag"></i>
+          <span>Document Types</span>
+        </button>
+
+        <button class="settings-nav-tab" data-setting-tab="users" onclick="settingsModalController.switchModalTab('users')">
+          <i data-lucide="users"></i>
+          <span>User Accounts</span>
+        </button>
+
+        <button class="settings-nav-tab" data-setting-tab="headers" onclick="settingsModalController.switchModalTab('headers')">
+          <i data-lucide="columns"></i>
+          <span>22 Column Headers</span>
+        </button>
+      </div>
+
+      <!-- Settings Modal Body Panes -->
+      <div class="settings-modal-body">
+        
+        <!-- ---------------- TAB 1: App Name & Branding ---------------- -->
+        <div class="settings-pane" id="set-pane-branding" style="display: block;">
+          <h3 class="settings-section-title">Application Customization</h3>
+          <p class="settings-section-desc">Rename the application and customize headers to match your company or organization.</p>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+              <label>App Title / Organization Name</label>
+              <input type="text" class="form-control" id="set-app-title" placeholder="DocuControl">
+            </div>
+
+            <div class="form-group">
+              <label>App Badge / Version</label>
+              <input type="text" class="form-control" id="set-app-badge" placeholder="PRO">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label>App Subtitle / Description</label>
+            <input type="text" class="form-control" id="set-app-subtitle" placeholder="Enterprise Document Control & Archival">
+          </div>
+
+          <div class="form-group">
+            <label>Document Number Prefix</label>
+            <input type="text" class="form-control" id="set-doc-prefix" placeholder="DOC">
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+              Used to auto-generate numbers (e.g. DOC-2026-0001, GDT-01024)
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------- TAB 2: Theme & Colors ---------------- -->
+        <div class="settings-pane" id="set-pane-theme" style="display: none;">
+          <h3 class="settings-section-title">Theme & Accent Colors</h3>
+          <p class="settings-section-desc">Choose a pre-designed color scheme or pick any custom brand color.</p>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+              Appearance Mode
+            </label>
+            <div class="appearance-mode-grid">
+              <button type="button" class="appearance-mode-btn" id="btn-mode-dark" onclick="settingsModalController.selectThemeMode('dark')">
+                <i data-lucide="moon"></i>
+                <span>Dark Theme</span>
+              </button>
+              <button type="button" class="appearance-mode-btn active" id="btn-mode-light" onclick="settingsModalController.selectThemeMode('light')">
+                <i data-lucide="sun"></i>
+                <span>Light Theme</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1.25rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+              Accent Color Scheme
+            </label>
+            <div class="color-scheme-pills" id="accent-color-pills-container">
+              <!-- Dynamically populated color presets -->
+            </div>
+          </div>
+
+          <!-- Custom Brand Color Picker -->
+          <div class="custom-brand-color-card">
+            <input type="color" id="set-custom-brand-color" value="#4f46e5" class="custom-color-preview-box" onchange="settingsModalController.handleCustomColorChange(event)">
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Custom Brand Color</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Pick any color value for your organization</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------- TAB 3: Document Types ---------------- -->
+        <div class="settings-pane" id="set-pane-doctypes" style="display: none;">
+          <h3 class="settings-section-title">Document Types & Categories</h3>
+          <p class="settings-section-desc">Manage controlled request reasons, document classifications, and reference document rules.</p>
+          
+          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+            <input type="text" class="form-control" id="input-modal-add-doctype" placeholder="បញ្ចូលប្រភេទឯកសារ ឬមូលហេតុថ្មី (e.g. ស្នើសុំផ្ទេរភារកិច្ច)...">
+            <button class="btn btn-primary" onclick="
+              const val = document.getElementById('input-modal-add-doctype').value;
+              if (val) {
+                SettingsManager.addItem('requestReasons', val);
+                document.getElementById('input-modal-add-doctype').value = '';
+                app.refreshAll();
+              }
+            ">
+              <i data-lucide="plus"></i> <span>បន្ថែម</span>
+            </button>
+          </div>
+
+          <ul class="settings-item-list" id="modal-list-requestReasons" style="max-height: 260px;"></ul>
+        </div>
+
+        <!-- ---------------- TAB 4: User Accounts ---------------- -->
+        <div class="settings-pane" id="set-pane-users" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem;">
+            <h3 class="settings-section-title" style="margin-bottom: 0;">User Accounts & Security Control</h3>
+            <span class="admin-protected-badge">ADMIN PROTECTED</span>
+          </div>
+          <p class="settings-section-desc">Create accounts, change user passwords, modify permissions, and manage access status.</p>
+
+          <!-- Create User Account Card -->
+          <div class="user-create-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
+              <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">Create New User Account</h4>
+              <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.generateRandomPassword()" style="font-size: 0.75rem;">
+                <i data-lucide="zap"></i> <span>Generate Password</span>
+              </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label>Username <span class="required-mark">*</span></label>
+                <input type="text" class="form-control" id="set-new-user-name" placeholder="e.g. john_doe">
+              </div>
+
+              <div class="form-group">
+                <label>Full Name <span class="required-mark">*</span></label>
+                <input type="text" class="form-control" id="set-new-user-fullname" placeholder="e.g. John Doe">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1rem;">
+              <div class="form-group">
+                <label>Password <span class="required-mark">*</span></label>
+                <input type="password" class="form-control" id="set-new-user-pass" placeholder="Enter password (e.g. Pass1234)">
+              </div>
+
+              <div class="form-group">
+                <label>Role / Permissions <span class="required-mark">*</span></label>
+                <select class="form-control" id="set-new-user-role">
+                  <option value="STAFF">Staff (Create & Edit Documents)</option>
+                  <option value="ADMIN">Admin (Full Access)</option>
+                  <option value="VIEWER">Viewer (Read-Only)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button class="btn btn-primary" type="button" onclick="settingsModalController.handleAddUserAccount()">
+                <i data-lucide="user-plus"></i> <span>Add User Account</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Registered Users Table -->
+          <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem;">
+            Registered User Accounts
+          </h4>
+
+          <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-card);">
+            <table class="user-accounts-table">
+              <thead>
+                <tr>
+                  <th>USER</th>
+                  <th>ROLE</th>
+                  <th>PASSWORD</th>
+                  <th>STATUS</th>
+                  <th>ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody id="user-accounts-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ---------------- TAB 5: 22 Column Headers ---------------- -->
+        <div class="settings-pane" id="set-pane-headers" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem;">
+            <h3 class="settings-section-title" style="margin-bottom: 0;">Custom 22-Column Master Database Headers</h3>
+            <div style="display: flex; gap: 0.4rem;">
+              <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.handleResetModalHeaders()">
+                <i data-lucide="rotate-ccw"></i> <span>Reset Book1</span>
+              </button>
+              <button class="btn btn-primary btn-sm" type="button" onclick="settingsModalController.handleSaveModalHeaders()">
+                <i data-lucide="save"></i> <span>Save Headers</span>
+              </button>
+            </div>
+          </div>
+          <p class="settings-section-desc">Edit the Khmer & English column titles for all 22 fields. Changes apply across the table, user forms, export, and reports.</p>
+
+          <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-card); max-height: 400px; overflow-y: auto;">
+            <table class="staff-table" style="font-size: 0.8rem;">
+              <thead>
+                <tr>
+                  <th style="width: 50px; text-align: center;">No.</th>
+                  <th style="width: 130px;">Field Key</th>
+                  <th>ឈ្មោះជួរឈរខ្មែរ (Khmer Header)</th>
+                  <th>ឈ្មោះជួរឈរអង់គ្លេស (English Header)</th>
+                  <th style="width: 140px; text-align: center;">តម្រឹម (Align)</th>
+                  <th style="width: 100px; text-align: center;">Rule</th>
+                </tr>
+              </thead>
+              <tbody id="modal-headers-editor-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Settings Modal Footer -->
+      <div class="settings-modal-footer">
+        <button type="button" class="btn-reset-text" onclick="settingsModalController.handleResetToDefaults()">
+          <i data-lucide="rotate-ccw"></i>
+          <span>Reset to Defaults</span>
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <button type="button" class="btn btn-secondary" onclick="settingsModalController.closeModal()">
+            <span>Cancel</span>
+          </button>
+          <button type="button" class="btn btn-primary" onclick="settingsModalController.handleSaveAll()">
+            <i data-lucide="check"></i>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== USERFORM MODAL (SECTION 4) ==================== -->
+  <div class="modal-backdrop" id="userform-modal">
+    <div class="userform-dialog">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2 id="modal-title-text">
+          <i data-lucide="user-plus"></i>
+          <span>ចុះឈ្មោះបុគ្គលិកថ្មី (Staff Registration)</span>
+        </h2>
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button class="btn btn-secondary btn-sm" type="button" onclick="ExcelHandler.downloadVLookupDataEntryTemplate()" title="ទាញយកគំរូ Excel ដែលមានរូបមន្ត VLOOKUP ស្វ័យប្រវត្ត">
+            <i data-lucide="file-spreadsheet"></i> <span>គំរូ Excel VLOOKUP</span>
+          </button>
+          <button class="modal-close-btn" onclick="userformController.closeModal()" title="Close">✕</button>
+        </div>
+      </div>
+
+      <!-- Modal Body (4 Master Sections + Metadata Bar) -->
+      <div class="modal-body">
+        <form id="staff-userform" onsubmit="return false;">
+
+          <!-- LOCKED STATUS BANNER (SHOWS WHEN STATUS IS CLOSED) -->
+          <div class="form-locked-alert" id="uf-locked-banner" style="display: none;">
+            <i data-lucide="lock" style="width: 22px; height: 22px; color: #dc2626; flex-shrink: 0;"></i>
+            <div style="flex: 1;">
+              <div style="font-weight: 700; font-size: 0.88rem; color: #991b1b; margin-bottom: 0.15rem;">
+                🔒 ប្រព័ន្ធបានបិទ (System Closed - View Only Mode)
+              </div>
+              <div style="font-size: 0.76rem; color: #b91c1c; line-height: 1.35;">
+                កំណត់ត្រានេះត្រូវបានចាក់សោរមិនអនុញ្ញាតឱ្យកែប្រែឡើយ (Read-Only)។ ដើម្បីកែប្រែព័ត៌មានឡើងវិញ សូមប្តូរស្ថានភាពពី «បានបិទប្រព័ន្ធ» ទៅជា «កំពុងដំណើរការ» ឬ «ស្វ័យប្រវត្ត»។
+              </div>
+            </div>
+          </div>
+
+          <!-- RECORD UPDATE INFORMATION / AUDIT METADATA BAR -->
+          <div class="record-meta-bar" id="uf-record-meta-bar" style="display: none;">
+            <div class="meta-pills-group">
+              <div class="meta-pill">
+                <i data-lucide="calendar-plus"></i>
+                <span>បង្កើត៖ <strong id="meta-created-at">-</strong> ដោយ <span id="meta-created-by">-</span></span>
+              </div>
+              <div class="meta-pill">
+                <i data-lucide="refresh-cw"></i>
+                <span>កែប្រែចុងក្រោយ៖ <strong id="meta-updated-at">-</strong> ដោយ <span id="meta-updated-by">-</span></span>
+              </div>
+              <span class="version-pill" id="meta-version-badge">v1</span>
+            </div>
+            <button type="button" class="history-toggle-btn" onclick="userformController.toggleChangeHistory()">
+              <i data-lucide="history"></i>
+              <span>ប្រវត្តិការកែប្រែ (History)</span>
+            </button>
+          </div>
+          
+          <div class="change-history-box" id="uf-change-history-box">
+            <div style="font-weight: 700; font-size: 0.8rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+              កំណត់ត្រាប្រវត្តិការកែប្រែបុគ្គលិកនេះ (Record Modification Audit Trail)
+            </div>
+            <div id="uf-change-history-list"></div>
+          </div>
+
+          <!-- SECTION 1: Staff Personal Information -->
+          <div class="form-section-card" id="uf-sec1-card">
+            <div class="form-section-header" style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="user"></i>
+                <span>១. ព័ត៌មានផ្ទាល់ខ្លួន (Staff Personal Information)</span>
+              </div>
+              <span class="vlookup-badge" id="uf-vlookup-badge" style="display: none;">
+                <i data-lucide="zap" style="width: 12px; height: 12px;"></i> <span>⚡ VLOOKUP Auto-Filled</span>
+              </span>
+            </div>
+
+            <!-- VLOOKUP Smart Hint Banner -->
+            <div class="vlookup-hint-banner" id="uf-vlookup-hint-banner">
+              <i data-lucide="sparkles" style="width: 16px; height: 16px; color: #10b981; flex-shrink: 0;"></i>
+              <span>💡 <strong>VLOOKUP ស្វ័យប្រវត្ត៖</strong> គ្រាន់តែវាយ ឬជ្រើសរើស <strong>អត្តលេខ អពដ (Staff ID)</strong> ប្រព័ន្ធនឹងទាញទិន្នន័យ (VLOOKUP) <strong>១. ព័ត៌មានផ្ទាល់ខ្លួន</strong> និង <strong>២. ព័ត៌មានអង្គភាព</strong> មកបំពេញជូនភ្លាមៗ!</span>
+            </div>
+            
+            <div class="form-grid-3">
+              <!-- No. -->
+              <div class="form-group">
+                <label id="lbl-uf-no">
+                  <span class="field-no">១.</span> ល.រ (No.)
+                </label>
+                <input type="number" class="form-control" id="uf-no" readonly>
+              </div>
+
+              <!-- Staff ID -->
+              <div class="form-group">
+                <label id="lbl-uf-staffId">
+                  <span class="field-no">២.</span> អត្តលេខ អពដ (Staff ID) <span class="required-mark">*</span>
+                </label>
+                <input type="text" class="form-control" id="uf-staffId" placeholder="ឧទាហរណ៍៖ GDT-01234 (វាយ ID ដើម្បី VLOOKUP)..." list="staffId-datalist" autocomplete="off">
+                <datalist id="staffId-datalist"></datalist>
+                <div class="field-error-msg" id="err-uf-staffId"></div>
+              </div>
+
+              <!-- Secondary ID -->
+              <div class="form-group">
+                <label id="lbl-uf-secondaryId">
+                  <span class="field-no">៣.</span> អត្តលេខ កសហវ (Secondary ID)
+                </label>
+                <input type="text" class="form-control" id="uf-secondaryId" placeholder="ឧទាហរណ៍៖ MEF-5678" list="secondaryId-datalist" autocomplete="off">
+                <datalist id="secondaryId-datalist"></datalist>
+                <div class="field-error-msg" id="err-uf-secondaryId"></div>
+              </div>
+
+              <!-- Latin Name -->
+              <div class="form-group">
+                <label id="lbl-uf-latinName">
+                  <span class="field-no">៤.</span> ឈ្មោះឡាតាំង (Latin Name) <span class="required-mark">*</span>
+                </label>
+                <input type="text" class="form-control" id="uf-latinName" placeholder="SOK SAMNANG" style="text-transform: uppercase;">
+                <div class="field-error-msg" id="err-uf-latinName"></div>
+              </div>
+
+              <!-- Khmer Name -->
+              <div class="form-group">
+                <label id="lbl-uf-khmerName">
+                  <span class="field-no">៥.</span> ឈ្មោះខ្មែរ (Khmer Name) <span class="required-mark">*</span>
+                </label>
+                <input type="text" class="form-control" id="uf-khmerName" placeholder="សុខ សំណាង">
+                <div class="field-error-msg" id="err-uf-khmerName"></div>
+              </div>
+
+              <!-- Gender -->
+              <div class="form-group">
+                <label id="lbl-uf-gender">
+                  <span class="field-no">៩.</span> ភេទ (Gender) <span class="required-mark">*</span>
+                </label>
+                <select class="form-control" id="uf-gender">
+                  <option value="">-- ជ្រើសរើសភេទ --</option>
+                </select>
+                <div class="field-error-msg" id="err-uf-gender"></div>
+              </div>
+
+              <!-- DOB -->
+              <div class="form-group">
+                <label id="lbl-uf-dob">
+                  <span class="field-no">១០.</span> ថ្ងៃខែឆ្នាំកំណើត (DOB)
+                  <span class="status-badge status-pending" id="uf-age-calculated" style="margin-left: auto; font-size: 0.68rem;">-</span>
+                </label>
+                <input type="date" class="form-control" id="uf-dob">
+                <div class="field-error-msg" id="err-uf-dob"></div>
+              </div>
+
+              <!-- Service Start Date -->
+              <div class="form-group">
+                <label id="lbl-uf-serviceStartDate">
+                  <span class="field-no">១១.</span> ថ្ងៃខែឆ្នាំបម្រើការងារ (Service Date)
+                  <span class="status-badge status-active" id="uf-service-duration-calculated" style="margin-left: auto; font-size: 0.68rem;">-</span>
+                </label>
+                <input type="date" class="form-control" id="uf-serviceStartDate">
+                <div class="field-error-msg" id="err-uf-serviceStartDate"></div>
+              </div>
+
+              <!-- Status Dropdown Selector -->
+              <div class="form-group">
+                <label id="lbl-uf-customStatus">
+                  <span class="field-no">ស្ថានភាព</span> ស្ថានភាពបុគ្គលិក (Staff Status)
+                </label>
+                <select class="form-control" id="uf-customStatus">
+                  <option value="AUTO">🔄 ស្វ័យប្រវត្តតាមកាលបរិច្ឆេទ (Auto-calculated)</option>
+                  <option value="active">🟢 កំពុងដំណើរការ (Active)</option>
+                  <option value="pending">⏳ រង់ចាំដំណើរការ (Pending)</option>
+                  <option value="completed">✅ បានបញ្ចប់ (Completed)</option>
+                  <option value="expired">⚠️ ផុតសុពលភាព (Expired)</option>
+                  <option value="closed">🔒 បានបិទប្រព័ន្ធ (Closed)</option>
+                  <option value="missing">📋 ខ្វះព័ត៌មាន (Missing Info)</option>
+                </select>
+                <div style="margin-top: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                  <span style="font-size: 0.72rem; color: var(--text-muted);">ស្ថានភាពជាក់ស្តែង៖</span>
+                  <span class="status-badge status-pending" id="uf-status-calculated" style="font-size: 0.7rem;">ថ្មី (New)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 2: Organization Information -->
+          <div class="form-section-card" id="uf-sec2-card">
+            <div class="form-section-header">
+              <i data-lucide="building"></i>
+              <span>២. ព័ត៌មានអង្គភាព និងតួនាទី (Organization Information)</span>
+            </div>
+            
+            <div class="form-grid-3">
+              <!-- Department -->
+              <div class="form-group">
+                <label id="lbl-uf-department">
+                  <span class="field-no">៦.</span> អង្គភាព (Department) <span class="required-mark">*</span>
+                </label>
+                <select class="form-control" id="uf-department">
+                  <option value="">-- ជ្រើសរើសអង្គភាព --</option>
+                </select>
+                <div class="field-error-msg" id="err-uf-department"></div>
+              </div>
+
+              <!-- Office -->
+              <div class="form-group">
+                <label id="lbl-uf-office">
+                  <span class="field-no">៧.</span> ការិយាល័យ (Office) <span class="required-mark">*</span>
+                </label>
+                <select class="form-control" id="uf-office">
+                  <option value="">-- ជ្រើសរើសការិយាល័យ --</option>
+                </select>
+                <div class="field-error-msg" id="err-uf-office"></div>
+              </div>
+
+              <!-- Position -->
+              <div class="form-group">
+                <label id="lbl-uf-position">
+                  <span class="field-no">៨.</span> តួនាទី (Position) <span class="required-mark">*</span>
+                </label>
+                <select class="form-control" id="uf-position">
+                  <option value="">-- ជ្រើសរើសតួនាទី --</option>
+                </select>
+                <div class="field-error-msg" id="err-uf-position"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 3: Request & Document Information -->
+          <div class="form-section-card">
+            <div class="form-section-header">
+              <i data-lucide="file-text"></i>
+              <span>៣. ព័ត៌មានសំណើ និងតាមដានឯកសារ (Request & Document Control)</span>
+            </div>
+            
+            <div class="form-grid-4">
+              <!-- Request Date -->
+              <div class="form-group">
+                <label id="lbl-uf-requestDate"><span class="field-no">១២.</span> ថ្ងៃខែឆ្នាំស្នើសុំ</label>
+                <input type="date" class="form-control" id="uf-requestDate">
+                <div class="field-error-msg" id="err-uf-requestDate"></div>
+              </div>
+
+              <!-- Start Date -->
+              <div class="form-group">
+                <label id="lbl-uf-startDate" style="display: flex; align-items: center; justify-content: space-between;">
+                  <span><span class="field-no">១៤.</span> ថ្ងៃខែឆ្នាំចាប់ផ្តើម</span>
+                  <span id="uf-startdate-sync-indicator" onclick="userformController.syncStartDateWithRequestDate()" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; color: var(--primary); background: rgba(79, 70, 229, 0.08); cursor: pointer; font-weight: 600;" title="ចុចដើម្បីធ្វើសមកាលកម្មស្មើថ្ងៃស្នើសុំ (Click to sync with Request Date)">⚡ ស្វ័យប្រវត្ត (Auto)</span>
+                </label>
+                <input type="date" class="form-control" id="uf-startDate">
+                <div class="field-error-msg" id="err-uf-startDate"></div>
+              </div>
+
+              <!-- End Date -->
+              <div class="form-group">
+                <label id="lbl-uf-endDate"><span class="field-no">១៣.</span> ថ្ងៃខែឆ្នាំបញ្ចប់</label>
+                <input type="date" class="form-control" id="uf-endDate">
+                <div class="field-error-msg" id="err-uf-endDate"></div>
+              </div>
+
+              <!-- Annual Period -->
+              <div class="form-group">
+                <label id="lbl-uf-annualPeriod"><span class="field-no">១៥.</span> ប្រចាំឆ្នាំ (Year)</label>
+                <select class="form-control" id="uf-annualPeriod">
+                  <option value="">-- ជ្រើសរើសឆ្នាំ --</option>
+                </select>
+              </div>
+
+              <!-- Request Reason -->
+              <div class="form-group form-col-full">
+                <label id="lbl-uf-requestReason"><span class="field-no">១៦.</span> មូលហេតុនៃសំណើ (Request Reason)</label>
+                <select class="form-control" id="uf-requestReason">
+                  <option value="">-- ជ្រើសរើសមូលហេតុ --</option>
+                </select>
+              </div>
+
+              <!-- Prakas No -->
+              <div class="form-group" style="grid-column: span 2;">
+                <label id="lbl-uf-prakasNo"><span class="field-no">១៧.</span> ប្រកាសលេខ (Prakas No.)</label>
+                <input type="text" class="form-control" id="uf-prakasNo" placeholder="ឧទាហរណ៍៖ ប្រកាសលេខ ១២៣ សហវ">
+              </div>
+
+              <!-- Ref Document -->
+              <div class="form-group" style="grid-column: span 2;">
+                <label id="lbl-uf-refDocument"><span class="field-no">២០.</span> ឯកសារយោង (Ref Document)</label>
+                <input type="text" class="form-control" id="uf-refDocument" placeholder="ឧទាហរណ៍៖ លិខិតលេខ ៤៥៦ អពដ">
+              </div>
+
+              <!-- Received Date -->
+              <div class="form-group" style="grid-column: span 2;">
+                <label id="lbl-uf-receivedDate"><span class="field-no">២១.</span> ថ្ងៃទទួលឯកសារ ឬប្រកាស</label>
+                <input type="date" class="form-control" id="uf-receivedDate">
+              </div>
+
+              <!-- System Closing Date -->
+              <div class="form-group" style="grid-column: span 2;">
+                <label id="lbl-uf-systemClosingDate"><span class="field-no">១៩.</span> ថ្ងៃខែបិទប្រព័ន្ធ (Closing Date)</label>
+                <input type="date" class="form-control" id="uf-systemClosingDate">
+              </div>
+
+              <!-- Status Dropdown Selector (Active / Closed / Pending / Auto) -->
+              <div class="form-group form-col-full" style="background: var(--bg-card-subtle); padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 1.5px solid var(--border-color);">
+                <label id="lbl-uf-customStatus" style="font-weight: 700; color: var(--primary); display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+                  <span style="display: flex; align-items: center; gap: 0.4rem;">
+                    <i data-lucide="activity" style="width: 15px; height: 15px;"></i>
+                    <span>ស្ថានភាពបុគ្គលិក / ស្ថានភាពប្រព័ន្ធ (Staff & System Status)</span>
+                  </span>
+                  <span class="status-badge status-pending" id="uf-status-calculated" style="font-size: 0.72rem;">ថ្មី (New)</span>
+                </label>
+                <select class="form-control" id="uf-customStatus" style="font-weight: 600;">
+                  <option value="AUTO">🔄 ស្វ័យប្រវត្តតាមកាលបរិច្ឆេទ (Auto-calculated)</option>
+                  <option value="active">🟢 កំពុងដំណើរការ (Active)</option>
+                  <option value="pending">⏳ រង់ចាំដំណើរការ (Pending)</option>
+                  <option value="completed">✅ បានបញ្ចប់ (Completed)</option>
+                  <option value="expired">⚠️ ផុតសុពលភាព (Expired)</option>
+                  <option value="closed">🔒 បានបិទប្រព័ន្ធ (Closed - View Only Mode)</option>
+                  <option value="missing">📋 ខ្វះព័ត៌មាន (Missing Info)</option>
+                </select>
+                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
+                  💡 ចំណាំ៖ ប្រសិនបើជ្រើសរើស «🔒 បានបិទប្រព័ន្ធ» ទម្រង់នឹងត្រូវបានចាក់សោរ (View Only) ដោយស្វ័យប្រវត្ត។
+                </div>
+              </div>
+
+              <!-- Description -->
+              <div class="form-group form-col-full">
+                <label id="lbl-uf-description"><span class="field-no">១៨.</span> ពិព័ណនាផ្សេងៗ (Description)</label>
+                <textarea class="form-control" id="uf-description" rows="2" placeholder="ពិព័ណនាលម្អិតអំពីសំណើ ឬការកែប្រែ..."></textarea>
+              </div>
+
+              <!-- Remark with Droplist for Quick Selection and Custom Entry -->
+              <div class="form-group form-col-full" style="background: var(--bg-card-subtle); padding: 0.85rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem; flex-wrap: wrap; gap: 0.5rem;">
+                  <label id="lbl-uf-remark" style="margin-bottom: 0; font-weight: 600;">
+                    <span class="field-no">២២.</span> Remark (កំណត់សម្គាល់បន្ថែម)
+                  </label>
+                  <button type="button" class="btn btn-secondary btn-sm" style="padding: 3px 9px; font-size: 0.72rem;" onclick="userformController.saveCurrentRemarkAsPreset()" title="រក្សាទុកកំណត់សម្គាល់នេះទៅក្នុងបញ្ជីគំរូ Droplist">
+                    <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i>
+                    <span>+ បន្ថែមទៅបញ្ជីគំរូ (Save as Preset)</span>
+                  </button>
+                </div>
+
+                <!-- Remark Droplist Selector -->
+                <div style="margin-bottom: 0.45rem;">
+                  <select class="form-control" id="uf-remark-select" style="font-size: 0.82rem; background: var(--bg-card);">
+                    <option value="">-- ជ្រើសរើសកំណត់សម្គាល់គំរូពី Droplist (Select Preset Remark) --</option>
+                  </select>
+                </div>
+
+                <!-- Remark Editable Textarea -->
+                <textarea class="form-control" id="uf-remark" rows="2" placeholder="កំណត់សម្គាល់បន្ថែមផ្សេងៗ (ឬជ្រើសរើសពី Droplist ខាងលើ)..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION 4: Attached Files & Document Repository -->
+          <div class="form-section-card" style="margin-top: 1.25rem;">
+            <div class="form-section-header">
+              <i data-lucide="paperclip"></i>
+              <span>៤. ឯកសារភ្ជាប់ និងលិខិតយោង (Attached Files & Documents)</span>
+            </div>
+
+            <!-- Dropzone Upload Area -->
+            <div class="attachment-dropzone" id="uf-attachment-dropzone" onclick="document.getElementById('uf-attachment-input').click()">
+              <i data-lucide="upload-cloud"></i>
+              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+                ចុចទីនេះ ឬទម្លាក់ឯកសារដើម្បីភ្ជាប់ (Click or Drag & Drop Files to Attach)
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">
+                គាំទ្រឯកសារ PDF, DOCX, XLSX, រូបភាពស្កេនលិខិតយោង ឬប្រកាស (Max 10MB/file)
+              </div>
+              <input type="file" id="uf-attachment-input" multiple style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+            </div>
+
+            <!-- Attachments Grid -->
+            <div class="attachments-grid" id="uf-attachments-list">
+              <!-- Dynamically populated from userformController.renderAttachmentsList() -->
+            </div>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Modal Footer (Action Buttons: New, Save, Update, Delete, Search, Clear, Close) -->
+      <div class="modal-footer">
+        <div class="footer-left-actions">
+          <button class="btn btn-secondary" onclick="userformController.openNew()" title="បង្កើតថ្មី">
+            <i data-lucide="sparkles"></i>
+            <span>ថ្មី (New)</span>
+          </button>
+          <button class="btn btn-secondary" onclick="userformController.handleSearchPrompt()" title="ស្វែងរកក្នុងទម្រង់">
+            <i data-lucide="search"></i>
+            <span>ស្វែងរក (Search)</span>
+          </button>
+          <button class="btn btn-secondary" onclick="userformController.clearForm()" title="សម្អាតទម្រង់">
+            <i data-lucide="eraser"></i>
+            <span>សម្អាត (Clear)</span>
+          </button>
+        </div>
+
+        <div class="footer-right-actions">
+          <button class="btn btn-danger" id="btn-uf-delete" onclick="userformController.handleDelete()" style="display: none;">
+            <i data-lucide="trash-2"></i>
+            <span>លុប (Delete)</span>
+          </button>
+          <button class="btn btn-primary" id="btn-uf-update" onclick="userformController.handleUpdate()" style="display: none;">
+            <i data-lucide="refresh-cw"></i>
+            <span>កែប្រែ (Update)</span>
+          </button>
+          <button class="btn btn-success" id="btn-uf-save" onclick="userformController.handleSave()">
+            <i data-lucide="save"></i>
+            <span>រក្សាទុក (Save)</span>
+          </button>
+          <button class="btn btn-secondary" onclick="userformController.closeModal()">
+            <i data-lucide="x"></i>
+            <span>បិទ (Close)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROFILE PRINT PREVIEW MODAL ==================== -->
+  <div class="modal-backdrop" id="profile-card-modal">
+    <div class="userform-dialog" style="max-width: 800px;">
+      <div class="modal-header">
+        <h2>
+          <i data-lucide="printer"></i>
+          <span>ប័ណ្ណព័ត៌មានបុគ្គលិក (Staff Profile Card)</span>
+        </h2>
+        <button class="modal-close-btn" onclick="document.getElementById('profile-card-modal').classList.remove('open')">✕</button>
+      </div>
+      <div class="modal-body" id="profile-modal-body">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button class="btn btn-primary" onclick="window.print()">
+          <i data-lucide="printer"></i>
+          <span>បោះពុម្ព (Print Profile)</span>
+        </button>
+        <button class="btn btn-secondary" onclick="document.getElementById('profile-card-modal').classList.remove('open')">
+          <span>បិទ (Close)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== LIGHTBOX ATTACHMENT PREVIEW MODAL ==================== -->
+  <div class="lightbox-modal" id="lightbox-preview-modal">
+    <div class="lightbox-content">
+      <div class="lightbox-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="file-text" style="color: var(--primary);"></i>
+          <strong id="lightbox-file-name" style="font-size: 0.95rem; color: var(--text-primary);">Document Preview</strong>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('lightbox-preview-modal').classList.remove('open')">✕</button>
+      </div>
+      <div class="lightbox-body" id="lightbox-body-content">
+        <!-- Preview loaded dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EDIT TABLE HEADER TITLES MODAL (LEFT, MIDDLE, RIGHT) ==================== -->
+  <div class="modal-backdrop" id="edit-table-header-modal">
+    <div class="userform-dialog" style="max-width: 650px;">
+      <div class="modal-header">
+        <h2>
+          <i data-lucide="edit-3"></i>
+          <span>កែសម្រួលចំណងជើងក្បាលតារាង (Edit Table Header: Left, Middle, Right)</span>
+        </h2>
+        <button class="modal-close-btn" onclick="document.getElementById('edit-table-header-modal').classList.remove('open')">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div class="form-group" style="margin-bottom: 1.15rem;">
+          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+            <span>⬅️ ១. ចំណងជើងខាងឆ្វេង (Left Title)</span>
+          </label>
+          <input type="text" class="form-control" id="input-edit-header-left" placeholder="តារាងគ្រប់គ្រងទិន្នន័យ">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.15rem;">
+          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+            <span>↔️ ២. ចំណងជើងកណ្តាល (Middle / Center Title)</span>
+          </label>
+          <input type="text" class="form-control" id="input-edit-header-middle" placeholder="អគ្គនាយកដ្ឋានពន្ធដារ • General Department of Taxation">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.15rem;">
+          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+            <span>➡️ ៣. ស្លាកចំណងជើងខាងស្តាំ (Right Sub-title / Tag)</span>
+          </label>
+          <input type="text" class="form-control" id="input-edit-header-right" placeholder="Book1 Master Control">
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: space-between;">
+        <button type="button" class="btn-reset-text" onclick="app.resetTableHeaderTitlesFromModal()">
+          <i data-lucide="rotate-ccw"></i>
+          <span>កំណត់ឡើងវិញតាមលំនាំដើម (Reset)</span>
+        </button>
+
+        <div style="display: flex; gap: 0.5rem;">
+          <button class="btn btn-secondary" onclick="document.getElementById('edit-table-header-modal').classList.remove('open')">
+            <span>បោះបង់ (Cancel)</span>
+          </button>
+          <button class="btn btn-primary" onclick="app.saveTableHeaderTitlesFromModal()">
+            <i data-lucide="check"></i>
+            <span>រក្សាទុក (Save Header Titles)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== AUTH / LOGIN MODAL (SCREENSHOT 3 MATCH) ==================== -->
+  <div class="modal-backdrop" id="auth-login-modal">
+    <div class="login-modal-dialog">
+      <button class="modal-close-btn" onclick="app.closeAuthModal()" style="position: absolute; right: 1.25rem; top: 1.25rem;">✕</button>
+      
+      <div class="shield-icon-badge">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+
+      <h2 class="login-header-title">ចូលប្រព័ន្ធរដ្ឋបាល</h2>
+      <div class="login-subtitle">ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យបុគ្គលិក & លិខិតចេញចូល</div>
+
+      <form onsubmit="event.preventDefault(); app.handleAuthLogin();">
+        <div class="auth-form-group">
+          <label class="auth-form-label" for="auth-login-username">ឈ្មោះគណនី</label>
+          <div class="auth-input-wrapper">
+            <div class="auth-input-icon">
+              <i data-lucide="user"></i>
+            </div>
+            <select class="auth-input-field" id="auth-login-username" onchange="app.handleAuthUserSelected(this.value)" style="cursor: pointer; font-weight: 600; width: 100%;">
+              <option value="admin">admin</option>
+              <option value="staff">staff</option>
+              <option value="viewer">viewer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <label class="auth-form-label" for="auth-login-password">លេខសម្ងាត់</label>
+          <div class="auth-input-wrapper">
+            <div class="auth-input-icon">
+              <i data-lucide="lock"></i>
+            </div>
+            <input type="password" class="auth-input-field" id="auth-login-password" placeholder="បញ្ចូលលេខសម្ងាត់" value="Password123!" style="width: 100%;">
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth-primary">
+          <span>ចូលប្រព័ន្ធ</span>
+          <span>➔</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== IMPORT EXCEL & TEMPLATE MODAL ==================== -->
+  <div class="modal-backdrop" id="import-excel-modal">
+    <div class="userform-dialog" style="max-width: 920px;">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2>
+          <i data-lucide="upload" style="color: var(--primary);"></i>
+          <span>នាំចូលទិន្នន័យពី Excel / CSV (Import Staff Database)</span>
+        </h2>
+        <button class="modal-close-btn" onclick="app.closeImportModal()" title="Close">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- 1. TEMPLATE DOWNLOAD BANNER -->
+        <div class="import-template-box">
+          <div class="import-template-info">
+            <i data-lucide="file-spreadsheet"></i>
+            <div>
+              <div style="font-weight: 700; color: #065f46; font-size: 0.95rem; margin-bottom: 0.2rem;">
+                ទាញយកទម្រង់គំរូ Excel ផ្លូវការ (Download Official Import Template)
+              </div>
+              <div style="font-size: 0.78rem; color: #047857;">
+                ទម្រង់គំរូមាន ២២ ជួរឈរពេញលេញ (Book1 Master Fields) រួមទាំងបញ្ជីយោងអង្គភាព និងតួនាទី។
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-success" type="button" onclick="ExcelHandler.downloadImportTemplate()" style="padding: 0.55rem 1.15rem;">
+            <i data-lucide="download"></i>
+            <span>ទាញយកទម្រង់គំរូ (.xlsx)</span>
+          </button>
+        </div>
+
+        <!-- 2. DRAG & DROP UPLOAD ZONE -->
+        <div class="import-dropzone" id="import-modal-dropzone" onclick="document.getElementById('import-file-selector-input').click()">
+          <i data-lucide="cloud-upload" style="width: 44px; height: 44px; color: var(--primary); margin-bottom: 0.5rem;"></i>
+          <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+            ចុចទីនេះ ឬទម្លាក់ឯកសារ Excel / CSV ដើម្បីនាំចូល
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted);">
+            គាំទ្រឯកសារ .xlsx, .xls, ឬ .csv ដែលស្របតាមទម្រង់ ២២ ជួរឈរ
+          </div>
+          <input type="file" id="import-file-selector-input" accept=".xlsx, .xls, .csv" style="display: none;" onchange="app.handleImportFileSelected(event)">
+        </div>
+
+        <!-- 3. IMPORT MODE SELECTION -->
+        <div class="import-mode-group">
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">
+            របៀបនាំចូល (Import Mode)៖
+          </div>
+          <label class="import-mode-label">
+            <input type="radio" name="import-mode" value="append" checked>
+            <span>➕ បន្ថែមលើទិន្នន័យដែលមានស្រាប់ (Append)</span>
+          </label>
+          <label class="import-mode-label">
+            <input type="radio" name="import-mode" value="overwrite">
+            <span>🔄 ជំនួសទិន្នន័យចាស់ទាំងអស់ (Overwrite All)</span>
+          </label>
+        </div>
+
+        <!-- 4. LIVE IMPORT DATA PREVIEW (HIDDEN UNTIL FILE LOADED) -->
+        <div class="import-preview-box" id="import-preview-box" style="display: none;">
+          <div class="import-preview-header">
+            <div>
+              <i data-lucide="eye" style="width: 14px; height: 14px; color: var(--primary); margin-right: 4px;"></i>
+              <span>មើលទិន្នន័យជាមុន (Preview Data Before Import)</span>
+            </div>
+            <span class="status-badge status-active" id="import-preview-count-badge">រកឃើញ 0 កំណត់ត្រា</span>
+          </div>
+          <div class="import-preview-table-wrap">
+            <table class="staff-table" id="import-preview-table">
+              <thead id="import-preview-thead"></thead>
+              <tbody id="import-preview-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" onclick="app.closeImportModal()">
+          <i data-lucide="x"></i>
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button class="btn btn-primary" type="button" id="btn-confirm-import-data" onclick="app.confirmImportData()" disabled style="opacity: 0.6;">
+          <i data-lucide="upload"></i>
+          <span>បញ្ចូលទិន្នន័យទៅក្នុងប្រព័ន្ធ (Confirm Import)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GOOGLE APPS SCRIPT WEBHOOK CODE MODAL ==================== -->
+  <div class="modal-backdrop" id="apps-script-sync-modal">
+    <div class="userform-dialog" style="max-width: 820px;">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2>
+          <i data-lucide="code" style="color: #10b981;"></i>
+          <span>កូដ Google Apps Script សម្រាប់ផ្ទេរទិន្នន័យស្វ័យប្រវត្ត (Webhook Code)</span>
+        </h2>
+        <button class="modal-close-btn" onclick="CloudSyncService.closeAppsScriptModal()" title="Close">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <div class="cloud-info-box" style="margin-bottom: 1rem;">
+          <i data-lucide="info"></i>
+          <div>
+            <strong>ការណែនាំអំពីការភ្ជាប់ Google Sheet ជាមួយប្រព័ន្ធ (30 វិនាទី)៖</strong>
+            <ol style="margin-top: 0.35rem; padding-left: 1.25rem; font-size: 0.82rem; line-height: 1.6;">
+              <li>បើក <strong>Google Sheet</strong> របស់អ្នក -> ចុចម៉ឺនុយ <strong>Extensions (ផ្នែកបន្ថែម)</strong> -> ជ្រើសរើស <strong>Apps Script</strong>។</li>
+              <li>ចម្លងកូដខាងក្រោមនេះ រួច Paste ចូលក្នុងឯកសារ <code>Code.gs</code> ក្នុង Google Sheet។</li>
+              <li>ចុចប៊ូតុង <strong>Deploy (ដាក់ឱ្យដំណើរការ)</strong> -> <strong>New deployment</strong> -> ជ្រើសរើស <strong>Web app</strong> -> កំណត់ <em>Who has access: <strong>Anyone (អ្នកណាក៏បាន)</strong></em>។</li>
+              <li>ចម្លង <strong>Web app URL</strong> យកមកបិទភ្ជាប់ក្នុងប្រអប់ <strong>«Webhook URL»</strong> ក្នុងប្រព័ន្ធនេះ ជាការស្រេច!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div style="position: relative;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">Code.gs (Apps Script Sync Engine)</span>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="CloudSyncService.copyAppsScriptCode()">
+              <i data-lucide="copy"></i> <span>ចម្លងកូដ (Copy Code)</span>
+            </button>
+          </div>
+          <pre id="apps-script-code-text" style="background: #0f172a; color: #38bdf8; padding: 1rem; border-radius: 10px; font-size: 0.78rem; font-family: Consolas, monospace; max-height: 320px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;">
+/**
+ * Staff Control System - Google Sheets Auto-Transfer Webhook
+ * Paste in Google Sheets -> Extensions -> Apps Script -> Deploy as Web App
+ */
+function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Staff_Data") || ss.getActiveSheet();
+    
+    var headers = [
+      "ល.រ", "អត្តលេខ អពដ", "អត្តលេខ កសហវ", "ឈ្មោះឡាតាំង", "ឈ្មោះខ្មែរ",
+      "អង្គភាព", "ការិយាល័យ", "តួនាទី", "ភេទ", "ថ្ងៃខែឆ្នាំកំណើត",
+      "ថ្ងៃខែឆ្នាំបម្រើការងារ", "ថ្ងៃខែឆ្នាំស្នើសុំ", "ថ្ងៃខែឆ្នាំបញ្ចប់", "ថ្ងៃខែឆ្នាំចាប់ផ្តើម",
+      "ប្រចាំឆ្នាំ", "មូលហេតុនៃសំណើ", "ប្រកាសលេខ", "ពិព័ណនាផ្សេងៗ", "ថ្ងៃខែបិទប្រព័ន្ធ",
+      "ឯកសារយោង", "ថ្ងៃខែទទួលឯកសារ ឬប្រកាសផ្សេងៗ", "Remark", "ស្ថានភាព", "កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព"
+    ];
+    
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(headers);
+    }
+    
+    if (data.action === "SYNC_ALL" && Array.isArray(data.records)) {
+      sheet.clearContents();
+      sheet.appendRow(headers);
+      data.records.forEach(function(r) {
+        sheet.appendRow(recordToArray(r));
+      });
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", count: data.records.length }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (data.action === "SYNC_RECORD" && data.record) {
+      var r = data.record;
+      var values = sheet.getDataRange().getValues();
+      var foundRow = -1;
+      
+      for (var i = 1; i &lt; values.length; i++) {
+        if (String(values[i][1]).trim() === String(r.staffId).trim() || String(values[i][0]).trim() === String(r.no).trim()) {
+          foundRow = i + 1;
+          break;
+        }
+      }
+      
+      var rowData = recordToArray(r);
+      if (data.syncAction === "DELETE" &amp;&amp; foundRow &gt; 1) {
+        sheet.deleteRow(foundRow);
+      } else if (foundRow &gt; 1) {
+        sheet.getRange(foundRow, 1, 1, rowData.length).setValues([rowData]);
+      } else {
+        sheet.appendRow(rowData);
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({ status: "success", action: data.syncAction, staffId: r.staffId }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "ok" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function recordToArray(r) {
+  return [
+    r.no || "", r.staffId || "", r.secondaryId || "", r.latinName || "", r.khmerName || "",
+    r.department || "", r.office || "", r.position || "", r.gender || "", r.dob || "",
+    r.serviceStartDate || "", r.requestDate || "", r.endDate || "", r.startDate || "",
+    r.annualPeriod || "", r.requestReason || "", r.prakasNo || "", r.description || "",
+    r.systemClosingDate || "", r.refDocument || "", r.receivedDate || "", r.remark || "",
+    r.statusLabelKh || "", r.updatedAt || new Date().toLocaleString()
+  ];
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({ status: "online", message: "Webhook is Active" }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+          </pre>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" type="button" onclick="CloudSyncService.closeAppsScriptModal()">
+          <span>បិទ (Close)</span>
+        </button>
+        <button class="btn btn-success" type="button" onclick="CloudSyncService.copyAppsScriptCode()">
+          <i data-lucide="copy"></i> <span>ចម្លងកូដ Apps Script</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Application Scripts -->
+  <script src="js/data.js"></script>
+  <script src="js/status-calculator.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/audit-log.js"></script>
+  <script src="js/user-control.js"></script>
+  <script src="js/cloud-sync.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/settings-modal.js"></script>
+  <script src="js/excel-handler.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/userform.js"></script>
+  <script src="js/multi-filter.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

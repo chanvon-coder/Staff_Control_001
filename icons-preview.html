@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Control Icon Style & System Settings Showcase</title>
+  <link rel="stylesheet" href="css/khmer-fonts.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .showcase-body {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .showcase-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    .showcase-card h2 {
+      font-size: 1.15rem;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body style="background: #f8fafc;">
+
+  <div class="showcase-body">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <h1 style="font-size: 1.5rem; font-weight: 800; color: #0f172a;">
+        🏛️ System Settings & UI Showcase
+      </h1>
+      <p style="color: #64748b; font-size: 0.88rem;">
+        Pixel-perfect implementation of the Top Bar, Theme & Color Pickers, and User Accounts Security Control.
+      </p>
+    </div>
+
+    <!-- 1. TOP UTILITY BAR (Exact Image Match) -->
+    <div class="showcase-card">
+      <h2><i data-lucide="layout"></i> ១. ផ្ទាំង Top Utility Bar តាមរូបភាពយោង (Image Match)</h2>
+      
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          
+          <!-- Stat Pills -->
+          <div class="stat-pills-group">
+            <div class="stat-pill" style="--pill-color: #3b82f6; --pill-bg: #eff6ff;">
+              <div class="stat-pill-icon">
+                <i data-lucide="copy"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num">4</span>
+                <span class="stat-pill-label">TOTAL RECORDS</span>
+              </div>
+            </div>
+
+            <div class="stat-pill" style="--pill-color: #f59e0b; --pill-bg: #fffbeb;">
+              <div class="stat-pill-icon">
+                <i data-lucide="tag"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num">9</span>
+                <span class="stat-pill-label">DOC TYPES</span>
+              </div>
+            </div>
+
+            <div class="stat-pill" style="--pill-color: #a855f7; --pill-bg: #faf5ff;">
+              <div class="stat-pill-icon">
+                <i data-lucide="paperclip"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num">4</span>
+                <span class="stat-pill-label">ATTACHED FILES</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="header-pill-actions">
+            <button class="pill-btn">
+              <i data-lucide="upload"></i>
+              <span>Import</span>
+            </button>
+
+            <button class="pill-btn">
+              <i data-lucide="database"></i>
+              <span>Backup</span>
+            </button>
+
+            <button class="pill-btn">
+              <i data-lucide="file-text"></i>
+              <span>CSV</span>
+            </button>
+
+            <button class="pill-btn" onclick="settingsModalController.openModal('branding')">
+              <i data-lucide="settings"></i>
+              <span>Settings</span>
+            </button>
+
+            <button class="theme-icon-btn">
+              <i data-lucide="sun"></i>
+            </button>
+
+            <div class="user-profile-pill" onclick="settingsModalController.openModal('users')">
+              <div class="user-profile-avatar">S</div>
+              <div class="user-profile-info">
+                <div class="user-profile-name">System Admin...</div>
+                <div class="user-profile-role">ADMIN</div>
+              </div>
+              <div class="user-logout-icon">
+                <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MULTI-DIMENSION FILTERS SHOWCASE -->
+    <div class="showcase-card">
+      <h2><i data-lucide="filter"></i> ២. ផ្ទាំងតម្រងទិន្នន័យពហុវិមាត្រ (Multi-Dimension Filters Bar)</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+        ច្រោះទិន្នន័យតាម <strong>Office, Position, Request Date, End Date, Annual Period, Reason, និង Prakas No.</strong> ដោយផ្ទាល់៖
+      </p>
+
+      <div class="advanced-filter-card" style="margin-bottom: 0;">
+        <div class="filter-card-topbar">
+          <div class="filter-title-wrap">
+            <div class="filter-icon-badge">
+              <i data-lucide="filter" style="width: 16px; height: 16px; color: var(--primary);"></i>
+            </div>
+            <div>
+              <span class="filter-main-title">តម្រងទិន្នន័យពហុកម្រិត</span>
+              <span class="filter-sub-title">Advanced Multi-Dimension Filters</span>
+            </div>
+            <span class="active-filter-badge has-active">🎯 តម្រងសកម្ម: 2</span>
+          </div>
+
+          <div class="filter-actions-wrap">
+            <button type="button" class="btn-clear-filters">
+              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+              <span>🧹 សម្អាតតម្រងទាំងអស់ (Clear All Filters)</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-dimensions-grid">
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="building" style="color: #3b82f6;"></i><span>អង្គភាព (Department)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់អង្គភាព (All) --</option></select>
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="door-open" style="color: #06b6d4;"></i><span>ការិយាល័យ (Office)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់ការិយាល័យ (All) --</option></select>
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="briefcase" style="color: #f59e0b;"></i><span>តួនាទី (Position)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់តួនាទី (All) --</option></select>
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="calendar" style="color: #10b981;"></i><span>ប្រចាំឆ្នាំ (Annual Year)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់ឆ្នាំ (All) --</option></select>
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="file-question" style="color: #8b5cf6;"></i><span>មូលហេតុសំណើ (Reason)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់មូលហេតុ (All) --</option></select>
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="scroll" style="color: #14b8a6;"></i><span>ប្រកាសលេខ (Prakas No.)</span></label>
+            <input type="text" class="filter-text-input" placeholder="វាយលេខប្រកាស...">
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="calendar-plus" style="color: #0284c7;"></i><span>ថ្ងៃស្នើសុំ (Request Date)</span></label>
+            <input type="date" class="filter-date-input">
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="calendar-check" style="color: #ea580c;"></i><span>ថ្ងៃបញ្ចប់ (End Date)</span></label>
+            <input type="date" class="filter-date-input">
+          </div>
+          <div class="filter-input-card">
+            <label class="filter-input-label"><i data-lucide="activity" style="color: #e11d48;"></i><span>ស្ថានភាព (Status)</span></label>
+            <select class="filter-select-control"><option>-- គ្រប់ស្ថានភាព (All) --</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. TABLE HEADER 3-ZONE SHOWCASE (Left, Middle, Right) -->
+    <div class="showcase-card">
+      <h2><i data-lucide="table"></i> ៣. ផ្ទាំងចំណងជើងក្បាលតារាង ៣ តំបន់ (Left, Middle, Right)</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+        កែសម្រួលចំណងជើងខាងឆ្វេង (Left Title), ចំណងជើងកណ្តាល (Middle Title), និងស្លាកខាងស្តាំ (Right Tag) ដោយផ្ទាល់៖
+      </p>
+
+      <div class="table-header-bar" style="border: 1px solid var(--border-color); border-radius: 8px 8px 0 0;">
+        <div class="table-header-left">
+          <i data-lucide="table" style="color: var(--primary);"></i>
+          <span>តារាងគ្រប់គ្រងទិន្នន័យ</span>
+          <button class="icon-btn" onclick="app.openEditTableHeaderModal()">
+            <i data-lucide="edit-2"></i>
+          </button>
+        </div>
+        <div class="table-header-middle">
+          <i data-lucide="building-2" style="width: 14px; height: 14px; color: var(--primary);"></i>
+          <span>អគ្គនាយកដ្ឋានពន្ធដារ • General Department of Taxation</span>
+        </div>
+        <div class="table-header-right">
+          <span class="status-badge status-active">Book1 Master Control</span>
+          <span>បង្ហាញ 1 ដល់ 6 នៃសរុប 6 កំណត់ត្រា</span>
+        </div>
+      </div>
+
+      <!-- Clean Table Headers Snippet (No Numbers in Front) -->
+      <div class="table-scroll-wrap" style="border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 8px 8px; overflow-x: auto;">
+        <table class="staff-table">
+          <thead>
+            <tr>
+              <th class="th-cell" style="text-align: center;"><div class="th-title-group"><span class="th-khmer">ល.រ</span><span class="th-english">No.</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">អត្តលេខ អពដ</span><span class="th-english">GDT</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">អត្តលេខ កសហវ</span><span class="th-english">MEF</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">ឈ្មោះឡាតាំង</span><span class="th-english">Latin Name</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">ឈ្មោះខ្មែរ</span><span class="th-english">Khmer Name</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">អង្គភាព</span><span class="th-english">Department</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">ការិយាល័យ</span><span class="th-english">Office</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">តួនាទី</span><span class="th-english">Position</span></div></th>
+              <th class="th-cell" style="text-align: center;"><div class="th-title-group"><span class="th-khmer">ភេទ</span><span class="th-english">Gender</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">ថ្ងៃខែឆ្នាំកំណើត</span><span class="th-english">Date of Birth</span></div></th>
+              <th class="th-cell"><div class="th-title-group"><span class="th-khmer">ថ្ងៃខែឆ្នាំបម្រើការងារ</span><span class="th-english">Service Start Date</span></div></th>
+              <th class="th-cell" style="text-align: center;"><div class="th-title-group"><span class="th-khmer">ស្ថានភាព</span><span class="th-english">Status</span></div></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="text-align: center; font-weight: bold;">1</td>
+              <td><strong style="color: var(--primary);">GDT-01234</strong></td>
+              <td>MEF-5678</td>
+              <td>SOK SAMNANG</td>
+              <td>សុខ សំណាង</td>
+              <td>នាយកដ្ឋានបុគ្គលិក</td>
+              <td>ការិយាល័យគ្រប់គ្រង</td>
+              <td>អនុប្រធានការិយាល័យ</td>
+              <td style="text-align: center;">ប្រុស</td>
+              <td>12-05-1988</td>
+              <td>01-03-2015</td>
+              <td style="text-align: center;">
+                <select class="table-status-select status-closed">
+                  <option selected>● បានបិទប្រព័ន្ធ (Closed)</option>
+                  <option>🟢 កំពុងដំណើរការ (Active)</option>
+                  <option>⏳ រង់ចាំដំណើរការ (Pending)</option>
+                  <option>✅ បានបញ្ចប់ (Completed)</option>
+                  <option>⚠️ ផុតសុពលភាព (Expired)</option>
+                  <option>📋 ខ្វះព័ត៌មាន (Missing)</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center; font-weight: bold;">2</td>
+              <td><strong style="color: var(--primary);">GDT-05678</strong></td>
+              <td>MEF-9012</td>
+              <td>CHAN THEARY</td>
+              <td>ចាន់ ធារី</td>
+              <td>នាយកដ្ឋានបច្ចេកវិទ្យា</td>
+              <td>ការិយាល័យអភិវឌ្ឍន៍</td>
+              <td>មន្ត្រី</td>
+              <td style="text-align: center;">ស្រី</td>
+              <td>20-11-1992</td>
+              <td>15-06-2018</td>
+              <td style="text-align: center;">
+                <select class="table-status-select status-pending">
+                  <option selected>● រង់ចាំដំណើរការ (Pending)</option>
+                  <option>🟢 កំពុងដំណើរការ (Active)</option>
+                  <option>✅ បានបញ្ចប់ (Completed)</option>
+                  <option>⚠️ ផុតសុពលភាព (Expired)</option>
+                  <option>🔒 បានបិទប្រព័ន្ធ (Closed)</option>
+                  <option>📋 ខ្វះព័ត៌មាន (Missing)</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 4. IMPORT & TEMPLATE DOWNLOAD SHOWCASE -->
+    <div class="showcase-card">
+      <h2><i data-lucide="upload"></i> ៤. ផ្ទាំងនាំចូលទិន្នន័យ & ទាញយកទម្រង់គំរូ Excel (Import & Template)</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+        ចុចប៊ូតុងខាងក្រោមដើម្បីបើកផ្ទាំងនាំចូលទិន្នន័យ (Import Dialog) ឬទាញយកឯកសារ Template ២២ ជួរឈរផ្ទាល់៖
+      </p>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn btn-success" onclick="ExcelHandler.downloadImportTemplate()">
+          <i data-lucide="download"></i> <span>ទាញយកទម្រង់គំរូ Excel (.xlsx)</span>
+        </button>
+        <button class="btn btn-primary" onclick="app.openImportModal()">
+          <i data-lucide="upload"></i> <span>បើកផ្ទាំងនាំចូលទិន្នន័យ (Open Import Modal)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 5. SYSTEM SETTINGS MODAL INTERACTIVE LAUNCHER -->
+    <div class="showcase-card">
+      <h2><i data-lucide="sliders"></i> ៥. ផ្ទាំង System Settings & Management (Screenshots Match)</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+        ចុចប៊ូតុងខាងក្រោមដើម្បីបើកផ្ទាំង Settings ដែលមាន App Name & Branding, Theme & Colors, Document Types, និង User Accounts៖
+      </p>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="settingsModalController.openModal('branding')">
+          <i data-lucide="layout"></i> <span>បើកផ្ទាំង App Name & Branding</span>
+        </button>
+        <button class="btn btn-primary" onclick="settingsModalController.openModal('theme')">
+          <i data-lucide="palette"></i> <span>បើកផ្ទាំង Theme & Accent Colors</span>
+        </button>
+        <button class="btn btn-primary" onclick="settingsModalController.openModal('users')">
+          <i data-lucide="users"></i> <span>បើកផ្ទាំង User Accounts & Security</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 4. GOOGLE CLOUD SYNC SETTINGS SHOWCASE (Screenshot 2 Match) -->
+    <div class="showcase-card">
+      <h2><i data-lucide="cloud"></i> ៤. ផ្ទាំង Google Sheet & Drive Cloud Sync (Screenshot 2 Match)</h2>
+      <div class="cloud-sync-card" style="margin-bottom: 0;">
+        <div class="cloud-info-box">
+          <i data-lucide="info"></i>
+          <div>
+            <strong>កំណត់ទិន្នន័យចងក្រងរបស់អ្នក</strong><br>
+            សូម Copy Link ពី Google Sheet និង Google Drive Folder របស់អ្នកដាក់ទីនេះ។ <strong>ចំណាំ៖</strong> សូមប្រាកដថាអ្នកបាន Share វាក្នុងសិទ្ធិ Editor (Anyone with the link) មុននឹងភ្ជាប់។
+          </div>
+        </div>
+
+        <div class="cloud-input-group">
+          <label class="cloud-input-label">
+            <span style="color: #10b981;">📊</span>
+            <span>តំណភ្ជាប់ Google Sheet (Sheet URL)</span>
+          </label>
+          <input type="url" class="cloud-input-control" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+
+        <div class="cloud-input-group">
+          <label class="cloud-input-label">
+            <span style="color: #f59e0b;">📁</span>
+            <span>តំណភ្ជាប់ Google Drive Folder (Folder URL)</span>
+          </label>
+          <input type="url" class="cloud-input-control" placeholder="https://drive.google.com/drive/folders/...">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+          <button class="btn-cloud-save">
+            <i data-lucide="lock"></i>
+            <span>រក្សាទុកការកំណត់</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. AUTH / LOGIN DIALOG SHOWCASE (Screenshot 3 Match) -->
+    <div class="showcase-card">
+      <h2><i data-lucide="shield"></i> ៥. ផ្ទាំង Auth & Login Portal (Screenshot 3 Match)</h2>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1rem;">
+        ចុចប៊ូតុងខាងក្រោមដើម្បីបើកផ្ទាំង Auth / Login Dialog ដ៏ស្រស់ស្អាត៖
+      </p>
+      <button class="btn btn-primary" onclick="app.openAuthModal()">
+        <i data-lucide="log-in"></i> <span>បើកផ្ទាំង Login Dialog</span>
+      </button>
+    </div>
+
+    <!-- 6. COLOR SCHEME PALETTE -->
+    <div class="showcase-card">
+      <h2><i data-lucide="palette"></i> ៦. ជម្រើសពណ៌ Accent Color Presets</h2>
+      <div class="color-scheme-pills">
+        <button class="color-pill active"><span class="color-dot" style="background: #4f46e5;"></span><span>Indigo (Default)</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #0284c7;"></span><span>Ocean Blue</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #059669;"></span><span>Emerald</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #7c3aed;"></span><span>Royal Violet</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #e11d48;"></span><span>Crimson</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #ea580c;"></span><span>Sunset Orange</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #0d9488;"></span><span>Teal Cyan</span></button>
+        <button class="color-pill"><span class="color-dot" style="background: #d97706;"></span><span>Amber Gold</span></button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/status-calculator.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/audit-log.js"></script>
+  <script src="js/user-control.js"></script>
+  <script src="js/cloud-sync.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/settings-modal.js"></script>
+  <script src="js/excel-handler.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/userform.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

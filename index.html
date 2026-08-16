@@ -697,6 +697,12 @@
           </div>
         </div>
 
+        <!-- Mobile Table Swipe Guide Hint -->
+        <div class="mobile-table-swipe-hint">
+          <i data-lucide="chevrons-right"></i>
+          <span>អូសតារាងទៅស្តាំ ដើម្បីមើលជួរឈរទាំង ២២ & សកម្មភាព (Swipe for 22 columns & actions)</span>
+        </div>
+
         <div class="table-scroll-wrap">
           <table class="staff-table" id="master-staff-table">
             <thead>
@@ -1341,9 +1347,14 @@
           </div>
 
           <!-- Registered Users Table -->
-          <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.65rem;">
-            Registered User Accounts
-          </h4>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; margin-top: 1rem;">
+            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+              Registered User Accounts
+            </h4>
+            <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.handleResetDefaultPasswords()" title="កំណត់លេខសម្ងាត់ទាំងអស់ទៅតាមលំនាំដើម (admin: Password123!, staff: StaffSecret2026, viewer: ViewerPass123)">
+              <i data-lucide="rotate-ccw"></i> <span>Reset Passwords to Defaults</span>
+            </button>
+          </div>
 
           <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-card);">
             <table class="user-accounts-table">
@@ -2197,6 +2208,32 @@ function doGet(e) {
       </div>
     </div>
   </div>
+
+  <!-- ==================== MOBILE FLUID BOTTOM NAVIGATION DOCK ==================== -->
+  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <button class="mobile-nav-btn active" data-tab="dashboard" onclick="app.switchTab('dashboard')" id="mob-nav-dashboard">
+      <i data-lucide="layout-dashboard"></i>
+      <span>ផ្ទាំងសង្ខេប</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="database" onclick="app.switchTab('database')" id="mob-nav-database">
+      <i data-lucide="users"></i>
+      <span>បុគ្គលិក</span>
+    </button>
+    <button class="mobile-nav-btn mobile-nav-btn-center" onclick="userformController.openNew()" id="mob-btn-new-staff" title="ចុះឈ្មោះបុគ្គលិកថ្មី">
+      <div class="mobile-nav-plus-circle">
+        <i data-lucide="plus"></i>
+      </div>
+      <span>ចុះឈ្មោះ</span>
+    </button>
+    <button class="mobile-nav-btn" data-tab="documents" onclick="app.switchTab('documents')" id="mob-nav-documents">
+      <i data-lucide="file-check"></i>
+      <span>ឯកសារ</span>
+    </button>
+    <button class="mobile-nav-btn" onclick="app.toggleAdminDroplist(event)" id="mob-nav-profile">
+      <i data-lucide="user-circle"></i>
+      <span>គណនី</span>
+    </button>
+  </nav>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>

@@ -542,7 +542,21 @@ class SettingsModalController {
       }
       this.saveUserAccounts(users);
       this.renderUserAccountsTable();
+      if (typeof app !== 'undefined' && app.populateAuthUserDropdown) {
+        app.populateAuthUserDropdown();
+      }
       this.notify(`បានកែប្រែព័ត៌មានគណនី ${user.username} ជោគជ័យ`, 'success');
+    }
+  }
+
+  handleResetDefaultPasswords() {
+    if (confirm('តើលោកអ្នកចង់កំណត់ពាក្យសម្ងាត់គណនីទាំងអស់តាមលំនាំដើមឡើងវិញមែនទេ? (Reset all accounts & passwords to defaults)')) {
+      localStorage.setItem(this.STORAGE_KEY_USERS, JSON.stringify(DEFAULT_USER_ACCOUNTS));
+      this.renderUserAccountsTable();
+      if (typeof app !== 'undefined' && app.populateAuthUserDropdown) {
+        app.populateAuthUserDropdown();
+      }
+      this.notify('បានកំណត់លេខសម្ងាត់គណនីទាំងអស់តាមលំនាំដើមរួចរាល់ (admin: Password123!, staff: StaffSecret2026, viewer: ViewerPass123)', 'success');
     }
   }
 }

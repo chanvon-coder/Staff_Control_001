@@ -22,7 +22,7 @@
     <div class="header-container">
       <!-- Left: Brand Section (Document Control) -->
       <div class="brand-section">
-        <div class="brand-logo">
+        <div class="brand-logo" id="header-brand-logo-container">
           <i data-lucide="landmark"></i>
         </div>
         <div class="brand-titles">
@@ -60,7 +60,7 @@
             </div>
 
             <!-- Import -->
-            <button class="nav-droplist-item" onclick="app.openImportModal(); app.closeAllHeaderDroplists();">
+            <button class="nav-droplist-item" onclick="app.requestSystemAction('import'); app.closeAllHeaderDroplists();">
               <div class="nav-item-icon-box" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
                 <i data-lucide="upload"></i>
               </div>
@@ -71,7 +71,7 @@
             </button>
 
             <!-- Backup -->
-            <button class="nav-droplist-item" onclick="ExcelHandler.exportFullWorkbook(); app.closeAllHeaderDroplists();">
+            <button class="nav-droplist-item" onclick="app.requestSystemAction('backup'); app.closeAllHeaderDroplists();">
               <div class="nav-item-icon-box" style="background: rgba(37, 99, 235, 0.12); color: #2563eb;">
                 <i data-lucide="database"></i>
               </div>
@@ -82,7 +82,7 @@
             </button>
 
             <!-- CSV -->
-            <button class="nav-droplist-item" onclick="ExcelHandler.exportToCSV(); app.closeAllHeaderDroplists();">
+            <button class="nav-droplist-item" onclick="app.requestSystemAction('csv'); app.closeAllHeaderDroplists();">
               <div class="nav-item-icon-box" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
                 <i data-lucide="file-text"></i>
               </div>
@@ -101,6 +101,18 @@
                 <div class="nav-item-title">ការកំណត់ប្រព័ន្ធ (Settings)</div>
                 <div class="nav-item-desc">គ្រប់គ្រងឈ្មោះស្ថាប័ន & Cloud</div>
               </div>
+            </button>
+
+            <!-- Toggle Auto-Hide Right Dock Option -->
+            <button class="nav-droplist-item" type="button" onclick="app.toggleRightDockPreference(event)" id="btn-toggle-right-dock" style="border-top: 1px solid var(--border-color);">
+              <div class="nav-item-icon-box" style="background: rgba(168, 85, 247, 0.12); color: #a855f7;">
+                <i data-lucide="compass" id="icon-right-dock-state"></i>
+              </div>
+              <div class="nav-item-text" style="flex: 1;">
+                <div class="nav-item-title" id="title-right-dock-state">របាររុករកស្តាំ (Right Nav Dock)</div>
+                <div class="nav-item-desc" id="desc-right-dock-state">ស្ថានភាព៖ បើក (Show) - ចុចដើម្បីបិទ</div>
+              </div>
+              <span class="status-badge status-active" id="badge-right-dock-state" style="font-size: 0.68rem; padding: 2px 8px;">SHOW</span>
             </button>
           </div>
         </div>
@@ -137,7 +149,7 @@
             </button>
 
             <!-- Switch User / Login -->
-            <button class="nav-droplist-item" onclick="app.openAuthModal(); app.closeAllHeaderDroplists();">
+            <button class="nav-droplist-item" type="button" onclick="app.closeAllHeaderDroplists(); app.handleSwitchAccount();">
               <div class="nav-item-icon-box" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
                 <i data-lucide="shield-check"></i>
               </div>
@@ -148,13 +160,13 @@
             </button>
 
             <!-- Logout / Clear User -->
-            <button class="nav-droplist-item" onclick="app.handleLogout();" style="border-top: 1px solid var(--border-color);">
+            <button class="nav-droplist-item" type="button" onclick="app.closeAllHeaderDroplists(); app.handleLogout();" style="border-top: 1px solid var(--border-color);">
               <div class="nav-item-icon-box" style="background: rgba(239, 68, 68, 0.12); color: #ef4444;">
                 <i data-lucide="log-out"></i>
               </div>
               <div class="nav-item-text">
                 <div class="nav-item-title" style="color: #ef4444;">ចាកចេញ និងសម្អាត (Logout / Clear)</div>
-                <div class="nav-item-desc">សម្អាតគណនីត្រឡប់ជា Viewer ធម្មតា</div>
+                <div class="nav-item-desc">ចាកចេញ និងចាក់សោសុវត្ថិភាពទិន្នន័យ</div>
               </div>
             </button>
           </div>
@@ -202,6 +214,15 @@
                 <div class="nav-item-desc">តារាងមេ ២២ ជួរឈរ & តម្រងពហុកម្រិត</div>
               </div>
               <span class="nav-item-check">✓</span>
+            <button class="nav-droplist-item" data-tab="reports" onclick="app.switchTab('reports')">
+              <div class="nav-item-icon-box" style="background: rgba(236, 72, 153, 0.12); color: #ec4899;">
+                <i data-lucide="file-spreadsheet"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">របាយការណ៍ផ្លូវការ (Reports)</div>
+                <div class="nav-item-desc">របាយការណ៍តាមមូលហេតុនៃសំណើ & បោះពុម្ព</div>
+              </div>
+              <span class="nav-item-check">✓</span>
             </button>
 
             <button class="nav-droplist-item" data-tab="documents" onclick="app.switchTab('documents')">
@@ -217,11 +238,11 @@
 
             <button class="nav-droplist-item" data-tab="settings" onclick="app.switchTab('settings')">
               <div class="nav-item-icon-box" style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9;">
-                <i data-lucide="sliders"></i>
+                <i data-lucide="cloud-cog"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">ការកំណត់ (Settings)</div>
-                <div class="nav-item-desc">Cloud Sync, Droplist & បញ្ជីយោង</div>
+                <div class="nav-item-title">Cloud Sync, Droplist & បញ្ជីយោង</div>
+                <div class="nav-item-desc">Google Sheets, ជម្រើសទិន្នន័យ & ក្បាលជួរឈរ</div>
               </div>
               <span class="nav-item-check">✓</span>
             </button>
@@ -318,9 +339,14 @@
             <div class="right-nav-sub">Auto-Hide Navigation Dock</div>
           </div>
         </div>
-        <button class="right-nav-close-btn" type="button" onclick="app.closeRightNavDock()" title="បង្រួមចូលវិញ (Collapse)">
-          ✕
-        </button>
+        <div style="display: flex; align-items: center; gap: 0.25rem;">
+          <button class="right-nav-close-btn" type="button" onclick="app.setRightDockPreference(false)" title="បិទរបាររុករកនេះ (Disable Right Nav Dock)" style="font-size: 0.72rem; color: #ef4444;">
+            <i data-lucide="eye-off" style="width: 14px; height: 14px;"></i>
+          </button>
+          <button class="right-nav-close-btn" type="button" onclick="app.closeRightNavDock()" title="បង្រួមចូលវិញ (Collapse)">
+            ✕
+          </button>
+        </div>
       </div>
 
       <div class="right-nav-items-list">
@@ -342,6 +368,14 @@
             <span class="right-nav-kh">ទិន្នន័យបុគ្គលិក</span>
             <span class="right-nav-en">Staff Data</span>
           </div>
+        <button class="right-nav-item" data-tab="reports" onclick="app.switchTab('reports')">
+          <div class="right-nav-item-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.12);">
+            <i data-lucide="file-spreadsheet"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">របាយការណ៍</span>
+            <span class="right-nav-en">Reports</span>
+          </div>
         </button>
 
         <button class="right-nav-item" data-tab="documents" onclick="app.switchTab('documents')">
@@ -356,11 +390,11 @@
 
         <button class="right-nav-item" data-tab="settings" onclick="app.switchTab('settings')">
           <div class="right-nav-item-icon" style="color: #0ea5e9; background: rgba(14, 165, 233, 0.12);">
-            <i data-lucide="sliders"></i>
+            <i data-lucide="cloud-cog"></i>
           </div>
           <div class="right-nav-item-text">
-            <span class="right-nav-kh">ការកំណត់</span>
-            <span class="right-nav-en">Settings</span>
+            <span class="right-nav-kh">Cloud & បញ្ជីយោង</span>
+            <span class="right-nav-en">Cloud & Droplists</span>
           </div>
         </button>
 
@@ -384,6 +418,9 @@
         <button class="btn btn-secondary btn-sm" type="button" style="width: 100%; justify-content: center; margin-top: 0.45rem;" onclick="app.openImportModal(); app.closeRightNavDock();">
           <i data-lucide="upload"></i> <span>នាំចូលពី Excel</span>
         </button>
+        <button class="btn btn-secondary btn-sm" type="button" style="width: 100%; justify-content: center; margin-top: 0.45rem; font-size: 0.72rem; color: var(--text-muted);" onclick="app.setRightDockPreference(false)">
+          <i data-lucide="eye-off" style="width: 12px; height: 12px;"></i> <span>បិទរបាររុករកនេះ (Disable Dock)</span>
+        </button>
       </div>
     </div>
   </aside>
@@ -393,9 +430,54 @@
 
     <!-- ==================== TAB 1: DASHBOARD ==================== -->
     <section class="tab-pane active" id="tab-dashboard">
+      <!-- Global Dashboard Filter Toolbar -->
+      <div class="dashboard-filter-bar">
+        <div class="dash-filter-title">
+          <i data-lucide="sliders"></i>
+          <span>តម្រងទិន្នន័យ Dashboard (Analytics Filter)</span>
+        </div>
+        <div class="dash-filters-group">
+          <!-- 1-Click Master Toggle All Bars / All Charts -->
+          <div class="dash-master-toggle-box" title="ប្តូរទម្រង់បង្ហាញគ្រប់ផ្ទាំងស្ថិតិទាំងអស់ (Global View Switcher)">
+            <button type="button" class="btn-dash-view-all active" id="btn-dash-all-bars" onclick="dashboardController.setAllViewModes('progress')" title="ប្តូរផ្ទាំងទាំងអស់ជាបញ្ជីរបារ (Change All to Progress Bars)">
+              <i data-lucide="bar-chart-horizontal" style="width: 14px; height: 14px;"></i>
+              <span>របារទាំងអស់ (All Bars)</span>
+            </button>
+            <button type="button" class="btn-dash-view-all" id="btn-dash-all-charts" onclick="dashboardController.setAllViewModes('chart')" title="ប្តូរផ្ទាំងទាំងអស់ជាក្រាហ្វិក (Change All to Charts)">
+              <i data-lucide="pie-chart" style="width: 14px; height: 14px;"></i>
+              <span>ក្រាហ្វិកទាំងអស់ (All Charts)</span>
+            </button>
+            <button type="button" class="btn-dash-view-all btn-dash-toggle-shuffle" id="btn-dash-toggle-all" onclick="dashboardController.toggleAllViewModes()" title="ចុចមួយដងដើម្បីប្តូរទាំងអស់រវាង របារ ឬ ក្រាហ្វ (1-Click Toggle All)">
+              <i data-lucide="arrow-left-right" style="width: 13px; height: 13px;"></i>
+              <span id="btn-dash-toggle-all-text">ប្តូរទាំងអស់ (Toggle All)</span>
+            </button>
+          </div>
+
+          <select class="dash-filter-control" id="dash-filter-dept" onchange="dashboardController.handleGlobalFilterChange()">
+            <option value="all">🏢 គ្រប់អង្គភាព (All Departments)</option>
+          </select>
+          <select class="dash-filter-control" id="dash-filter-year" onchange="dashboardController.handleGlobalFilterChange()">
+            <option value="all">📅 គ្រប់ឆ្នាំ (All Years)</option>
+          </select>
+          <select class="dash-filter-control" id="dash-filter-status" onchange="dashboardController.handleGlobalFilterChange()">
+            <option value="all">🚦 គ្រប់ស្ថានភាព (All Statuses)</option>
+            <option value="active">🟢 កំពុងដំណើរការ (Active)</option>
+            <option value="pending">⏳ រង់ចាំដំណើរការ (Pending)</option>
+            <option value="completed">✅ បានបញ្ចប់ (Completed)</option>
+            <option value="expired">⚠️ ផុតសុពលភាព (Expired)</option>
+            <option value="closed">🔒 បានបិទប្រព័ន្ធ (Closed)</option>
+            <option value="missing">📋 ខ្វះព័ត៌មាន (Missing Info)</option>
+          </select>
+          <button type="button" class="btn-dash-reset-filter" onclick="dashboardController.resetGlobalFilters()" title="សម្អាតតម្រង Dashboard">
+            <i data-lucide="rotate-ccw"></i>
+            <span>សម្អាត (Reset)</span>
+          </button>
+        </div>
+      </div>
+
       <!-- KPI Metric Cards Grid -->
       <div class="metrics-grid">
-        <div class="metric-card" style="--card-accent: #2563eb; --icon-bg: #eff6ff; --icon-color: #2563eb;">
+        <div class="metric-card" style="--card-accent: #2563eb; --icon-bg: #eff6ff; --icon-color: #2563eb;" onclick="dashboardController.filterMasterByStatus('all')" title="ចុចដើម្បីមើលទាំងអស់" style="cursor: pointer;">
           <div class="metric-info">
             <h3>បុគ្គលិកសរុប</h3>
             <div class="metric-num" id="metric-total-staff">0</div>
@@ -406,7 +488,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #059669; --icon-bg: #ecfdf5; --icon-color: #059669;">
+        <div class="metric-card" style="--card-accent: #059669; --icon-bg: #ecfdf5; --icon-color: #059669;" onclick="dashboardController.filterMasterByStatus('active')" title="ចុចដើម្បីមើលបុគ្គលិកកំពុងដំណើរការ" style="cursor: pointer;">
           <div class="metric-info">
             <h3>បុគ្គលិកកំពុងដំណើរការ</h3>
             <div class="metric-num" id="metric-active-staff">0</div>
@@ -417,7 +499,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #d97706; --icon-bg: #fffbeb; --icon-color: #d97706;">
+        <div class="metric-card" style="--card-accent: #d97706; --icon-bg: #fffbeb; --icon-color: #d97706;" onclick="dashboardController.filterMasterByStatus('pending')" title="ចុចដើម្បីមើលសំណើរង់ចាំ" style="cursor: pointer;">
           <div class="metric-info">
             <h3>សំណើរង់ចាំដំណើរការ</h3>
             <div class="metric-num" id="metric-pending-records">0</div>
@@ -428,7 +510,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #4f46e5; --icon-bg: #eef2ff; --icon-color: #4f46e5;">
+        <div class="metric-card" style="--card-accent: #4f46e5; --icon-bg: #eef2ff; --icon-color: #4f46e5;" onclick="dashboardController.filterMasterByStatus('completed')" title="ចុចដើម្បីមើលសំណើបានបញ្ចប់" style="cursor: pointer;">
           <div class="metric-info">
             <h3>សំណើបានបញ្ចប់</h3>
             <div class="metric-num" id="metric-completed-records">0</div>
@@ -439,7 +521,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #dc2626; --icon-bg: #fef2f2; --icon-color: #dc2626;">
+        <div class="metric-card" style="--card-accent: #dc2626; --icon-bg: #fef2f2; --icon-color: #dc2626;" onclick="dashboardController.filterMasterByStatus('expired')" title="ចុចដើម្បីមើលផុតសុពលភាព" style="cursor: pointer;">
           <div class="metric-info">
             <h3>ផុតសុពលភាព</h3>
             <div class="metric-num" id="metric-expired-records">0</div>
@@ -450,7 +532,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #4b5563; --icon-bg: #f3f4f6; --icon-color: #4b5563;">
+        <div class="metric-card" style="--card-accent: #4b5563; --icon-bg: #f3f4f6; --icon-color: #4b5563;" onclick="dashboardController.filterMasterByStatus('closed')" title="ចុចដើម្បីមើលបានបិទប្រព័ន្ធ" style="cursor: pointer;">
           <div class="metric-info">
             <h3>បានបិទប្រព័ន្ធ</h3>
             <div class="metric-num" id="metric-closed-records">0</div>
@@ -461,7 +543,7 @@
           </div>
         </div>
 
-        <div class="metric-card" style="--card-accent: #9333ea; --icon-bg: #faf5ff; --icon-color: #9333ea;">
+        <div class="metric-card" style="--card-accent: #9333ea; --icon-bg: #faf5ff; --icon-color: #9333ea;" onclick="dashboardController.filterMasterByStatus('missing')" title="ចុចដើម្បីមើលខ្វះព័ត៌មាន" style="cursor: pointer;">
           <div class="metric-info">
             <h3>ខ្វះព័ត៌មាន/ឯកសារ</h3>
             <div class="metric-num" id="metric-missing-records">0</div>
@@ -473,59 +555,234 @@
         </div>
       </div>
 
-      <!-- Charts Section -->
+      <!-- Charts & Multi-Dimension Analytics Grid -->
       <div class="charts-grid">
-        <!-- Staff by Department -->
-        <div class="chart-card chart-card-lg">
+
+        <!-- 1. ស្ថិតិបុគ្គលិកតាមអង្គភាព (Department) -->
+        <div class="chart-card chart-card-md" id="card-chart-department">
           <div class="chart-header">
             <h2>
               <i data-lucide="building-2"></i>
-              <span>ចំនួនបុគ្គលិកតាមអង្គភាព (Staff by Department)</span>
+              <span>ស្ថិតិបុគ្គលិកតាមអង្គភាព (អង្គភាព (Department))</span>
             </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-dept" onchange="dashboardController.handleCardFilterChange('department', this.value)">
+                <option value="all">🎯 គ្រប់អង្គភាព (All)</option>
+                <option value="top5">🔝 Top 5 អង្គភាព</option>
+                <option value="top10">🔝 Top 10 អង្គភាព</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('department')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-department">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
           </div>
           <div class="chart-body">
-            <canvas id="chart-department"></canvas>
+            <div class="stat-progress-list" id="dept-stats-container"></div>
+            <div id="dept-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-department"></canvas>
+            </div>
           </div>
         </div>
 
-        <!-- Status Distribution -->
-        <div class="chart-card chart-card-sm">
+        <!-- 2. ស្ថិតិបុគ្គលិកតាមប្រភេទបុគ្គលិក (Staff Type) -->
+        <div class="chart-card chart-card-md" id="card-chart-staff-type">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="award"></i>
+              <span>ស្ថិតិបុគ្គលិកតាមប្រភេទបុគ្គលិក (ប្រភេទបុគ្គលិក (Staff Type))</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-staff-type" onchange="dashboardController.handleCardFilterChange('staffType', this.value)">
+                <option value="all">🎯 គ្រប់ប្រភេទ (All)</option>
+                <option value="active_only">🟢 តែសកម្ម (Active Only)</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('staffType')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-staffType">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="stat-progress-list" id="staff-type-stats-container"></div>
+            <div id="staff-type-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-staff-type"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ស្ថិតិបុគ្គលិកតាមការិយាល័យ (Office) -->
+        <div class="chart-card chart-card-md" id="card-chart-office">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="door-open"></i>
+              <span>ស្ថិតិបុគ្គលិកតាមការិយាល័យ (ការិយាល័យ (Office))</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-office" onchange="dashboardController.handleCardFilterChange('office', this.value)">
+                <option value="all">🎯 គ្រប់ការិយាល័យ (All)</option>
+                <option value="top5">🔝 Top 5 ការិយាល័យ</option>
+                <option value="top10">🔝 Top 10 ការិយាល័យ</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('office')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-office">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="stat-progress-list" id="office-stats-container"></div>
+            <div id="office-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-office"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ស្ថិតិបុគ្គលិកតាមតួនាទី (Position) -->
+        <div class="chart-card chart-card-md" id="card-chart-position">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="briefcase"></i>
+              <span>ស្ថិតិបុគ្គលិកតាមមុខតំណែង (តួនាទី (Position))</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-position" onchange="dashboardController.handleCardFilterChange('position', this.value)">
+                <option value="all">🎯 គ្រប់តួនាទី (All)</option>
+                <option value="top5">🔝 Top 5 តួនាទី</option>
+                <option value="top10">🔝 Top 10 តួនាទី</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('position')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-position">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="stat-progress-list" id="position-stats-container"></div>
+            <div id="position-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-position"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. ស្ថិតិបុគ្គលិកតាមមូលហេតុនៃសំណើ (Request Reasons) -->
+        <div class="chart-card chart-card-md" id="card-chart-reason">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="file-text"></i>
+              <span>ស្ថិតិបុគ្គលិកតាមមូលហេតុនៃសំណើ (មូលហេតុនៃសំណើ (Request Reasons))</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-reason" onchange="dashboardController.handleCardFilterChange('reason', this.value)">
+                <option value="all">🎯 គ្រប់មូលហេតុ (All)</option>
+                <option value="top5">🔝 Top 5 មូលហេតុ</option>
+                <option value="top10">🔝 Top 10 មូលហេតុ</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('reason')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-reason">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="stat-progress-list" id="reason-stats-container"></div>
+            <div id="reason-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-reason"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. ស្ថិតិការកំណត់រោទ៍កាលបរិច្ឆេទ (Request Reasons & Date Alert Options) -->
+        <div class="chart-card chart-card-md" id="card-chart-alerts">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="bell-ring"></i>
+              <span>ការកំណត់រោទ៍កាលបរិច្ឆេទ (Request Reasons & Date Alert Options)</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-alerts" onchange="dashboardController.handleCardFilterChange('alerts', this.value)">
+                <option value="all">🎯 គ្រប់កម្រិត Alert (All)</option>
+                <option value="urgent_only">⚠️ បន្ទាន់ ≤ 15 ថ្ងៃ (Urgent)</option>
+                <option value="warning_only">⏳ ព្រមាន ≤ 30 ថ្ងៃ (Warning)</option>
+                <option value="expired_only">⛔ ផុតកំណត់ (Expired)</option>
+              </select>
+              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('alerts')" title="ប្តូរទម្រង់បង្ហាញ">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="btn-text-mode-alerts">ក្រាហ្វិក (Chart)</span>
+              </button>
+              <span class="realtime-badge">Real-time</span>
+            </div>
+          </div>
+          <div class="chart-body">
+            <div class="stat-progress-list" id="alert-stats-container"></div>
+            <div id="alert-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
+              <canvas id="chart-alerts"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. កំណត់ត្រាសកម្មភាពចុងក្រោយ (Recent Activities Widget - Matching Picture 1) -->
+        <div class="chart-card chart-card-md" id="card-recent-activities">
+          <div class="chart-header">
+            <h2>
+              <i data-lucide="zap" style="color: #f59e0b;"></i>
+              <span>កំណត់ត្រាសកម្មភាពចុងក្រោយ (Recent Activities)</span>
+            </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-activity" onchange="dashboardController.handleCardFilterChange('activity', this.value)">
+                <option value="all">🎯 គ្រប់សកម្មភាព (All)</option>
+                <option value="CREATE">🟢 CREATE</option>
+                <option value="UPDATE">🔵 UPDATE</option>
+                <option value="LOCK">🔴 LOCK</option>
+                <option value="DELETE">🗑️ DELETE</option>
+                <option value="AUTH">🔑 AUTH</option>
+                <option value="BACKUP">💾 BACKUP</option>
+              </select>
+              <button type="button" class="btn-view-all-logs" onclick="app.switchTab('logs')" title="បើកមើលកំណត់ត្រាទាំងអស់">
+                <span>មើលទាំងអស់</span>
+              </button>
+            </div>
+          </div>
+          <div class="chart-body" style="min-height: 320px;">
+            <div class="recent-activities-list" id="recent-activities-list"></div>
+          </div>
+        </div>
+
+        <!-- 8. ស្ថានភាព & សមាមាត្រភេទ (Status & Gender Distribution) -->
+        <div class="chart-card chart-card-md" id="card-chart-status-gender">
           <div class="chart-header">
             <h2>
               <i data-lucide="pie-chart"></i>
-              <span>ស្ថានភាពបុគ្គលិក (Staff Status)</span>
+              <span>ស្ថានភាពបុគ្គលិក & សមាមាត្រភេទ (Status & Gender)</span>
             </h2>
+            <div class="chart-header-actions">
+              <select class="chart-filter-select" id="filter-chart-status-gender" onchange="dashboardController.handleStatusGenderToggle(this.value)">
+                <option value="dual">📊 ស្ថានភាព & ភេទ (Both)</option>
+                <option value="status">🚦 តែស្ថានភាព (Status Only)</option>
+                <option value="gender">👥 តែភេទ (Gender Only)</option>
+                <option value="year">📅 កំណត់ត្រាតាមឆ្នាំ (Yearly)</option>
+              </select>
+              <span class="realtime-badge">Real-time</span>
+            </div>
           </div>
-          <div class="chart-body">
-            <canvas id="chart-status"></canvas>
+          <div class="chart-body" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; align-items: center;" id="status-gender-canvas-grid">
+            <div style="height: 100%; min-height: 220px;" id="wrap-chart-status">
+              <canvas id="chart-status"></canvas>
+            </div>
+            <div style="height: 100%; min-height: 220px;" id="wrap-chart-gender">
+              <canvas id="chart-gender"></canvas>
+            </div>
+            <div style="height: 100%; min-height: 220px; display: none; grid-column: span 2;" id="wrap-chart-year">
+              <canvas id="chart-year"></canvas>
+            </div>
           </div>
         </div>
 
-        <!-- Gender Ratio -->
-        <div class="chart-card chart-card-sm">
-          <div class="chart-header">
-            <h2>
-              <i data-lucide="users-2"></i>
-              <span>សមាមាត្រភេទ (Staff by Gender)</span>
-            </h2>
-          </div>
-          <div class="chart-body">
-            <canvas id="chart-gender"></canvas>
-          </div>
-        </div>
-
-        <!-- Records by Year -->
-        <div class="chart-card chart-card-lg">
-          <div class="chart-header">
-            <h2>
-              <i data-lucide="calendar"></i>
-              <span>កំណត់ត្រាបុគ្គលិកតាមឆ្នាំ (Staff by Annual Year)</span>
-            </h2>
-          </div>
-          <div class="chart-body">
-            <canvas id="chart-year"></canvas>
-          </div>
-        </div>
       </div>
     </section>
 
@@ -615,94 +872,56 @@
             <input type="text" id="filter-prakas-input" class="filter-text-input" placeholder="វាយលេខប្រកាស...">
           </div>
 
-          <!-- 7. Request Date Filter -->
+          <!-- 7. Request Date Range Filter (From Date to Date) -->
           <div class="filter-input-card">
-            <label class="filter-input-label" for="filter-reqdate-input">
+            <label class="filter-input-label" for="filter-reqdate-from">
               <i data-lucide="calendar-plus" style="color: #0284c7;"></i>
               <span>ថ្ងៃស្នើសុំ (Request Date)</span>
             </label>
-            <input type="date" id="filter-reqdate-input" class="filter-date-input">
+            <div class="filter-date-range-wrap">
+              <input type="date" id="filter-reqdate-from" class="filter-date-input" title="ចាប់ពីថ្ងៃ (From Date)" onchange="multiFilter.handleDateChange('reqDateFrom', this.value)">
+              <span class="filter-range-sep">➔</span>
+              <input type="date" id="filter-reqdate-to" class="filter-date-input" title="ដល់ថ្ងៃ (To Date)" onchange="multiFilter.handleDateChange('reqDateTo', this.value)">
+            </div>
           </div>
 
-          <!-- 8. End Date Filter -->
+          <!-- 8. End Date Range Filter (From Date to Date) -->
           <div class="filter-input-card">
-            <label class="filter-input-label" for="filter-enddate-input">
+            <label class="filter-input-label" for="filter-enddate-from">
               <i data-lucide="calendar-check" style="color: #ea580c;"></i>
               <span>ថ្ងៃបញ្ចប់ (End Date)</span>
             </label>
-            <input type="date" id="filter-enddate-input" class="filter-date-input">
+            <div class="filter-date-range-wrap">
+              <input type="date" id="filter-enddate-from" class="filter-date-input" title="ចាប់ពីថ្ងៃ (From Date)" onchange="multiFilter.handleDateChange('endDateFrom', this.value)">
+              <span class="filter-range-sep">➔</span>
+              <input type="date" id="filter-enddate-to" class="filter-date-input" title="ដល់ថ្ងៃ (To Date)" onchange="multiFilter.handleDateChange('endDateTo', this.value)">
+            </div>
           </div>
 
           <!-- 9. Status Multi-Select Droplist -->
           <div id="filter-status-container"></div>
+
+          <!-- 10. Maturity & Date Calculation Filter -->
+          <div class="filter-input-card">
+            <label class="filter-input-label" for="filter-maturity-select">
+              <i data-lucide="target" style="color: #2563eb;"></i>
+              <span>គណនាកាលកំណត់ (Calculated Date)</span>
+            </label>
+            <select class="filter-select" id="filter-maturity-select" onchange="app.handleMaturityDropdownFilter(this.value)" style="font-size: 0.78rem; padding: 0.35rem 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); font-weight: 600;">
+              <option value="">-- ទាំងអស់ (All) --</option>
+              <option value="maturity_calc">🎯 គណនាកាលកំណត់ (Start & End Calculations)</option>
+              <option value="start_base">🔘 គណនាតាមថ្ងៃចាប់ផ្តើម (Start Date Base)</option>
+              <option value="alerts_only">🔔 មាន Alert កាលបរិច្ឆេទ (Active Alerts)</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <!-- Quick Status Filter Chips -->
-      <div class="quick-filter-chips">
-        <button class="filter-chip active" data-status="ALL">
-          <span>ទាំងអស់ (All)</span>
-          <span class="chip-count" id="count-chip-ALL">0</span>
-        </button>
-        <button class="filter-chip" data-status="active">
-          <span>🟢 កំពុងដំណើរការ (Active)</span>
-          <span class="chip-count" id="count-chip-active">0</span>
-        </button>
-        <button class="filter-chip" data-status="pending">
-          <span>⏳ រង់ចាំ (Pending)</span>
-          <span class="chip-count" id="count-chip-pending">0</span>
-        </button>
-        <button class="filter-chip" data-status="completed">
-          <span>✅ បានបញ្ចប់ (Completed)</span>
-          <span class="chip-count" id="count-chip-completed">0</span>
-        </button>
-        <button class="filter-chip" data-status="expired">
-          <span>⚠️ ផុតកំណត់ (Expired)</span>
-          <span class="chip-count" id="count-chip-expired">0</span>
-        </button>
-        <button class="filter-chip" data-status="closed">
-          <span>🔒 បិទប្រព័ន្ធ (Closed)</span>
-          <span class="chip-count" id="count-chip-closed">0</span>
-        </button>
-        <button class="filter-chip" data-status="missing">
-          <span>📋 ខ្វះព័ត៌មាន (Missing)</span>
-          <span class="chip-count" id="count-chip-missing">0</span>
-        </button>
-      </div>
+      <!-- Persistent Multi-Select Filter Bar (Popovers with Apply Button matching Stripe/Linear style) -->
+      <div id="persistent-filter-bar-container"></div>
 
       <!-- Master 22-Column Staff Table -->
       <div class="table-card">
-        <div class="table-header-bar">
-          <!-- Left Zone: Table Main Title -->
-          <div class="table-header-left">
-            <i data-lucide="table" style="color: var(--primary);"></i>
-            <span id="table-header-left-title">តារាងគ្រប់គ្រងទិន្នន័យ</span>
-            <button class="icon-btn" style="width: 24px; height: 24px;" onclick="app.openEditTableHeaderModal()" title="កែសម្រួលចំណងជើងក្បាលតារាង (Edit Header Titles: Left, Middle, Right)">
-              <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
-            </button>
-          </div>
-
-          <!-- Middle Zone: Department / Organization Center Banner -->
-          <div class="table-header-middle">
-            <i data-lucide="building-2" style="width: 14px; height: 14px; color: var(--primary);"></i>
-            <span id="table-header-middle-title">អគ្គនាយកដ្ឋានពន្ធដារ • General Department of Taxation</span>
-          </div>
-
-          <!-- Right Zone: Meta Tag & Live Record Counter -->
-          <div class="table-header-right">
-            <span class="status-badge status-active" id="table-header-right-tag" style="font-size: 0.72rem;">Book1 Master Control</span>
-            <div id="table-records-info" style="font-size: 0.8rem; color: var(--text-secondary);">
-              បង្ហាញ 0 នៃ 0 កំណត់ត្រា
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Table Swipe Guide Hint -->
-        <div class="mobile-table-swipe-hint">
-          <i data-lucide="chevrons-right"></i>
-          <span>អូសតារាងទៅស្តាំ ដើម្បីមើលជួរឈរទាំង ២២ & សកម្មភាព (Swipe for 22 columns & actions)</span>
-        </div>
-
         <div class="table-scroll-wrap">
           <table class="staff-table" id="master-staff-table">
             <thead>
@@ -714,14 +933,408 @@
           </table>
         </div>
 
-        <!-- Table Footer Pagination -->
+        <!-- Table Footer Pagination & Records Info -->
         <div class="table-footer-bar">
-          <div>ទំព័រ (Page): <strong id="current-page-num">1 / 1</strong></div>
-          <div class="pagination-controls">
-            <button class="btn btn-secondary btn-sm" onclick="app.currentPage = Math.max(1, app.currentPage - 1); app.renderStaffTable();">◀ មុន (Prev)</button>
-            <button class="btn btn-secondary btn-sm" onclick="app.currentPage++; app.renderStaffTable();">បន្ទាប់ (Next) ▶</button>
+          <div id="table-records-info" style="font-size: 0.82rem; color: var(--text-secondary);">
+            បង្ហាញ 0 នៃ 0 កំណត់ត្រា
+          </div>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div>ទំព័រ (Page): <strong id="current-page-num">1 / 1</strong></div>
+            <div class="pagination-controls">
+              <button class="btn btn-secondary btn-sm" onclick="app.currentPage = Math.max(1, app.currentPage - 1); app.renderStaffTable();">◀ មុន (Prev)</button>
+              <button class="btn btn-secondary btn-sm" onclick="app.currentPage++; app.renderStaffTable();">បន្ទាប់ (Next) ▶</button>
+            </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB: OFFICIAL GOVERNMENT REPORTS ==================== -->
+    <section class="tab-pane" id="tab-reports">
+      <!-- Single Unified Master Toolbar (One Single Row, No Duplicates) -->
+      <div class="chart-header report-unified-master-bar" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <!-- Left: Title & Live Filter Status Pills (Clickable to open Filter Drawer) -->
+        <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 0.45rem; font-size: 1.12rem; font-weight: 800;">
+            <i data-lucide="file-spreadsheet" style="color: #ec4899;"></i>
+            <span>របាយការណ៍ផ្លូវការ (Official Reports)</span>
+          </h2>
+          
+          <div class="report-filter-pill-trigger" onclick="reportsController.toggleFilterDrawer()" title="ចុចដើម្បីបើក/បិទ ផ្ទាំងជ្រើសរើសតម្រង (Click to expand/collapse filters)" style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); cursor: pointer; user-select: none;">
+            <span class="badge" id="master-filter-reason-badge" style="background: rgba(236, 72, 153, 0.12); color: #ec4899; font-weight: 700; font-size: 0.76rem;">គ្រប់មូលហេតុ</span>
+            <span class="badge" id="master-filter-year-badge" style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9; font-weight: 700; font-size: 0.76rem;">គ្រប់ឆ្នាំ</span>
+            <span class="badge" id="master-filter-count-badge" style="background: rgba(79, 70, 229, 0.12); color: var(--primary); font-weight: 700; font-size: 0.76rem;">ទាំងអស់</span>
+            <span id="filter-toggle-arrow" style="font-size: 0.78rem; color: var(--primary); font-weight: 800; display: inline-flex; align-items: center; gap: 0.15rem; margin-left: 2px;">
+              <i data-lucide="filter" style="width: 12px; height: 12px;"></i>
+              <span>តម្រង ▾</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Consolidated Action Tools (Only One Place) -->
+        <div style="display: flex; gap: 0.45rem; flex-wrap: wrap; align-items: center;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-report-format" onclick="reportsController.togglePersistentFormattingPanel()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;" title="រៀបចំទម្រង់ ពុម្ពអក្សរ ការតម្រឹម និងគម្លាត">
+            <i data-lucide="sliders"></i>
+            <span>🛠️ ទម្រង់ & អក្សរ ▾</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.triggerLogoUpload()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;" title="បញ្ចូល ឬប្តូររូប Logo លើក្បាលរបាយការណ៍">
+            <i data-lucide="image"></i>
+            <span>🖼️ ប្តូរ Logo</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.openDividerModal()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;" title="ប្តូរ ឬកែប្រែម៉ូតបន្ទាត់ក្បាច់ក្រោម ជាតិ សាសនា ព្រះមហាក្សត្រ">
+            <i data-lucide="sparkles"></i>
+            <span>⚜️ បន្ទាត់ក្បាច់</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.resetToDefaultTemplate()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;" title="កំណត់ក្បាលលិខិត ហត្ថលេខា Logo និងបន្ទាត់ក្បាច់ទៅលំនាំដើមវិញ">
+            <i data-lucide="rotate-ccw"></i>
+            <span>🔄 លំនាំដើម</span>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="reportsController.printReport()" style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700;">
+            <i data-lucide="printer"></i>
+            <span>បោះពុម្ព (Print)</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.exportExcel()" style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700;">
+            <i data-lucide="download"></i>
+            <span>📊 Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Report Filter Control Toolbar (Slide-Down Drawer) -->
+      <div class="report-control-toolbar" id="report-filters-drawer" style="display: none; margin-bottom: 1.25rem;">
+        <div class="report-filters-grid">
+          <!-- 1. Request Reasons Option (User Request) -->
+          <div class="report-filter-item">
+            <label for="report-filter-reason">
+              <i data-lucide="list-filter" style="color: #ec4899; width: 14px; height: 14px;"></i>
+              <span>មូលហេតុនៃសំណើ (Request Reason)</span>
+            </label>
+            <select class="form-control" id="report-filter-reason" onchange="reportsController.handleFilterChange()" style="font-weight: 600; font-size: 0.82rem; height: 38px;">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- 2. Department Option -->
+          <div class="report-filter-item">
+            <label for="report-filter-dept">
+              <i data-lucide="building" style="color: #4f46e5; width: 14px; height: 14px;"></i>
+              <span>អង្គភាព/នាយកដ្ឋាន (Department)</span>
+            </label>
+            <select class="form-control" id="report-filter-dept" onchange="reportsController.handleFilterChange()" style="font-weight: 600; font-size: 0.82rem; height: 38px;">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- 3. Annual Period / Year -->
+          <div class="report-filter-item">
+            <label for="report-filter-year">
+              <i data-lucide="calendar" style="color: #0ea5e9; width: 14px; height: 14px;"></i>
+              <span>ប្រចាំឆ្នាំ (Annual Period)</span>
+            </label>
+            <select class="form-control" id="report-filter-year" onchange="reportsController.handleFilterChange()" style="font-weight: 600; font-size: 0.82rem; height: 38px;">
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- 4. Date From -->
+          <div class="report-filter-item">
+            <label for="report-filter-from">
+              <i data-lucide="calendar-plus" style="color: #10b981; width: 14px; height: 14px;"></i>
+              <span>ចាប់ពីថ្ងៃ (Date From)</span>
+            </label>
+            <input type="date" class="form-control" id="report-filter-from" onchange="reportsController.handleFilterChange()" style="font-size: 0.82rem; height: 38px;">
+          </div>
+
+          <!-- 5. Date To -->
+          <div class="report-filter-item">
+            <label for="report-filter-to">
+              <i data-lucide="calendar-check" style="color: #ea580c; width: 14px; height: 14px;"></i>
+              <span>ដល់ថ្ងៃ (Date To)</span>
+            </label>
+            <input type="date" class="form-control" id="report-filter-to" onchange="reportsController.handleFilterChange()" style="font-size: 0.82rem; height: 38px;">
+          </div>
+
+          <!-- Actions: Reset & Close Drawer -->
+          <div class="report-filter-item" style="display: flex; flex-direction: row; gap: 0.5rem; align-items: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="reportsController.resetFilters()" style="height: 38px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.8rem; width: 50%;" title="សម្អាតតម្រង">
+              <i data-lucide="rotate-ccw" style="width: 14px; height: 14px;"></i>
+              <span>សម្អាត</span>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="reportsController.closeFilterDrawer()" style="height: 38px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.8rem; width: 50%;" title="បិទផ្ទាំងតម្រង">
+              <i data-lucide="chevron-up" style="width: 14px; height: 14px;"></i>
+              <span>បិទ ▴</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Persistent Formatting & Typography Panel (Directly under Header Toolbar) -->
+      <div id="report-persistent-formatting-panel" class="hidden" style="display: none; margin-bottom: 1.15rem;">
+        <div class="report-formatting-toolbar" style="margin-bottom: 0;">
+          <!-- Paper Orientation & Size Selector -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="file-text" style="width: 13px; height: 13px;"></i> ក្រដាស:</span>
+            <button type="button" class="btn-format-toggle persist-btn-ori-landscape" onclick="reportsController.setPaperOrientation('landscape')" title="ក្រដាសផ្ដេក A4 Landscape">
+              🖼️ ផ្ដេក
+            </button>
+            <button type="button" class="btn-format-toggle persist-btn-ori-portrait" onclick="reportsController.setPaperOrientation('portrait')" title="ក្រដាសបញ្ឈរ A4 Portrait">
+              📄 បញ្ឈរ
+            </button>
+            <select class="form-control select-format-sm" id="persist-format-papersize-select" onchange="reportsController.setPaperSize(this.value)" style="padding: 2px 6px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); margin-left: 2px;">
+              <option value="A4">A4</option>
+              <option value="A3">A3</option>
+              <option value="Letter">Letter</option>
+            </select>
+          </div>
+
+          <!-- Font Family Selector & 1-Click Switchers -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="type" style="width: 13px; height: 13px;"></i> ពុម្ពអក្សរ:</span>
+            <select class="form-control select-format-sm" id="persist-format-font-select" onchange="reportsController.setFontFamily(this.value)" style="padding: 2px 8px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="Khmer OS Siemreap">Khmer OS Siemreap (សៀមរាប)</option>
+              <option value="Khmer OS Muol Light">Khmer OS Muol Light (មូលស្រាល)</option>
+              <option value="Khmer OS Muol">Khmer OS Muol (អក្សរមូល)</option>
+              <option value="Khmer OS Battambang">Khmer OS Battambang (បាត់ដំបង)</option>
+              <option value="Kantumruy Pro">Kantumruy Pro (កន្ទុមរុយ)</option>
+            </select>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setFontFamily('Khmer OS Siemreap')" title="ប្រើពុម្ពអក្សរ Khmer OS Siemreap">
+              🇰🇭 សៀមរាប
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setFontFamily('Khmer OS Muol Light')" title="ប្រើពុម្ពអក្សរ Khmer OS Muol Light">
+              👑 មូលស្រាល
+            </button>
+          </div>
+
+          <!-- Table Font Size Adjuster -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="table" style="width: 13px; height: 13px;"></i> ទំហំតារាង:</span>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeFontSize(-0.5)" title="បង្រួមទំហំអក្សរតារាង">A-</button>
+            <select class="form-control select-format-sm" id="persist-format-fontsize-select" onchange="reportsController.setFontSize(this.value)" style="padding: 2px 4px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="7">7pt</option>
+              <option value="7.5">7.5pt</option>
+              <option value="8">8pt</option>
+              <option value="8.5">8.5pt</option>
+              <option value="9">9pt</option>
+              <option value="9.5">9.5pt</option>
+              <option value="10" selected>10pt</option>
+              <option value="10.5">10.5pt</option>
+              <option value="11">11pt</option>
+              <option value="11.5">11.5pt</option>
+              <option value="12">12pt</option>
+              <option value="13">13pt</option>
+              <option value="14">14pt</option>
+              <option value="16">16pt</option>
+              <option value="18">18pt</option>
+            </select>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeFontSize(0.5)" title="ពង្រីកទំហំអក្សរតារាង">A+</button>
+          </div>
+
+          <!-- Header Ministry/Kingdom Font Size Adjuster -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="landmark" style="width: 13px; height: 13px;"></i> ទំហំក្បាលស្ថាប័ន:</span>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeHeaderFontSize(-0.5)" title="បង្រួមទំហំអក្សរក្បាលស្ថាប័ន">A-</button>
+            <select class="form-control select-format-sm" id="persist-format-header-fontsize-select" onchange="reportsController.setHeaderFontSize(this.value)" style="padding: 2px 4px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="7">7pt</option>
+              <option value="7.5">7.5pt</option>
+              <option value="8">8pt</option>
+              <option value="8.5" selected>8.5pt</option>
+              <option value="9">9pt</option>
+              <option value="9.5">9.5pt</option>
+              <option value="10">10pt</option>
+              <option value="10.5">10.5pt</option>
+              <option value="11">11pt</option>
+              <option value="12">12pt</option>
+              <option value="13">13pt</option>
+              <option value="14">14pt</option>
+              <option value="16">16pt</option>
+            </select>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeHeaderFontSize(0.5)" title="ពង្រីកទំហំអក្សរក្បាលស្ថាប័ន">A+</button>
+          </div>
+
+          <!-- Main Title Font Size Adjuster -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="heading" style="width: 13px; height: 13px;"></i> ទំហំចំណងជើង:</span>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeTitleFontSize(-0.5)" title="បង្រួមទំហំចំណងជើង">A-</button>
+            <select class="form-control select-format-sm" id="persist-format-title-fontsize-select" onchange="reportsController.setTitleFontSize(this.value)" style="padding: 2px 4px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="9">9pt</option>
+              <option value="10">10pt</option>
+              <option value="10.5">10.5pt</option>
+              <option value="11">11pt</option>
+              <option value="11.5">11.5pt</option>
+              <option value="12" selected>12pt</option>
+              <option value="13">13pt</option>
+              <option value="14">14pt</option>
+              <option value="15">15pt</option>
+              <option value="16">16pt</option>
+              <option value="18">18pt</option>
+              <option value="20">20pt</option>
+              <option value="22">22pt</option>
+            </select>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeTitleFontSize(0.5)" title="ពង្រីកទំហំចំណងជើង">A+</button>
+          </div>
+
+          <!-- Font Color Group -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="palette" style="width: 13px; height: 13px;"></i> ពណ៌អក្សរ:</span>
+            <input type="color" id="persist-format-fontcolor-picker" onchange="reportsController.setFontColor(this.value)" value="#000000" style="width: 26px; height: 26px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; padding: 1px; background: var(--bg-card);" title="ជ្រើសរើសពណ៌អក្សរ">
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setFontColor('#000000')" title="ពណ៌ខ្មៅ (Black)">⬛ ខ្មៅ</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setFontColor('#003366')" title="ពណ៌ខៀវចាស់ (Navy Blue)">🟦 ខៀវ</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setFontColor('#991b1b')" title="ពណ៌ក្រហម (Maroon/Red)">🟥 ក្រហម</button>
+          </div>
+
+          <!-- Table Border Line Style, Width & Color -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="grid" style="width: 13px; height: 13px;"></i> បន្ទាត់តារាង:</span>
+            <select class="form-control select-format-sm" id="persist-format-borderstyle-select" onchange="reportsController.setBorderStyle(this.value)" style="padding: 2px 6px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="solid" selected>── ត្រង់ (Solid)</option>
+              <option value="dashed">╌╌ ដាច់ៗ (Dashed)</option>
+              <option value="dotted">┈┈ ចុចៗ (Dotted)</option>
+              <option value="double">══ ពីរជាន់ (Double)</option>
+              <option value="none">🚫 គ្មានបន្ទាត់ (None)</option>
+            </select>
+            <select class="form-control select-format-sm" id="persist-format-borderwidth-select" onchange="reportsController.setBorderWidth(this.value)" style="padding: 2px 4px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="0.5">0.5px (ស្តើង)</option>
+              <option value="1" selected>1px (ស្តង់ដារ)</option>
+              <option value="1.5">1.5px (មធ្យម)</option>
+              <option value="2">2px (ក្រាស់)</option>
+            </select>
+            <input type="color" id="persist-format-bordercolor-picker" onchange="reportsController.setBorderColor(this.value)" value="#000000" style="width: 26px; height: 26px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; padding: 1px; background: var(--bg-card);" title="ជ្រើសរើសពណ៌បន្ទាត់">
+          </div>
+
+          <!-- Signatures Font, Size & Multidirectional Nudge -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="pen-tool" style="width: 13px; height: 13px;"></i> ហត្ថលេខា:</span>
+            <select class="form-control select-format-sm" id="persist-format-sigfont-select" onchange="reportsController.setSigFontFamily(this.value)" style="padding: 2px 6px; font-size: 0.72rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="Khmer OS Siemreap">Siemreap</option>
+              <option value="Khmer OS Battambang">Battambang</option>
+              <option value="Kantumruy Pro">Kantumruy Pro</option>
+              <option value="Khmer OS Muol Light">Muol Light</option>
+              <option value="Khmer OS Muol">Muol</option>
+            </select>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeSigFontSize(-0.5)" title="បង្រួមទំហំអក្សរហត្ថលេខា">A-</button>
+            <select class="form-control select-format-sm" id="persist-format-sig-fontsize-select" onchange="reportsController.setSigFontSize(this.value)" style="padding: 2px 4px; font-size: 0.74rem; font-weight: 700; height: 26px; border-radius: 6px; cursor: pointer; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color);">
+              <option value="7">7pt</option>
+              <option value="7.5">7.5pt</option>
+              <option value="8">8pt</option>
+              <option value="8.5">8.5pt</option>
+              <option value="9">9pt</option>
+              <option value="9.5" selected>9.5pt</option>
+              <option value="10">10pt</option>
+              <option value="10.5">10.5pt</option>
+              <option value="11">11pt</option>
+              <option value="11.5">11.5pt</option>
+              <option value="12">12pt</option>
+              <option value="13">13pt</option>
+              <option value="14">14pt</option>
+              <option value="16">16pt</option>
+            </select>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeSigFontSize(0.5)" title="ពង្រីកទំហំអក្សរហត្ថលេខា">A+</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeSigPosition(-5, 0)" title="រំកិលទៅឆ្វេង 5px">⇦</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeSigPosition(5, 0)" title="រំកិលទៅស្តាំ 5px">⇨</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeSigPosition(0, -3)" title="រំកិលឡើងលើ 3px">⇧</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeSigPosition(0, 3)" title="រំកិលចុះក្រោម 3px">⇩</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeSigSpaceHeight(-5)" title="បង្រួមកម្ពស់កន្លែងស៊ីញ៉េ">↕-</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.changeSigSpaceHeight(5)" title="ពង្រីកកម្ពស់កន្លែងស៊ីញ៉េ">↕+</button>
+          </div>
+
+          <!-- Page Number Toggle & Alignment Group -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="file-text" style="width: 13px; height: 13px;"></i> លេខទំព័រ:</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.togglePageNumber()" title="ចុចដើម្បីបង្ហាញ ឬលាក់លេខទំព័រ">
+              ✓ បង្ហាញ
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setPageNumberAlign('left')" title="តម្រឹមលេខទំព័រទៅឆ្វេង">⬅️</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setPageNumberAlign('center')" title="តម្រឹមលេខទំព័រទៅកណ្តាល">⏺️</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setPageNumberAlign('right')" title="តម្រឹមលេខទំព័រទៅស្តាំ">➡️</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgePageNumberPosition(-5, 0)" title="រំកិលលេខទំព័រទៅឆ្វេង 5px">⇦</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgePageNumberPosition(5, 0)" title="រំកិលលេខទំព័រទៅស្តាំ 5px">⇨</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgePageNumberPosition(0, -3)" title="រំកិលលេខទំព័រឡើងលើ 3px">⇧</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgePageNumberPosition(0, 3)" title="រំកិលលេខទំព័រចុះក្រោម 3px">⇩</button>
+          </div>
+
+          <!-- Alignment Toolbar Group (Left, Center, Right) -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="align-center" style="width: 13px; height: 13px;"></i> តម្រឹម:</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setAllColumnsAlign('left')" title="តម្រឹមឆ្វេងទាំងអស់ (All Left)">
+              ⬅️ ឆ្វេង
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setAllColumnsAlign('center')" title="តម្រឹមកណ្តាលទាំងអស់ (All Center)">
+              ⏺️ កណ្តាល
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setAllColumnsAlign('right')" title="តម្រឹមស្តាំទាំងអស់ (All Right)">
+              ➡️ ស្តាំ
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.resetColumnAligns()" title="តម្រឹមតាមស្តង់ដាររដ្ឋបាល (Default Alignment)">
+              ⚖️ ស្តង់ដារ
+            </button>
+          </div>
+
+          <!-- Ministry Header (Left) Position Controls -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="building-2" style="width: 13px; height: 13px;"></i> ស្ថាប័ន (ឆ្វេង):</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setHeaderLeftAlign('left')" title="តម្រឹមទៅឆ្វេង">⬅️</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setHeaderLeftAlign('center')" title="តម្រឹមទៅកណ្តាល">⏺️</button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setHeaderLeftAlign('right')" title="តម្រឹមទៅស្តាំ">➡️</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeHeaderLeftPosition(-5, 0)" title="រំកិលស្ថាប័នទៅឆ្វេង 5px">⇦</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeHeaderLeftPosition(5, 0)" title="រំកិលស្ថាប័នទៅស្តាំ 5px">⇨</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeHeaderLeftPosition(0, -3)" title="រំកិលស្ថាប័នឡើងលើ 3px">⇧</button>
+            <button type="button" class="btn-format-sm" onclick="reportsController.nudgeHeaderLeftPosition(0, 3)" title="រំកិលស្ថាប័នចុះក្រោម 3px">⇩</button>
+          </div>
+
+          <!-- Per-Column Wrap & Shrink Global Quick-Toggles -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="fold-horizontal" style="width: 13px; height: 13px;"></i> បន្ទាត់:</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setAllColumnsWrap('wrap')" title="កំណត់ Wrap Text (ច្រើនជួរ) គ្រប់ជួរឈរទាំងអស់">
+              ↩️ Wrap
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setAllColumnsWrap('nowrap')" title="កំណត់ Shrink to Fit (1 ជួរ) គ្រប់ជួរឈរទាំងអស់">
+              ↔️ Shrink
+            </button>
+          </div>
+
+          <!-- Row Density Mode -->
+          <div class="formatting-group">
+            <span class="formatting-label">កម្ពស់:</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setRowDensity('compact')">
+              បង្រួម
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setRowDensity('normal')">
+              ស្តង់ដារ
+            </button>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.setRowDensity('spacious')">
+              ទូលាយ
+            </button>
+          </div>
+
+          <!-- Row Checkboxes & Quick Delete Toggle -->
+          <div class="formatting-group">
+            <span class="formatting-label"><i data-lucide="check-square" style="width: 13px; height: 13px;"></i> ជ្រើសរើសជួរ:</span>
+            <button type="button" class="btn-format-toggle" onclick="reportsController.toggleRowCheckboxes()" title="បើក/បិទ ប្រអប់ជ្រើសរើសជួរ និងប៊ូតុងលុបជួរ">
+              ☑️ ប្រអប់លុបជួរ
+            </button>
+          </div>
+
+          <!-- Reset Button -->
+          <div class="formatting-group" style="margin-left: auto;">
+            <button type="button" class="btn-format-action" onclick="reportsController.resetTableLayout()" title="កំណត់ទំហំជួរឈរ ការតម្រឹម និងអក្សរទៅលំនាំដើមវិញ">
+              <i data-lucide="rotate-ccw" style="width: 12px; height: 12px;"></i> កំណត់ដើម
+            </button>
+          </div>
+        </div>
+      </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px dashed var(--border-color);">
+          <span style="font-size: 0.78rem; color: var(--text-muted);">
+            💡 របាយការណ៍ត្រូវបានទាញយក និងគណនាទិន្នន័យដោយស្វ័យប្រវត្តពីមូលដ្ឋានទិន្នន័យតាមទម្រង់ផ្លូវការនៃអគ្គនាយកដ្ឋានពន្ធដារ។
+          </span>
+          <span class="badge" id="report-records-count-badge" style="background: rgba(79, 70, 229, 0.1); color: var(--primary); font-weight: 700;">
+            0 កំណត់ត្រា (Records)
+          </span>
+        </div>
+
+      <!-- Render Target for Printable Official Report Sheet -->
+      <div id="official-report-render-target">
+        <!-- Dynamically rendered report sheet -->
       </div>
     </section>
 
@@ -739,25 +1352,17 @@
       </div>
     </section>
 
-    <!-- ==================== TAB 4: SETTINGS ==================== -->
+    <!-- ==================== TAB 4: CLOUD SYNC, DROPLIST & បញ្ជីយោង LOCATION ==================== -->
     <section class="tab-pane" id="tab-settings">
       <div class="chart-header" style="margin-bottom: 1.25rem;">
         <h2>
-          <i data-lucide="sliders"></i>
-          <span>ការកំណត់ប្រព័ន្ធ (System Settings & Cloud Integration)</span>
+          <i data-lucide="cloud-cog" style="color: var(--primary);"></i>
+          <span>Cloud Sync, Droplist & បញ្ជីយោង (Cloud Sync, Droplists & Reference Data)</span>
         </h2>
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-success btn-sm" onclick="ExcelHandler.downloadImportTemplate()" title="ទាញយកទម្រង់គំរូ Excel ២២ ជួរឈរ">
-            <i data-lucide="download"></i>
-            <span>ទាញយកទម្រង់គំរូ (.xlsx)</span>
-          </button>
-          <button class="btn btn-primary btn-sm" onclick="app.openImportModal()" title="នាំចូលទិន្នន័យពី Excel">
-            <i data-lucide="upload"></i>
-            <span>នាំចូលទិន្នន័យ (Import)</span>
-          </button>
-          <button class="btn btn-secondary btn-sm" onclick="settingsModalController.openModal('branding')">
-            <i data-lucide="settings-2"></i>
-            <span>ការកំណត់កម្រិតខ្ពស់</span>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="settingsModalController.openModal('branding')" title="បើកការកំណត់ម៉ាកសញ្ញា និងគណនី">
+            <i data-lucide="sliders"></i>
+            <span>Branding & Accounts</span>
           </button>
         </div>
       </div>
@@ -820,23 +1425,6 @@
             <button class="btn btn-secondary btn-sm" onclick="ExcelHandler.exportFullWorkbook()" style="width: 100%;">
               <i data-lucide="database"></i>
               <span>Backup Database (.xlsx)</span>
-            </button>
-          </div>
-
-          <!-- 4. Table Header 3-Zone Titles Editor Card -->
-          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                <i data-lucide="heading" style="color: #f59e0b; width: 18px; height: 18px;"></i>
-                <span>ចំណងជើងក្បាលតារាង ៣ តំបន់</span>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.4;">
-                កែសម្រួលចំណងជើងខាងឆ្វេង (Left Title), កណ្តាល (Middle Title), និងស្លាកខាងស្តាំ (Right Tag) នៃតារាងទិន្នន័យ។
-              </p>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="app.openEditTableHeaderModal()" style="width: 100%;">
-              <i data-lucide="edit-2"></i>
-              <span>កែសម្រួលចំណងជើង</span>
             </button>
           </div>
         </div>
@@ -1161,105 +1749,205 @@
   <!-- ==================== SYSTEM SETTINGS & MANAGEMENT MODAL ==================== -->
   <div class="modal-backdrop" id="settings-management-modal">
     <div class="settings-management-dialog">
-      <!-- Modal Header -->
+      <!-- Modal Header (Matching Picture) -->
       <div class="settings-modal-header">
         <h2>
           <i data-lucide="sliders"></i>
-          <span>System Settings & Management</span>
+          <span>System Settings & Branding</span>
         </h2>
         <button class="modal-close-btn" onclick="settingsModalController.closeModal()" title="Close">✕</button>
       </div>
 
-      <!-- Settings Navigation Tabs (Exact 4 Tabs from Image) -->
-      <div class="settings-tabs-bar">
-        <button class="settings-nav-tab active" data-setting-tab="branding" onclick="settingsModalController.switchModalTab('branding')">
-          <i data-lucide="layout"></i>
-          <span>App Name & Branding</span>
-        </button>
+      <!-- Settings Modal Layout: Left Sidebar + Right Panes -->
+      <div class="settings-modal-layout">
+        <!-- Left Sidebar Navigation (Matching Picture) -->
+        <aside class="settings-sidebar">
+          <div class="settings-sidebar-tabs">
+            <button class="settings-nav-tab active" data-setting-tab="branding" onclick="settingsModalController.switchModalTab('branding')">
+              <i data-lucide="layers"></i>
+              <span>Brand & Logo</span>
+            </button>
 
-        <button class="settings-nav-tab" data-setting-tab="theme" onclick="settingsModalController.switchModalTab('theme')">
-          <i data-lucide="palette"></i>
-          <span>Theme & Colors</span>
-        </button>
+            <button class="settings-nav-tab" data-setting-tab="theme" onclick="settingsModalController.switchModalTab('theme')">
+              <i data-lucide="moon"></i>
+              <span>Theme & Colors</span>
+            </button>
 
-        <button class="settings-nav-tab" data-setting-tab="doctypes" onclick="settingsModalController.switchModalTab('doctypes')">
-          <i data-lucide="tag"></i>
-          <span>Document Types</span>
-        </button>
+            <button class="settings-nav-tab" data-setting-tab="autobackup" onclick="settingsModalController.switchModalTab('autobackup')">
+              <i data-lucide="database"></i>
+              <span>Auto Backup</span>
+            </button>
 
-        <button class="settings-nav-tab" data-setting-tab="users" onclick="settingsModalController.switchModalTab('users')">
-          <i data-lucide="users"></i>
-          <span>User Accounts</span>
-        </button>
+            <button class="settings-nav-tab" data-setting-tab="users" onclick="settingsModalController.switchModalTab('users')">
+              <i data-lucide="users"></i>
+              <span>User Accounts</span>
+            </button>
 
-        <button class="settings-nav-tab" data-setting-tab="headers" onclick="settingsModalController.switchModalTab('headers')">
-          <i data-lucide="columns"></i>
-          <span>22 Column Headers</span>
-        </button>
-      </div>
+            <button class="settings-nav-tab" data-setting-tab="password" onclick="settingsModalController.switchModalTab('password')">
+              <i data-lucide="lock"></i>
+              <span>Admin Password</span>
+            </button>
+          </div>
+        </aside>
 
-      <!-- Settings Modal Body Panes -->
-      <div class="settings-modal-body">
+        <!-- Right Main Panes Content Area -->
+        <div class="settings-modal-body">
         
-        <!-- ---------------- TAB 1: App Name & Branding ---------------- -->
+        <!-- ---------------- TAB 1: App Name & All Logo Branding ---------------- -->
         <div class="settings-pane" id="set-pane-branding" style="display: block;">
-          <h3 class="settings-section-title">Application Customization</h3>
-          <p class="settings-section-desc">Rename the application and customize headers to match your company or organization.</p>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+            <h3 class="settings-section-title" style="margin-bottom: 0;">Application Names & Logo Customization</h3>
+          </div>
+          <p class="settings-section-desc">Rename system headers, customize the Login Screen titles, and upload or choose logos for the header and login screen.</p>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
-            <div class="form-group">
-              <label>App Title / Organization Name</label>
-              <input type="text" class="form-control" id="set-app-title" placeholder="DocuControl">
+          <!-- 1. System & Header Names -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-weight: 700; font-size: 0.86rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="type" style="width: 16px; height: 16px;"></i>
+              <span>១. ឈ្មោះប្រព័ន្ធ & ក្បាលទំព័រចម្បង (Header Names & Titles)</span>
             </div>
 
-            <div class="form-group">
-              <label>App Badge / Version</label>
-              <input type="text" class="form-control" id="set-app-badge" placeholder="PRO">
+            <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+              <div class="form-group">
+                <label>ឈ្មោះប្រព័ន្ធចម្បង (App Title / Org Name)</label>
+                <input type="text" class="form-control" id="set-app-title" placeholder="DocuControl" oninput="settingsModalController.handleLivePreview()">
+              </div>
+
+              <div class="form-group">
+                <label>ស្លាកសម្គាល់ (Badge / Tag)</label>
+                <input type="text" class="form-control" id="set-app-badge" placeholder="PRO" oninput="settingsModalController.handleLivePreview()">
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 0.85rem;">
+              <div class="form-group">
+                <label>ពិពណ៌នាប្រព័ន្ធ (App Subtitle / Description)</label>
+                <input type="text" class="form-control" id="set-app-subtitle" placeholder="Enterprise Document Control & Archival" oninput="settingsModalController.handleLivePreview()">
+              </div>
+
+              <div class="form-group">
+                <label>បុព្វបទលេខឯកសារ (Doc Prefix)</label>
+                <input type="text" class="form-control" id="set-doc-prefix" placeholder="DOC">
+              </div>
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom: 1.25rem;">
-            <label>App Subtitle / Description</label>
-            <input type="text" class="form-control" id="set-app-subtitle" placeholder="Enterprise Document Control & Archival">
+          <!-- 2. Login Screen Names & Titles -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-weight: 700; font-size: 0.86rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="shield" style="width: 16px; height: 16px;"></i>
+              <span>២. ចំណងជើងលើផ្ទាំងចូលប្រព័ន្ធ (Login Screen Titles)</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 0.85rem;">
+              <div class="form-group">
+                <label>ចំណងជើងចូលប្រព័ន្ធ (Login Title)</label>
+                <input type="text" class="form-control" id="set-login-title" placeholder="ចូលប្រព័ន្ធរដ្ឋបាល" oninput="settingsModalController.handleLivePreview()">
+              </div>
+
+              <div class="form-group">
+                <label>ចំណងជើងរងចូលប្រព័ន្ធ (Login Subtitle)</label>
+                <input type="text" class="form-control" id="set-login-subtitle" placeholder="ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យបុគ្គលិក & លិខិតចេញចូល" oninput="settingsModalController.handleLivePreview()">
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label>Document Number Prefix</label>
-            <input type="text" class="form-control" id="set-doc-prefix" placeholder="DOC">
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.35rem;">
-              Used to auto-generate numbers (e.g. DOC-2026-0001, GDT-01024)
+          <!-- 3. All Logo Customizers -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1.25rem;">
+            <div style="font-weight: 700; font-size: 0.86rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="image" style="width: 16px; height: 16px;"></i>
+              <span>៣. កែប្រែឡូហ្គោទាំងអស់ (App Header Logo & Login Modal Logo)</span>
+            </div>
+
+            <!-- Header Logo Customizer -->
+            <div style="border: 1px solid var(--border-color); background: var(--bg-card); border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 0.85rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.35rem;">
+                  <i data-lucide="layout" style="width: 15px; height: 15px; color: var(--primary);"></i>
+                  <span>ឡូហ្គោក្បាលទំព័រ (Header Logo)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('set-header-logo-file').click()" style="font-size: 0.75rem;">
+                    <i data-lucide="upload"></i> <span>ផ្ទុកឡូហ្គោរូបភាព (Upload Image)</span>
+                  </button>
+                  <input type="file" id="set-header-logo-file" accept="image/*" style="display: none;" onchange="settingsModalController.handleHeaderLogoUpload(event)">
+                  <button type="button" class="btn btn-sm" id="btn-clear-header-logo" onclick="settingsModalController.clearHeaderLogoImage()" style="display: none; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.75rem;">
+                    <i data-lucide="trash-2"></i> <span>លុប</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Header Built-in Icon selector -->
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.76rem; color: var(--text-muted);">ឬជ្រើសរើស Icon លំនាំដើម៖</span>
+                <div class="logo-preset-icons-grid" id="header-preset-icons">
+                  <button type="button" class="btn-logo-icon-preset active" data-icon="landmark" onclick="settingsModalController.selectHeaderIconPreset('landmark')"><i data-lucide="landmark"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="building" onclick="settingsModalController.selectHeaderIconPreset('building')"><i data-lucide="building"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="shield" onclick="settingsModalController.selectHeaderIconPreset('shield')"><i data-lucide="shield"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="file-text" onclick="settingsModalController.selectHeaderIconPreset('file-text')"><i data-lucide="file-text"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="folder" onclick="settingsModalController.selectHeaderIconPreset('folder')"><i data-lucide="folder"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="database" onclick="settingsModalController.selectHeaderIconPreset('database')"><i data-lucide="database"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="award" onclick="settingsModalController.selectHeaderIconPreset('award')"><i data-lucide="award"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="briefcase" onclick="settingsModalController.selectHeaderIconPreset('briefcase')"><i data-lucide="briefcase"></i></button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Login Modal Logo Customizer -->
+            <div style="border: 1px solid var(--border-color); background: var(--bg-card); border-radius: 8px; padding: 0.85rem 1rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="font-weight: 700; font-size: 0.82rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.35rem;">
+                  <i data-lucide="shield" style="width: 15px; height: 15px; color: var(--primary);"></i>
+                  <span>ឡូហ្គោលើផ្ទាំងចូលប្រព័ន្ធ (Login Modal Logo)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" onclick="document.getElementById('set-login-logo-file').click()" style="font-size: 0.75rem;">
+                    <i data-lucide="upload"></i> <span>ផ្ទុកឡូហ្គោរូបភាព (Upload Image)</span>
+                  </button>
+                  <input type="file" id="set-login-logo-file" accept="image/*" style="display: none;" onchange="settingsModalController.handleLoginLogoUpload(event)">
+                  <button type="button" class="btn btn-sm" id="btn-clear-login-logo" onclick="settingsModalController.clearLoginLogoImage()" style="display: none; background: rgba(239, 68, 68, 0.1); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); font-size: 0.75rem;">
+                    <i data-lucide="trash-2"></i> <span>លុប</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Login Built-in Icon selector -->
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <span style="font-size: 0.76rem; color: var(--text-muted);">ឬជ្រើសរើស Icon លំនាំដើម៖</span>
+                <div class="logo-preset-icons-grid" id="login-preset-icons">
+                  <button type="button" class="btn-logo-icon-preset active" data-icon="shield" onclick="settingsModalController.selectLoginIconPreset('shield')"><i data-lucide="shield"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="landmark" onclick="settingsModalController.selectLoginIconPreset('landmark')"><i data-lucide="landmark"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="lock" onclick="settingsModalController.selectLoginIconPreset('lock')"><i data-lucide="lock"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="key" onclick="settingsModalController.selectLoginIconPreset('key')"><i data-lucide="key"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="user-check" onclick="settingsModalController.selectLoginIconPreset('user-check')"><i data-lucide="user-check"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="building" onclick="settingsModalController.selectLoginIconPreset('building')"><i data-lucide="building"></i></button>
+                  <button type="button" class="btn-logo-icon-preset" data-icon="award" onclick="settingsModalController.selectLoginIconPreset('award')"><i data-lucide="award"></i></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- ---------------- TAB 2: Theme & Colors ---------------- -->
         <div class="settings-pane" id="set-pane-theme" style="display: none;">
-          <h3 class="settings-section-title">Theme & Accent Colors</h3>
-          <p class="settings-section-desc">Choose a pre-designed color scheme or pick any custom brand color.</p>
+          <h3 class="settings-section-title">Theme & Color Customization</h3>
+          <p class="settings-section-desc">Personalize the application's appearance and brand color scheme with live instant preview.</p>
 
-          <div style="margin-bottom: 1.25rem;">
-            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
-              Appearance Mode
-            </label>
-            <div class="appearance-mode-grid">
-              <button type="button" class="appearance-mode-btn" id="btn-mode-dark" onclick="settingsModalController.selectThemeMode('dark')">
-                <i data-lucide="moon"></i>
-                <span>Dark Theme</span>
-              </button>
-              <button type="button" class="appearance-mode-btn active" id="btn-mode-light" onclick="settingsModalController.selectThemeMode('light')">
-                <i data-lucide="sun"></i>
-                <span>Light Theme</span>
-              </button>
-            </div>
+          <!-- Light / Dark Appearance Mode -->
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.6rem;">Interface Theme Mode</div>
+          <div class="appearance-mode-grid">
+            <button class="appearance-mode-btn active" id="btn-theme-light" onclick="settingsModalController.selectThemeMode('light')">
+              <i data-lucide="sun"></i> <span>Light Mode</span>
+            </button>
+            <button class="appearance-mode-btn" id="btn-theme-dark" onclick="settingsModalController.selectThemeMode('dark')">
+              <i data-lucide="moon"></i> <span>Dark Mode</span>
+            </button>
           </div>
 
-          <div style="margin-bottom: 1.25rem;">
-            <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
-              Accent Color Scheme
-            </label>
-            <div class="color-scheme-pills" id="accent-color-pills-container">
-              <!-- Dynamically populated color presets -->
-            </div>
+          <!-- Color Presets -->
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.6rem;">Preset Accent Colors</div>
+          <div class="color-presets-grid" id="modal-color-presets">
+            <!-- Dynamically populated -->
           </div>
 
           <!-- Custom Brand Color Picker -->
@@ -1272,99 +1960,210 @@
           </div>
         </div>
 
-        <!-- ---------------- TAB 3: Document Types ---------------- -->
-        <div class="settings-pane" id="set-pane-doctypes" style="display: none;">
-          <h3 class="settings-section-title">Document Types & Categories</h3>
-          <p class="settings-section-desc">Manage controlled request reasons, document classifications, and reference document rules.</p>
-          
-          <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-            <input type="text" class="form-control" id="input-modal-add-doctype" placeholder="បញ្ចូលប្រភេទឯកសារ ឬមូលហេតុថ្មី (e.g. ស្នើសុំផ្ទេរភារកិច្ច)...">
-            <button class="btn btn-primary" onclick="
-              const val = document.getElementById('input-modal-add-doctype').value;
-              if (val) {
-                SettingsManager.addItem('requestReasons', val);
-                document.getElementById('input-modal-add-doctype').value = '';
-                app.refreshAll();
-              }
-            ">
-              <i data-lucide="plus"></i> <span>បន្ថែម</span>
-            </button>
+        <!-- ---------------- TAB 3: Automated Database Backup (Matches Picture 2) ---------------- -->
+        <div class="settings-pane" id="set-pane-autobackup" style="display: none;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3 class="settings-section-title" style="margin-bottom: 0; font-weight: 800; font-size: 1.05rem;">Automated Database Backup</h3>
+            <span class="auto-backup-status-badge" id="auto-backup-status-badge">
+              <span class="dot-indicator"></span>
+              <span id="auto-backup-badge-text">ACTIVE (15M)</span>
+            </span>
+          </div>
+          <p class="settings-section-desc" style="margin-bottom: 1.25rem; color: var(--text-muted); font-size: 0.84rem;">
+            Schedule automatic background snapshots to protect your document records from data loss.
+          </p>
+
+          <!-- Select Auto-Backup Time Interval Label -->
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.75rem;">
+            Select Auto-Backup Time Interval:
           </div>
 
-          <ul class="settings-item-list" id="modal-list-requestReasons" style="max-height: 260px;"></ul>
-        </div>
+          <!-- 4 Selectable Radio-Card Grid (Matching Picture 2) -->
+          <div class="backup-interval-grid">
+            <!-- 1 Minute -->
+            <label class="backup-interval-card" id="card-interval-1" onclick="settingsModalController.selectBackupInterval(1)">
+              <div class="backup-card-radio">
+                <input type="radio" name="auto-backup-interval" id="radio-interval-1" value="1" onchange="settingsModalController.selectBackupInterval(1)">
+                <span class="radio-custom-dot"></span>
+              </div>
+              <div class="backup-card-content">
+                <div class="backup-card-title">
+                  <span class="backup-card-icon" style="color: #eab308;">⚡</span> 1 Minute
+                </div>
+                <div class="backup-card-desc">Real-time / High Frequency auto-save</div>
+              </div>
+            </label>
 
-        <!-- ---------------- TAB 4: User Accounts ---------------- -->
-        <div class="settings-pane" id="set-pane-users" style="display: none;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem;">
-            <h3 class="settings-section-title" style="margin-bottom: 0;">User Accounts & Security Control</h3>
-            <span class="admin-protected-badge">ADMIN PROTECTED</span>
+            <!-- 15 Minutes (Default / Active) -->
+            <label class="backup-interval-card active" id="card-interval-15" onclick="settingsModalController.selectBackupInterval(15)">
+              <div class="backup-card-radio">
+                <input type="radio" name="auto-backup-interval" id="radio-interval-15" value="15" checked onchange="settingsModalController.selectBackupInterval(15)">
+                <span class="radio-custom-dot"></span>
+              </div>
+              <div class="backup-card-content">
+                <div class="backup-card-title">
+                  <span class="backup-card-icon" style="color: #3b82f6;">🛡️</span> 15 Minutes
+                </div>
+                <div class="backup-card-desc">Recommended for active standard sessions</div>
+              </div>
+            </label>
+
+            <!-- 30 Minutes -->
+            <label class="backup-interval-card" id="card-interval-30" onclick="settingsModalController.selectBackupInterval(30)">
+              <div class="backup-card-radio">
+                <input type="radio" name="auto-backup-interval" id="radio-interval-30" value="30" onchange="settingsModalController.selectBackupInterval(30)">
+                <span class="radio-custom-dot"></span>
+              </div>
+              <div class="backup-card-content">
+                <div class="backup-card-title">
+                  <span class="backup-card-icon" style="color: #8b5cf6;">⏱️</span> 30 Minutes
+                </div>
+                <div class="backup-card-desc">Lower frequency / lighter system load</div>
+              </div>
+            </label>
+
+            <!-- Disabled -->
+            <label class="backup-interval-card" id="card-interval-0" onclick="settingsModalController.selectBackupInterval(0)">
+              <div class="backup-card-radio">
+                <input type="radio" name="auto-backup-interval" id="radio-interval-0" value="0" onchange="settingsModalController.selectBackupInterval(0)">
+                <span class="radio-custom-dot"></span>
+              </div>
+              <div class="backup-card-content">
+                <div class="backup-card-title">
+                  <span class="backup-card-icon" style="color: #ef4444;">🔴</span> Disabled
+                </div>
+                <div class="backup-card-desc">Turn off automated background timer</div>
+              </div>
+            </label>
           </div>
-          <p class="settings-section-desc">Create accounts, change user passwords, modify permissions, and manage access status.</p>
 
-          <!-- Create User Account Card -->
-          <div class="user-create-card">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem;">
-              <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary);">Create New User Account</h4>
-              <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.generateRandomPassword()" style="font-size: 0.75rem;">
-                <i data-lucide="zap"></i> <span>Generate Password</span>
+          <!-- Backup Snapshot Action Bar (Matches Picture 2) -->
+          <div class="backup-snapshot-action-bar">
+            <div class="backup-last-time-info" id="backup-last-time-display">
+              Last Snapshot: <strong>Never (Ready)</strong>
+            </div>
+            <div class="backup-snapshot-actions">
+              <button class="btn btn-primary btn-sm" type="button" onclick="settingsModalController.triggerManualSnapshot()" style="font-weight: 700;">
+                <i data-lucide="save"></i> <span>Backup Now</span>
               </button>
+              <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.downloadBackupJSON()" style="font-weight: 600;">
+                <i data-lucide="download"></i> <span>Download .JSON</span>
+              </button>
+              <label class="btn btn-secondary btn-sm" style="font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem; margin: 0; background: var(--bg-card); border: 1px solid var(--border-color);" title="ជ្រើសរើសឯកសារ Backup .JSON ដើម្បីស្តារទិន្នន័យ (Import / Restore Backup)">
+                <i data-lucide="upload"></i> <span>Import Backup (.JSON)</span>
+                <input type="file" id="input-import-backup-json" accept=".json,application/json" style="display: none;" onchange="settingsModalController.handleImportBackupJSON(event)">
+              </label>
+            </div>
+          </div>
+
+          <!-- Recent Auto-Saved Restore Points Box (Matches Picture 2) -->
+          <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.65rem;">
+            Recent Auto-Saved Restore Points:
+          </div>
+
+          <!-- 1. Auto-Logout on Inactivity -->
+          <!-- 1. Auto-Logout on Inactivity -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: #2563eb; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="timer" style="width: 17px; height: 17px;"></i>
+              <span>1. Auto-Logout on Inactivity (Session Timeout)</span>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
-              <div class="form-group">
-                <label>Username <span class="required-mark">*</span></label>
-                <input type="text" class="form-control" id="set-new-user-name" placeholder="e.g. john_doe">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">
+                  Inactivity Timeout Duration
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">
+                  Automatically log out active users when no keyboard or mouse activity is detected to protect sensitive data.
+                </div>
               </div>
-
-              <div class="form-group">
-                <label>Full Name <span class="required-mark">*</span></label>
-                <input type="text" class="form-control" id="set-new-user-fullname" placeholder="e.g. John Doe">
-              </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 1rem;">
-              <div class="form-group">
-                <label>Password <span class="required-mark">*</span></label>
-                <input type="password" class="form-control" id="set-new-user-pass" placeholder="Enter password (e.g. Pass1234)">
-              </div>
-
-              <div class="form-group">
-                <label>Role / Permissions <span class="required-mark">*</span></label>
-                <select class="form-control" id="set-new-user-role">
-                  <option value="STAFF">Staff (Create & Edit Documents)</option>
-                  <option value="ADMIN">Admin (Full Access)</option>
-                  <option value="VIEWER">Viewer (Read-Only)</option>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <select class="form-control" id="set-auto-logout-minutes" style="font-size: 0.8rem; font-weight: 700; width: auto; min-width: 170px;" onchange="app.saveAutoLogoutPreference(this.value)">
+                  <option value="15">15 Minutes (Default)</option>
+                  <option value="30">30 Minutes</option>
+                  <option value="45">45 Minutes</option>
                 </select>
               </div>
             </div>
+          </div>
 
-            <div style="display: flex; justify-content: flex-end;">
-              <button class="btn btn-primary" type="button" onclick="settingsModalController.handleAddUserAccount()">
-                <i data-lucide="user-plus"></i> <span>Add User Account</span>
+          <div class="backup-restore-points-box" id="backup-restore-points-container">
+            <!-- Empty state matching Picture 2 -->
+            <div class="backup-empty-state">
+              <i data-lucide="hard-drive"></i>
+              <p>No auto-saved restore points yet. Click "Backup Now" or wait for scheduled timer.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------------- TAB 5: User Accounts Management (Exact Match to Picture) ---------------- -->
+        <div class="settings-pane" id="set-pane-users" style="display: none;">
+          <h3 class="settings-section-title" style="margin-bottom: 0.2rem; font-size: 1.15rem; font-weight: 800;">
+            User Accounts Management
+          </h3>
+          <p class="settings-section-desc" style="color: var(--text-muted); font-size: 0.84rem; margin-bottom: 1.25rem;">
+            Add new system operators, assign permission roles, and manage account statuses.
+          </p>
+
+          <!-- Create User Form Card (Matches Picture) -->
+          <div class="user-create-card" style="background: var(--bg-card-subtle, #f0f7ff); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem 1.35rem; margin-bottom: 1.5rem;">
+            <!-- Row 1: Username, Password, Full Name -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.85rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">Username <span class="required-mark" style="color: #ef4444;">*</span></label>
+                <input type="text" class="form-control" id="set-new-user-name" placeholder="e.g. sophal_hr" style="background: var(--bg-card); font-size: 0.85rem;">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">Password <span class="required-mark" style="color: #ef4444;">*</span></label>
+                <input type="password" class="form-control" id="set-new-user-pass" placeholder="••••••••" style="background: var(--bg-card); font-size: 0.85rem;">
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">Full Name <span class="required-mark" style="color: #ef4444;">*</span></label>
+                <input type="text" class="form-control" id="set-new-user-fullname" placeholder="e.g. ចាន់ សុផល" style="background: var(--bg-card); font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <!-- Row 2: Role, Department -->
+            <div style="display: grid; grid-template-columns: 1.4fr 1.6fr; gap: 1rem; margin-bottom: 1rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">Role</label>
+                <select class="form-control" id="set-new-user-role" style="background: var(--bg-card); font-size: 0.85rem;">
+                  <option value="OFFICER">មន្ត្រីបញ្ចូលទិន្នន័យ (Data Entry Officer)</option>
+                  <option value="HR_MGR">អ្នកគ្រប់គ្រងធនធានមនុស្ស (HR Manager)</option>
+                  <option value="ADMIN">អ្នកគ្រប់គ្រងប្រព័ន្ធ (System Administrator)</option>
+                  <option value="VIEWER">អ្នកមើលទិន្នន័យ (Read-Only Viewer)</option>
+                </select>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">Department</label>
+                <input type="text" class="form-control" id="set-new-user-dept" placeholder="e.g. នាយកដ្ឋានបុគ្គលិក" style="background: var(--bg-card); font-size: 0.85rem;">
+              </div>
+            </div>
+
+            <!-- Create Button -->
+            <div>
+              <button class="btn btn-primary" type="button" onclick="settingsModalController.handleAddUserAccount()" style="padding: 0.55rem 1.15rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="plus"></i> <span>បង្កើតគណនី (Create User)</span>
               </button>
             </div>
           </div>
 
-          <!-- Registered Users Table -->
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; margin-top: 1rem;">
-            <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-primary); margin: 0;">
-              Registered User Accounts
-            </h4>
-            <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.handleResetDefaultPasswords()" title="កំណត់លេខសម្ងាត់ទាំងអស់ទៅតាមលំនាំដើម (admin: Password123!, staff: StaffSecret2026, viewer: ViewerPass123)">
-              <i data-lucide="rotate-ccw"></i> <span>Reset Passwords to Defaults</span>
-            </button>
-          </div>
-
+          <!-- Users Table (Matching Picture) -->
           <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-card);">
-            <table class="user-accounts-table">
+            <table class="user-accounts-table" style="width: 100%; border-collapse: collapse;">
               <thead>
-                <tr>
-                  <th>USER</th>
-                  <th>ROLE</th>
-                  <th>PASSWORD</th>
-                  <th>STATUS</th>
-                  <th>ACTIONS</th>
+                <tr style="background: var(--bg-card-subtle, #f8fafc);">
+                  <th style="padding: 0.75rem 1rem;">ID</th>
+                  <th style="padding: 0.75rem 1rem;">Username</th>
+                  <th style="padding: 0.75rem 1rem;">Full Name</th>
+                  <th style="padding: 0.75rem 1rem;">Role</th>
+                  <th style="padding: 0.75rem 1rem;">Department</th>
+                  <th style="padding: 0.75rem 1rem; text-align: center;">Status</th>
+                  <th style="padding: 0.75rem 1rem; text-align: center;">Action</th>
                 </tr>
               </thead>
               <tbody id="user-accounts-tbody">
@@ -1374,45 +2173,98 @@
           </div>
         </div>
 
-        <!-- ---------------- TAB 5: 22 Column Headers ---------------- -->
-        <div class="settings-pane" id="set-pane-headers" style="display: none;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.2rem;">
-            <h3 class="settings-section-title" style="margin-bottom: 0;">Custom 22-Column Master Database Headers</h3>
-            <div style="display: flex; gap: 0.4rem;">
-              <button class="btn btn-secondary btn-sm" type="button" onclick="settingsModalController.handleResetModalHeaders()">
-                <i data-lucide="rotate-ccw"></i> <span>Reset Book1</span>
-              </button>
-              <button class="btn btn-primary btn-sm" type="button" onclick="settingsModalController.handleSaveModalHeaders()">
-                <i data-lucide="save"></i> <span>Save Headers</span>
-              </button>
-            </div>
-          </div>
-          <p class="settings-section-desc">Edit the Khmer & English column titles for all 22 fields. Changes apply across the table, user forms, export, and reports.</p>
+        <!-- ---------------- TAB 6: Admin Password & Security Policy ---------------- -->
+        <div class="settings-pane" id="set-pane-password" style="display: none;">
+          <h3 class="settings-section-title" style="margin-bottom: 0.2rem; font-size: 1.15rem; font-weight: 800;">
+            Admin Password & Security Access
+          </h3>
+          <p class="settings-section-desc" style="color: var(--text-muted); font-size: 0.84rem; margin-bottom: 1.25rem;">
+            Change master administrator credentials, set login attempt lockout thresholds, and configure account protection.
+          </p>
 
-          <div style="border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: var(--bg-card); max-height: 400px; overflow-y: auto;">
-            <table class="staff-table" style="font-size: 0.8rem;">
-              <thead>
-                <tr>
-                  <th style="width: 50px; text-align: center;">No.</th>
-                  <th style="width: 130px;">Field Key</th>
-                  <th>ឈ្មោះជួរឈរខ្មែរ (Khmer Header)</th>
-                  <th>ឈ្មោះជួរឈរអង់គ្លេស (English Header)</th>
-                  <th style="width: 140px; text-align: center;">តម្រឹម (Align)</th>
-                  <th style="width: 100px; text-align: center;">Rule</th>
-                </tr>
-              </thead>
-              <tbody id="modal-headers-editor-tbody">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
+          <!-- 1. Change Master Admin Password -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.35rem;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="key" style="width: 17px; height: 17px;"></i>
+              <span>១. ផ្លាស់ប្តូរពាក្យសម្ងាត់ Admin (Change Master Admin Password)</span>
+            </div>
+
+            <!-- Old Password with Eye -->
+            <div class="form-group" style="margin-bottom: 0.85rem; max-width: 450px;">
+              <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">ពាក្យសម្ងាត់បច្ចុប្បន្ន (Current Old Password) <span class="required-mark" style="color: #ef4444;">*</span></label>
+              <div class="input-with-eye-wrap">
+                <input type="password" class="form-control" id="set-admin-old-pass" placeholder="បញ្ចូលពាក្យសម្ងាត់ចាស់">
+                <button type="button" class="btn-toggle-pw-eye" onclick="settingsModalController.toggleInputPasswordVisibility('set-admin-old-pass', this)" title="បង្ហាញ/លាក់ពាក្យសម្ងាត់">
+                  <i data-lucide="eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.15rem; max-width: 650px;">
+              <!-- New Password with Eye -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">ពាក្យសម្ងាត់ថ្មី (New Password) <span class="required-mark" style="color: #ef4444;">*</span></label>
+                <div class="input-with-eye-wrap">
+                  <input type="password" class="form-control" id="set-admin-new-pass" placeholder="បញ្ចូលពាក្យសម្ងាត់ថ្មី">
+                  <button type="button" class="btn-toggle-pw-eye" onclick="settingsModalController.toggleInputPasswordVisibility('set-admin-new-pass', this)" title="បង្ហាញ/លាក់ពាក្យសម្ងាត់">
+                    <i data-lucide="eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Confirm New Password with Eye -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.35rem;">ផ្ទៀងផ្ទាត់ពាក្យសម្ងាត់ថ្មី (Confirm New Password) <span class="required-mark" style="color: #ef4444;">*</span></label>
+                <div class="input-with-eye-wrap">
+                  <input type="password" class="form-control" id="set-admin-confirm-pass" placeholder="បញ្ចូលពាក្យសម្ងាត់ថ្មីម្តងទៀត">
+                  <button type="button" class="btn-toggle-pw-eye" onclick="settingsModalController.toggleInputPasswordVisibility('set-admin-confirm-pass', this)" title="បង្ហាញ/លាក់ពាក្យសម្ងាត់">
+                    <i data-lucide="eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" type="button" onclick="settingsModalController.handleChangeAdminPassword()" style="padding: 0.6rem 1.25rem; font-weight: 700;">
+              <i data-lucide="save"></i> <span>រក្សាទុកពាក្យសម្ងាត់ Admin (Update Password)</span>
+            </button>
+          </div>
+
+          <!-- 2. Security Lockout Policy -->
+          <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.25rem;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: #dc2626; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+              <i data-lucide="shield-alert" style="width: 17px; height: 17px;"></i>
+              <span>២. គោលការណ៍សុវត្ថិភាពចាក់សោរស្វ័យប្រវត្ត (Auto-Lock Security Policy)</span>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">
+                  ចំនួនកំណត់នៃការវាយពាក្យសម្ងាត់ខុស មុនពេលចាក់សោរ
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;">
+                  ប្រសិនបើវាយខុសលើសចំនួនកំណត់ ប្រព័ន្ធនឹងចាក់សោរគណនី (Auto-Lock) ហើយតម្រូវឱ្យ Admin ដោះសោរតាម Toggle Switch។
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <select class="form-control" id="set-max-failed-attempts" style="font-size: 0.8rem; font-weight: 700; width: auto; min-width: 155px;" onchange="settingsModalController.handleMaxAttemptsChange(this.value)">
+                  <option value="3">៣ ដង (3 Times)</option>
+                  <option value="5">៥ ដង (5 Times - លំនាំដើម)</option>
+                  <option value="10">១០ ដង (10 Times)</option>
+                  <option value="65">៦៥ ដង (65 Times)</option>
+                  <option value="custom">ផ្សេងៗ... (Custom)</option>
+                </select>
+                <input type="number" class="form-control" id="set-custom-failed-attempts" min="1" max="100" placeholder="ចំនួនដង" style="display: none; width: 85px; font-size: 0.8rem;" onchange="settingsModalController.handleCustomMaxAttempts(this.value)">
+              </div>
+            </div>
           </div>
         </div>
 
+        </div>
       </div>
 
-      <!-- Settings Modal Footer -->
+      <!-- Settings Modal Footer (Matching Picture) -->
       <div class="settings-modal-footer">
-        <button type="button" class="btn-reset-text" onclick="settingsModalController.handleResetToDefaults()">
+        <button type="button" class="btn-reset-defaults" onclick="settingsModalController.handleResetAllBrandingAndSettings()">
           <i data-lucide="rotate-ccw"></i>
           <span>Reset to Defaults</span>
         </button>
@@ -1421,7 +2273,7 @@
           <button type="button" class="btn btn-secondary" onclick="settingsModalController.closeModal()">
             <span>Cancel</span>
           </button>
-          <button type="button" class="btn btn-primary" onclick="settingsModalController.handleSaveAll()">
+          <button type="button" class="btn btn-primary" onclick="settingsModalController.handleSaveAllBranding()">
             <i data-lucide="check"></i>
             <span>Save Changes</span>
           </button>
@@ -1440,7 +2292,7 @@
           <span>ចុះឈ្មោះបុគ្គលិកថ្មី (Staff Registration)</span>
         </h2>
         <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <button class="btn btn-secondary btn-sm" type="button" onclick="ExcelHandler.downloadVLookupDataEntryTemplate()" title="ទាញយកគំរូ Excel ដែលមានរូបមន្ត VLOOKUP ស្វ័យប្រវត្ត">
+          <button class="btn btn-secondary btn-sm" id="btn-uf-vlookup-template" type="button" onclick="ExcelHandler.downloadVLookupDataEntryTemplate()" title="ទាញយកគំរូ Excel ដែលមានរូបមន្ត VLOOKUP ស្វ័យប្រវត្ត">
             <i data-lucide="file-spreadsheet"></i> <span>គំរូ Excel VLOOKUP</span>
           </button>
           <button class="modal-close-btn" onclick="userformController.closeModal()" title="Close">✕</button>
@@ -1577,33 +2429,13 @@
               </div>
 
               <!-- Service Start Date -->
-              <div class="form-group">
+              <div class="form-group" style="grid-column: span 2;">
                 <label id="lbl-uf-serviceStartDate">
                   <span class="field-no">១១.</span> ថ្ងៃខែឆ្នាំបម្រើការងារ (Service Date)
                   <span class="status-badge status-active" id="uf-service-duration-calculated" style="margin-left: auto; font-size: 0.68rem;">-</span>
                 </label>
                 <input type="date" class="form-control" id="uf-serviceStartDate">
                 <div class="field-error-msg" id="err-uf-serviceStartDate"></div>
-              </div>
-
-              <!-- Status Dropdown Selector -->
-              <div class="form-group">
-                <label id="lbl-uf-customStatus">
-                  <span class="field-no">ស្ថានភាព</span> ស្ថានភាពបុគ្គលិក (Staff Status)
-                </label>
-                <select class="form-control" id="uf-customStatus">
-                  <option value="AUTO">🔄 ស្វ័យប្រវត្តតាមកាលបរិច្ឆេទ (Auto-calculated)</option>
-                  <option value="active">🟢 កំពុងដំណើរការ (Active)</option>
-                  <option value="pending">⏳ រង់ចាំដំណើរការ (Pending)</option>
-                  <option value="completed">✅ បានបញ្ចប់ (Completed)</option>
-                  <option value="expired">⚠️ ផុតសុពលភាព (Expired)</option>
-                  <option value="closed">🔒 បានបិទប្រព័ន្ធ (Closed)</option>
-                  <option value="missing">📋 ខ្វះព័ត៌មាន (Missing Info)</option>
-                </select>
-                <div style="margin-top: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
-                  <span style="font-size: 0.72rem; color: var(--text-muted);">ស្ថានភាពជាក់ស្តែង៖</span>
-                  <span class="status-badge status-pending" id="uf-status-calculated" style="font-size: 0.7rem;">ថ្មី (New)</span>
-                </div>
               </div>
             </div>
           </div>
@@ -1615,7 +2447,7 @@
               <span>២. ព័ត៌មានអង្គភាព និងតួនាទី (Organization Information)</span>
             </div>
             
-            <div class="form-grid-3">
+            <div class="form-grid-4">
               <!-- Department -->
               <div class="form-group">
                 <label id="lbl-uf-department">
@@ -1648,6 +2480,19 @@
                 </select>
                 <div class="field-error-msg" id="err-uf-position"></div>
               </div>
+
+              <!-- Staff Type -->
+              <div class="form-group">
+                <label id="lbl-uf-staffType">
+                  <span class="field-no">៩.</span> ប្រភេទបុគ្គលិក (Staff Type)
+                </label>
+                <select class="form-control" id="uf-staffType">
+                  <option value="មន្ត្រីក្របខណ្ឌ (Civil Servant)">🏛️ មន្ត្រីក្របខណ្ឌ (Civil Servant)</option>
+                  <option value="មន្ត្រីជាប់កិច្ចសន្យា (Contract Staff)">📑 មន្ត្រីជាប់កិច្ចសន្យា (Contract Staff)</option>
+                  <option value="មន្ត្រីកម្មសិក្សា (Intern / Probationary)">🎓 មន្ត្រីកម្មសិក្សា (Intern / Probationary)</option>
+                  <option value="មន្ត្រីអណ្តែត (Floating Officer)">🌐 មន្ត្រីអណ្តែត (Floating Officer)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -1668,17 +2513,24 @@
 
               <!-- Start Date -->
               <div class="form-group">
-                <label id="lbl-uf-startDate" style="display: flex; align-items: center; justify-content: space-between;">
-                  <span><span class="field-no">១៤.</span> ថ្ងៃខែឆ្នាំចាប់ផ្តើម</span>
-                  <span id="uf-startdate-sync-indicator" onclick="userformController.syncStartDateWithRequestDate()" style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; color: var(--primary); background: rgba(79, 70, 229, 0.08); cursor: pointer; font-weight: 600;" title="ចុចដើម្បីធ្វើសមកាលកម្មស្មើថ្ងៃស្នើសុំ (Click to sync with Request Date)">⚡ ស្វ័យប្រវត្ត (Auto)</span>
-                </label>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                  <label id="lbl-uf-startDate" style="margin: 0; white-space: nowrap; font-weight: 700;">ថ្ងៃចាប់ផ្តើម <small style="color: var(--text-muted); font-size: 0.72rem;">(Start Date)</small></label>
+                  <label style="font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; color: var(--primary); font-weight: 700; margin: 0; background: rgba(37, 99, 235, 0.08); padding: 2px 6px; border-radius: 4px; white-space: nowrap;" title="គណនាកាលកំណត់/សុពលភាពតាមថ្ងៃចាប់ផ្តើម (Calculate Maturity from Start Date)">
+                    <input type="radio" name="uf-maturity-base" id="uf-maturity-start" value="startDate" onchange="userformController.handleMaturityBaseChange('startDate')" style="margin: 0; cursor: pointer;"> 🎯 គណនាកាលកំណត់
+                  </label>
+                </div>
                 <input type="date" class="form-control" id="uf-startDate">
                 <div class="field-error-msg" id="err-uf-startDate"></div>
               </div>
 
               <!-- End Date -->
               <div class="form-group">
-                <label id="lbl-uf-endDate"><span class="field-no">១៣.</span> ថ្ងៃខែឆ្នាំបញ្ចប់</label>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; margin-bottom: 0.35rem; flex-wrap: wrap;">
+                  <label id="lbl-uf-endDate" style="margin: 0; white-space: nowrap; font-weight: 700;">ថ្ងៃបញ្ចប់ <small style="color: var(--text-muted); font-size: 0.72rem;">(End Date)</small></label>
+                  <label style="font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; color: var(--primary); font-weight: 700; margin: 0; background: rgba(37, 99, 235, 0.08); padding: 2px 6px; border-radius: 4px; white-space: nowrap;" title="គណនាកាលកំណត់/សុពលភាពតាមថ្ងៃបញ្ចប់ (Calculate Maturity from End Date)">
+                    <input type="radio" name="uf-maturity-base" id="uf-maturity-end" value="endDate" checked onchange="userformController.handleMaturityBaseChange('endDate')" style="margin: 0; cursor: pointer;"> 🎯 គណនាកាលកំណត់
+                  </label>
+                </div>
                 <input type="date" class="form-control" id="uf-endDate">
                 <div class="field-error-msg" id="err-uf-endDate"></div>
               </div>
@@ -1779,24 +2631,80 @@
 
           <!-- SECTION 4: Attached Files & Document Repository -->
           <div class="form-section-card" style="margin-top: 1.25rem;">
-            <div class="form-section-header">
-              <i data-lucide="paperclip"></i>
-              <span>៤. ឯកសារភ្ជាប់ និងលិខិតយោង (Attached Files & Documents)</span>
+            <div class="form-section-header" style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="paperclip"></i>
+                <span>៤. ឯកសារភ្ជាប់ និងលិខិតយោង (Attached Files & Documents)</span>
+              </div>
             </div>
 
-            <!-- Dropzone Upload Area -->
-            <div class="attachment-dropzone" id="uf-attachment-dropzone" onclick="document.getElementById('uf-attachment-input').click()">
-              <i data-lucide="upload-cloud"></i>
-              <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); margin-bottom: 0.25rem;">
-                ចុចទីនេះ ឬទម្លាក់ឯកសារដើម្បីភ្ជាប់ (Click or Drag & Drop Files to Attach)
-              </div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">
-                គាំទ្រឯកសារ PDF, DOCX, XLSX, រូបភាពស្កេនលិខិតយោង ឬប្រកាស (Max 10MB/file)
-              </div>
-              <input type="file" id="uf-attachment-input" multiple style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+            <!-- 2 CLEAR CHOICES TABS: 1. ATTACH FILES (WITH FOLDER LOCATION) & 2. DOCUMENT CODE -->
+            <div class="attachment-option-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 0.85rem; padding: 4px; background: var(--bg-card-subtle); border-radius: var(--radius-md); border: 1px solid var(--border-color); width: fit-content;">
+              <button type="button" class="btn-subtab active" id="btn-att-tab-file" onclick="userformController.switchAttachmentMode('file')">
+                <i data-lucide="upload-cloud"></i>
+                <span>១. ភ្ជាប់ឯកសារ (Attach Files)</span>
+              </button>
+              <button type="button" class="btn-subtab" id="btn-att-tab-code" onclick="userformController.switchAttachmentMode('code')">
+                <i data-lucide="hash"></i>
+                <span>២. ប្រើលេខកូដឯកសារ (Document Code - e.g. MXC0231536)</span>
+              </button>
             </div>
 
-            <!-- Attachments Grid -->
+            <!-- CHOICE 1: File Upload Dropzone + Storage Folder / Drive Path (C:, D:) -->
+            <div id="uf-att-file-panel">
+              <!-- Storage Folder / Drive Location Path Bar -->
+              <div id="uf-folder-storage-bar" style="margin-bottom: 0.65rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-card-subtle); padding: 0.55rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); gap: 0.6rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; font-weight: 600; color: var(--text-primary);">
+                  <i data-lucide="folder" style="width: 15px; height: 15px; color: var(--primary);"></i>
+                  <span>ទីតាំង Folder ផ្ទុកឯកសារ (Folder Storage Location):</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex: 1; min-width: 260px;">
+                  <input type="text" class="form-control" id="uf-default-folder-path" value="D:\GDT_Documents\Staff_2026\" style="font-size: 0.78rem; padding: 4px 9px; font-family: monospace;" placeholder="ឧទាហរណ៍៖ D:\GDT_Documents\Staff_2026\ ឬ C:\Staff_Files\" onchange="userformController.saveDefaultFolderPath(this.value)">
+                  <button type="button" class="btn btn-secondary btn-sm btn-quick-drive" style="padding: 3px 8px; font-size: 0.72rem; font-weight: 600;" onclick="userformController.setQuickDrive('D:\\GDT_Documents\\Staff_2026\\')">D:\</button>
+                  <button type="button" class="btn btn-secondary btn-sm btn-quick-drive" style="padding: 3px 8px; font-size: 0.72rem; font-weight: 600;" onclick="userformController.setQuickDrive('C:\\Staff_Control\\Documents\\')">C:\</button>
+                </div>
+              </div>
+
+              <!-- Dropzone Upload Area -->
+              <div class="attachment-dropzone" id="uf-attachment-dropzone" onclick="document.getElementById('uf-attachment-input').click()">
+                <i data-lucide="upload-cloud"></i>
+                <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); margin-bottom: 0.25rem;">
+                  ចុចទីនេះ ឬទម្លាក់ឯកសារដើម្បីភ្ជាប់ (Click or Drag & Drop Files to Attach)
+                </div>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                  គាំទ្រឯកសារ PDF, DOCX, XLSX, រូបភាពស្កេនលិខិតយោង ឬប្រកាស (Max 10MB/file)
+                </div>
+                <input type="file" id="uf-attachment-input" multiple style="display: none;" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.xls,.xlsx">
+              </div>
+            </div>
+
+            <!-- CHOICE 2: Document Entry Code (e.g. MXC0231536) -->
+            <div id="uf-att-code-panel" style="display: none;">
+              <div style="background: var(--bg-card-subtle); border: 1px dashed var(--border-color); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 0.75rem;">
+                <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 0.4rem;">
+                  <i data-lucide="file-code"></i>
+                  <span>បញ្ចូលលេខកូដសម្គាល់ឯកសារ ឬលិខិតបទដ្ឋាន (Document Entry Number & Text)</span>
+                </div>
+                <div style="display: grid; grid-template-columns: 1.5fr 2fr auto; gap: 0.65rem; align-items: flex-end;">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.76rem; font-weight: 600;">លេខកូដឯកសារ (Entry / Tracking Number) <span class="required-mark">*</span></label>
+                    <input type="text" class="form-control" id="uf-input-doc-code" placeholder="ឧទាហរណ៍៖ MXC0231536" onkeydown="if(event.key==='Enter'){event.preventDefault(); userformController.addDocEntryCode();}">
+                  </div>
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 0.76rem; font-weight: 600;">ឈ្មោះ ឬពិព័រណ៍នាឯកសារ (Document Name / Description)</label>
+                    <input type="text" class="form-control" id="uf-input-doc-title" placeholder="ឧទាហរណ៍៖ លិខិតផ្ទេរភារកិច្ចអនឡាញ (Digital Request)" onkeydown="if(event.key==='Enter'){event.preventDefault(); userformController.addDocEntryCode();}">
+                  </div>
+                  <div>
+                    <button type="button" class="btn btn-primary" onclick="userformController.addDocEntryCode()" style="height: 38px; padding: 0 1.1rem; display: flex; align-items: center; gap: 0.35rem;">
+                      <i data-lucide="plus"></i>
+                      <span>បន្ថែម (Add)</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Unified Attachments Grid (Files & Document Codes) -->
             <div class="attachments-grid" id="uf-attachments-list">
               <!-- Dynamically populated from userformController.renderAttachmentsList() -->
             </div>
@@ -1807,16 +2715,16 @@
 
       <!-- Modal Footer (Action Buttons: New, Save, Update, Delete, Search, Clear, Close) -->
       <div class="modal-footer">
-        <div class="footer-left-actions">
-          <button class="btn btn-secondary" onclick="userformController.openNew()" title="បង្កើតថ្មី">
+        <div class="footer-left-actions" id="uf-footer-left-actions">
+          <button class="btn btn-secondary" id="btn-uf-new" onclick="userformController.openNew()" title="បង្កើតថ្មី">
             <i data-lucide="sparkles"></i>
             <span>ថ្មី (New)</span>
           </button>
-          <button class="btn btn-secondary" onclick="userformController.handleSearchPrompt()" title="ស្វែងរកក្នុងទម្រង់">
+          <button class="btn btn-secondary" id="btn-uf-search" onclick="userformController.handleSearchPrompt()" title="ស្វែងរកក្នុងទម្រង់">
             <i data-lucide="search"></i>
             <span>ស្វែងរក (Search)</span>
           </button>
-          <button class="btn btn-secondary" onclick="userformController.clearForm()" title="សម្អាតទម្រង់">
+          <button class="btn btn-secondary" id="btn-uf-clear" onclick="userformController.clearForm()" title="សម្អាតទម្រង់">
             <i data-lucide="eraser"></i>
             <span>សម្អាត (Clear)</span>
           </button>
@@ -1835,7 +2743,7 @@
             <i data-lucide="save"></i>
             <span>រក្សាទុក (Save)</span>
           </button>
-          <button class="btn btn-secondary" onclick="userformController.closeModal()">
+          <button class="btn btn-secondary" id="btn-uf-close" onclick="userformController.closeModal()">
             <i data-lucide="x"></i>
             <span>បិទ (Close)</span>
           </button>
@@ -1885,72 +2793,23 @@
     </div>
   </div>
 
-  <!-- ==================== EDIT TABLE HEADER TITLES MODAL (LEFT, MIDDLE, RIGHT) ==================== -->
-  <div class="modal-backdrop" id="edit-table-header-modal">
-    <div class="userform-dialog" style="max-width: 650px;">
-      <div class="modal-header">
-        <h2>
-          <i data-lucide="edit-3"></i>
-          <span>កែសម្រួលចំណងជើងក្បាលតារាង (Edit Table Header: Left, Middle, Right)</span>
-        </h2>
-        <button class="modal-close-btn" onclick="document.getElementById('edit-table-header-modal').classList.remove('open')">✕</button>
-      </div>
-
-      <div class="modal-body" style="padding: 1.5rem;">
-        <div class="form-group" style="margin-bottom: 1.15rem;">
-          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
-            <span>⬅️ ១. ចំណងជើងខាងឆ្វេង (Left Title)</span>
-          </label>
-          <input type="text" class="form-control" id="input-edit-header-left" placeholder="តារាងគ្រប់គ្រងទិន្នន័យ">
-        </div>
-
-        <div class="form-group" style="margin-bottom: 1.15rem;">
-          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
-            <span>↔️ ២. ចំណងជើងកណ្តាល (Middle / Center Title)</span>
-          </label>
-          <input type="text" class="form-control" id="input-edit-header-middle" placeholder="អគ្គនាយកដ្ឋានពន្ធដារ • General Department of Taxation">
-        </div>
-
-        <div class="form-group" style="margin-bottom: 1.15rem;">
-          <label style="font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
-            <span>➡️ ៣. ស្លាកចំណងជើងខាងស្តាំ (Right Sub-title / Tag)</span>
-          </label>
-          <input type="text" class="form-control" id="input-edit-header-right" placeholder="Book1 Master Control">
-        </div>
-      </div>
-
-      <div class="modal-footer" style="justify-content: space-between;">
-        <button type="button" class="btn-reset-text" onclick="app.resetTableHeaderTitlesFromModal()">
-          <i data-lucide="rotate-ccw"></i>
-          <span>កំណត់ឡើងវិញតាមលំនាំដើម (Reset)</span>
-        </button>
-
-        <div style="display: flex; gap: 0.5rem;">
-          <button class="btn btn-secondary" onclick="document.getElementById('edit-table-header-modal').classList.remove('open')">
-            <span>បោះបង់ (Cancel)</span>
-          </button>
-          <button class="btn btn-primary" onclick="app.saveTableHeaderTitlesFromModal()">
-            <i data-lucide="check"></i>
-            <span>រក្សាទុក (Save Header Titles)</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- ==================== AUTH / LOGIN MODAL (SCREENSHOT 3 MATCH) ==================== -->
   <div class="modal-backdrop" id="auth-login-modal">
-    <div class="login-modal-dialog">
-      <button class="modal-close-btn" onclick="app.closeAuthModal()" style="position: absolute; right: 1.25rem; top: 1.25rem;">✕</button>
-      
-      <div class="shield-icon-badge">
-        <svg viewBox="0 0 24 24">
+    <div class="login-modal-dialog" style="position: relative;">
+      <div class="shield-icon-badge" id="auth-login-logo-container">
+        <svg viewBox="0 0 24 24" id="auth-login-logo-svg">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
         </svg>
       </div>
 
-      <h2 class="login-header-title">ចូលប្រព័ន្ធរដ្ឋបាល</h2>
-      <div class="login-subtitle">ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យបុគ្គលិក & លិខិតចេញចូល</div>
+      <h2 class="login-header-title" id="auth-login-title-text">ចូលប្រព័ន្ធរដ្ឋបាល</h2>
+      <div class="login-subtitle" id="auth-login-subtitle-text">ប្រព័ន្ធគ្រប់គ្រងទិន្នន័យបុគ្គលិក & លិខិតចេញចូល</div>
+
+      <!-- Styled Auth Error / Locked Banner (Matches Screenshot) -->
+      <div id="auth-login-error-banner" style="display: none; background: rgba(220, 38, 38, 0.12); border: 1px solid #ef4444; color: #dc2626; padding: 0.65rem 0.85rem; border-radius: 8px; font-size: 0.8rem; margin: 0.85rem 0; align-items: center; gap: 0.5rem; text-align: left;">
+        <i data-lucide="alert-circle" style="width: 18px; height: 18px; flex-shrink: 0; color: #dc2626;"></i>
+        <span id="auth-login-error-text" style="font-weight: 600; line-height: 1.35;">ឈ្មោះអ្នកប្រើប្រាស់ ឬ ពាក្យសម្ងាត់មិនត្រឹមត្រូវ!</span>
+      </div>
 
       <form onsubmit="event.preventDefault(); app.handleAuthLogin();">
         <div class="auth-form-group">
@@ -1969,19 +2828,171 @@
 
         <div class="auth-form-group">
           <label class="auth-form-label" for="auth-login-password">លេខសម្ងាត់</label>
-          <div class="auth-input-wrapper">
+          <div class="auth-input-wrapper" style="position: relative;">
             <div class="auth-input-icon">
               <i data-lucide="lock"></i>
             </div>
-            <input type="password" class="auth-input-field" id="auth-login-password" placeholder="បញ្ចូលលេខសម្ងាត់ (Enter Password)" value="" autocomplete="current-password" style="width: 100%;">
+            <input type="password" class="auth-input-field" id="auth-login-password" placeholder="បញ្ចូលលេខសម្ងាត់ (Enter Password)" value="" autocomplete="current-password" style="width: 100%; padding-right: 42px;">
+            <button type="button" class="btn-toggle-pw-eye" onclick="settingsModalController.toggleInputPasswordVisibility('auth-login-password', this)" title="បង្ហាញ/លាក់ពាក្យសម្ងាត់" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%);">
+              <i data-lucide="eye"></i>
+            </button>
           </div>
         </div>
 
-        <button type="submit" class="btn-auth-primary">
+        <!-- Remember Password Tickbox (Point/Tick Option) -->
+        <div class="auth-remember-wrap">
+          <label class="auth-remember-label" for="auth-remember-password">
+            <input type="checkbox" id="auth-remember-password" class="auth-remember-input" onchange="app.handleRememberCheckboxChange(this.checked)">
+            <span class="auth-remember-box">
+              <i data-lucide="check" class="auth-remember-tick-icon"></i>
+            </span>
+            <span class="auth-remember-text">ចងចាំលេខសម្ងាត់</span>
+          </label>
+        </div>
+
+        <button type="button" class="btn-auth-primary" onclick="app.handleAuthLogin();" style="cursor: pointer;">
           <span>ចូលប្រព័ន្ធ</span>
           <span>➔</span>
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- ==================== EDIT USER & CHANGE PASSWORD MODAL ==================== -->
+  <div class="modal-backdrop" id="edit-user-modal">
+    <div class="userform-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <h2>
+          <i data-lucide="key-round" style="color: var(--primary);"></i>
+          <span id="edit-user-modal-title">កែប្រែព័ត៌មាន & ប្តូរលេខសម្ងាត់ (Change Password)</span>
+        </h2>
+        <button class="modal-close-btn" onclick="settingsModalController.closeEditUserModal()">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.25rem 1.5rem;">
+        <input type="hidden" id="edit-user-id">
+
+        <!-- Username (Readonly) -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 700; color: var(--text-secondary);">
+            <i data-lucide="user" style="width: 14px; height: 14px;"></i> ឈ្មោះគណនី (Username)
+          </label>
+          <input type="text" class="form-control" id="edit-user-username" readonly style="background: var(--bg-card-subtle); font-weight: 700; color: var(--primary);">
+        </div>
+
+        <!-- Full Name -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 700;">
+            <i data-lucide="badge-check" style="width: 14px; height: 14px;"></i> ឈ្មោះពេញ (Full Name) <span class="required-mark">*</span>
+          </label>
+          <input type="text" class="form-control" id="edit-user-fullname" placeholder="ឧទាហរណ៍៖ System Administrator">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.1fr 1.4fr; gap: 0.85rem; margin-bottom: 1rem;">
+          <!-- Role -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700;">
+              <i data-lucide="shield" style="width: 14px; height: 14px;"></i> សិទ្ធិ (Role)
+            </label>
+            <select class="form-control" id="edit-user-role">
+              <option value="ADMIN">Admin (Full Access)</option>
+              <option value="HR_MGR">HR Manager (HR Access)</option>
+              <option value="STAFF">Staff / Officer (Data Entry)</option>
+              <option value="VIEWER">Viewer (Read-Only)</option>
+            </select>
+          </div>
+
+          <!-- Department -->
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-weight: 700;">
+              <i data-lucide="building" style="width: 14px; height: 14px;"></i> អង្គភាព (Department)
+            </label>
+            <input type="text" class="form-control" id="edit-user-department" placeholder="ឧ. នាយកដ្ឋានបុគ្គលិក">
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div style="border-top: 1px dashed var(--border-color); margin: 1.25rem 0 1rem;"></div>
+
+        <div style="font-weight: 700; font-size: 0.88rem; color: var(--primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+          <span>កំណត់លេខសម្ងាត់ថ្មី (Change Password)</span>
+        </div>
+
+        <!-- Eye Peek Box for Current / Old Password -->
+        <div style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.65rem 0.85rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-muted);">លេខសម្ងាត់បច្ចុប្បន្ន (Current Password):</div>
+            <div id="edit-user-current-pw-val" data-pw="" data-masked="true" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.88rem; color: var(--primary); letter-spacing: 2px;">•••••••</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <button type="button" class="btn btn-sm btn-secondary" id="btn-peek-current-pw" onclick="settingsModalController.toggleCurrentPasswordPeek()" style="font-size: 0.72rem; padding: 3px 8px; display: inline-flex; align-items: center; gap: 0.25rem;" title="ចុចដើម្បីមើល ឬលាក់លេខសម្ងាត់ចាស់">
+              <i data-lucide="eye" id="icon-peek-current-pw" style="width: 13px; height: 13px;"></i>
+              <span id="text-peek-current-pw">មើលលេខសម្ងាត់ (Peek)</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary" onclick="settingsModalController.fillOldPasswordWithCurrent()" style="font-size: 0.72rem; padding: 3px 8px;" title="ចម្លងលេខសម្ងាត់ចាស់ចូលប្រអប់ដោយស្វ័យប្រវត្ត">
+              <span>ចម្លងចូល (Auto-fill)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. Old Password (Required to verify before changing) -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 700;">
+            <i data-lucide="key" style="width: 14px; height: 14px;"></i> ១. លេខសម្ងាត់ចាស់ (Current / Old Password)
+          </label>
+          <div style="position: relative;">
+            <input type="password" class="form-control" id="edit-user-old-password" placeholder="បញ្ចូលលេខសម្ងាត់ចាស់ដើម្បីផ្ទៀងផ្ទាត់..." autocomplete="current-password">
+            <button type="button" class="icon-btn" onclick="settingsModalController.togglePassVisibility('edit-user-old-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px;" title="បង្ហាញ / លាក់លេខសម្ងាត់">
+              <i data-lucide="eye"></i>
+            </button>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+            🔒 ត្រូវវាយបញ្ចូលលេខសម្ងាត់ចាស់ជាមុនសិន មុននឹងអាចកំណត់លេខសម្ងាត់ថ្មីបាន។
+          </div>
+          <div class="field-error-msg" id="err-edit-user-oldpass" style="display: none; color: #dc2626; font-size: 0.75rem; margin-top: 0.35rem; font-weight: 600;"></div>
+        </div>
+
+        <!-- 2. New Password -->
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label style="font-weight: 700;">
+            <i data-lucide="lock" style="width: 14px; height: 14px;"></i> ២. លេខសម្ងាត់ថ្មី (New Password)
+          </label>
+          <div style="position: relative;">
+            <input type="password" class="form-control" id="edit-user-new-password" placeholder="បញ្ចូលលេខសម្ងាត់ថ្មី..." autocomplete="new-password">
+            <button type="button" class="icon-btn" onclick="settingsModalController.togglePassVisibility('edit-user-new-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px;" title="បង្ហាញ / លាក់លេខសម្ងាត់">
+              <i data-lucide="eye"></i>
+            </button>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem;">
+            💡 ទុកប្រអប់លេខសម្ងាត់ចាស់ & ថ្មីឱ្យនៅទទេ ប្រសិនបើអ្នកមិនចង់ផ្លាស់ប្តូរលេខសម្ងាត់។
+          </div>
+        </div>
+
+        <!-- 3. Re-Confirm Password -->
+        <div class="form-group" style="margin-bottom: 0.5rem;" id="edit-user-confirm-group">
+          <label style="font-weight: 700;">
+            <i data-lucide="check-check" style="width: 14px; height: 14px;"></i> ៣. បញ្ជាក់លេខសម្ងាត់ថ្មីឡើងវិញ (Re-confirm New Password)
+          </label>
+          <div style="position: relative;">
+            <input type="password" class="form-control" id="edit-user-confirm-password" placeholder="វាយបញ្ចូលលេខសម្ងាត់ថ្មីម្តងទៀត..." autocomplete="new-password">
+            <button type="button" class="icon-btn" onclick="settingsModalController.togglePassVisibility('edit-user-confirm-password', this)" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px;" title="បង្ហាញ / លាក់លេខសម្ងាត់">
+              <i data-lucide="eye"></i>
+            </button>
+          </div>
+          <div class="field-error-msg" id="err-edit-user-confirm" style="display: none; color: #dc2626; font-size: 0.75rem; margin-top: 0.35rem; font-weight: 600;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content: flex-end; gap: 0.65rem;">
+        <button type="button" class="btn btn-secondary" onclick="settingsModalController.closeEditUserModal()">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-primary" onclick="settingsModalController.saveEditedUser()">
+          <i data-lucide="save"></i>
+          <span>រក្សាទុក (Save Password & Info)</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2209,31 +3220,513 @@ function doGet(e) {
     </div>
   </div>
 
-  <!-- ==================== MOBILE FLUID BOTTOM NAVIGATION DOCK ==================== -->
-  <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation">
-    <button class="mobile-nav-btn active" data-tab="dashboard" onclick="app.switchTab('dashboard')" id="mob-nav-dashboard">
-      <i data-lucide="layout-dashboard"></i>
-      <span>ផ្ទាំងសង្ខេប</span>
-    </button>
-    <button class="mobile-nav-btn" data-tab="database" onclick="app.switchTab('database')" id="mob-nav-database">
-      <i data-lucide="users"></i>
-      <span>បុគ្គលិក</span>
-    </button>
-    <button class="mobile-nav-btn mobile-nav-btn-center" onclick="userformController.openNew()" id="mob-btn-new-staff" title="ចុះឈ្មោះបុគ្គលិកថ្មី">
-      <div class="mobile-nav-plus-circle">
-        <i data-lucide="plus"></i>
+  <!-- ==================== SYSTEM ACTIONS WARNING CONFIRMATION MODAL ==================== -->
+  <div class="modal-backdrop" id="system-action-confirm-modal">
+    <div class="confirm-modal-dialog" style="max-width: 460px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1); padding: 1.5rem; text-align: center; position: relative;">
+      <button class="modal-close-btn" onclick="app.closeSystemActionConfirmModal()" style="position: absolute; right: 1rem; top: 1rem;">✕</button>
+      
+      <!-- Dynamic Icon Box -->
+      <div id="sys-action-modal-icon-box" style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0.5rem auto 1rem; background: rgba(245, 158, 11, 0.15); color: #d97706;">
+        <i data-lucide="alert-triangle" id="sys-action-modal-icon" style="width: 28px; height: 28px;"></i>
       </div>
-      <span>ចុះឈ្មោះ</span>
-    </button>
-    <button class="mobile-nav-btn" data-tab="documents" onclick="app.switchTab('documents')" id="mob-nav-documents">
-      <i data-lucide="file-check"></i>
-      <span>ឯកសារ</span>
-    </button>
-    <button class="mobile-nav-btn" onclick="app.toggleAdminDroplist(event)" id="mob-nav-profile">
-      <i data-lucide="user-circle"></i>
-      <span>គណនី</span>
-    </button>
-  </nav>
+
+      <!-- Title & Subtitle -->
+      <h3 id="sys-action-modal-title" style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; line-height: 1.35;">
+        ការព្រមានអំពីប្រតិបត្តិការប្រព័ន្ធ
+      </h3>
+      <div id="sys-action-modal-desc-kh" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
+        តើលោកអ្នកពិតជាចង់បន្តប្រតិបត្តិការនេះមែនទេ?
+      </div>
+      <div id="sys-action-modal-desc-en" style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 1.5rem;">
+        Are you sure you want to proceed with this system action?
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" onclick="app.closeSystemActionConfirmModal()" style="padding: 0.65rem 1rem; font-weight: 600;">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-primary" id="btn-sys-action-modal-proceed" onclick="app.executeConfirmedSystemAction()" style="padding: 0.65rem 1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+          <span id="sys-action-modal-proceed-text">បន្ត (Proceed)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PREMIUM CENTERED APP CONFIRMATION MODAL ==================== -->
+  <div class="modal-backdrop" id="app-confirmation-modal">
+    <div class="custom-confirm-dialog">
+      <!-- Animated / Glowing Icon Container -->
+      <div class="confirm-icon-wrapper warning" id="custom-confirm-icon-box">
+        <i data-lucide="help-circle" id="custom-confirm-icon"></i>
+      </div>
+
+      <!-- Header Title & Badges -->
+      <h3 class="confirm-modal-title" id="custom-confirm-title">
+        ការបញ្ជាក់ប្រតិបត្តិការ (Confirmation)
+      </h3>
+
+      <!-- Primary Khmer Message (Highlighted with bold / code styling) -->
+      <div class="confirm-modal-message-kh" id="custom-confirm-msg-kh">
+        តើលោកអ្នកពិតជាចង់អនុវត្តប្រតិបត្តិការនេះមែនទេ?
+      </div>
+
+      <!-- Secondary English / Hint Message -->
+      <div class="confirm-modal-message-en" id="custom-confirm-msg-en">
+        Please confirm if you want to proceed with this action.
+      </div>
+
+      <!-- Action Buttons Row -->
+      <div class="confirm-modal-actions">
+        <button type="button" class="btn btn-secondary btn-confirm-cancel" id="btn-custom-confirm-cancel" onclick="app.resolveCustomConfirm(false)">
+          <i data-lucide="x"></i>
+          <span id="custom-confirm-cancel-text">បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-confirm-proceed" id="btn-custom-confirm-proceed" onclick="app.resolveCustomConfirm(true)">
+          <i data-lucide="check" id="custom-confirm-proceed-icon"></i>
+          <span id="custom-confirm-proceed-text">យល់ព្រម (Proceed)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT LOGO SELECTOR & UPLOADER MODAL ==================== -->
+  <div class="modal-backdrop" id="report-logo-modal" style="display: none; z-index: 100050; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 520px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(79, 70, 229, 0.12); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="image"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">ជ្រើសរើស ឬប្តូររូប Logo របាយការណ៍</h3>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Change or Upload Official Report Emblem / Logo</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="reportsController.closeLogoModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem;">
+        <!-- Dropzone / File Picker -->
+        <div class="logo-dropzone" id="report-logo-dropzone" onclick="document.getElementById('report-logo-file-input').click()" style="border: 2px dashed #6366f1; border-radius: 12px; padding: 1.5rem 1rem; text-align: center; background: rgba(99, 102, 241, 0.04); cursor: pointer; transition: all 0.2s ease;">
+          <i data-lucide="upload-cloud" style="width: 38px; height: 38px; color: #6366f1; margin-bottom: 0.5rem;"></i>
+          <div style="font-weight: 700; font-size: 0.92rem; color: var(--text-primary);">ចុចត្រង់នេះដើម្បីជ្រើសរើសរូបភាព Logo (Click to Upload)</div>
+          <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 0.35rem;">គាំទ្រទម្រង់ PNG, JPG, JPEG, SVG, WebP (ក្រោម 8MB)</div>
+        </div>
+        <input type="file" id="report-logo-file-input" accept="image/*" style="display: none;" onchange="reportsController.handleLogoFileChange(event)">
+
+        <!-- Preset Government Logos Option -->
+        <div>
+          <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.45rem; display: block;">
+            🏛️ ជ្រើសរើស Logo ស្តង់ដាររដ្ឋបាល (Preset Official Seals):
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.selectPresetLogo('gdt_default')" style="font-size: 0.76rem; padding: 0.6rem 0.75rem; justify-content: flex-start; display: flex; align-items: center; gap: 0.4rem; font-weight: 700;">
+              <span>🔵 ត្រាពន្ធដារ (GDT Blue)</span>
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.selectPresetLogo('mef_gold')" style="font-size: 0.76rem; padding: 0.6rem 0.75rem; justify-content: flex-start; display: flex; align-items: center; gap: 0.4rem; font-weight: 700;">
+              <span>🟡 ត្រាសេដ្ឋកិច្ច (MEF Gold)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Logo Size & Vertical Position Sliders -->
+        <div style="background: var(--bg-card-subtle, rgba(0,0,0,0.02)); padding: 0.85rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-logo-size-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              ទំហំ Logo (Logo Size): <span id="report-logo-size-val" style="color: var(--primary);">76px</span>
+            </label>
+            <input type="range" id="report-logo-size-range" min="40" max="130" value="76" style="width: 140px; cursor: pointer;" oninput="reportsController.setLogoSize(this.value)">
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-logo-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិល Logo ឡើងលើ/ចុះក្រោម (Up/Down Y-Offset): <span id="report-logo-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-logo-offset-y-range" min="-40" max="40" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setLogoOffsetY(this.value)">
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div style="display: flex; align-items: center; justify-content: center; padding: 1.15rem; background: var(--bg-card-subtle, rgba(0,0,0,0.02)); border-radius: 10px; border: 1px solid var(--border-color);">
+          <div id="report-logo-modal-preview-target" style="display: flex; flex-direction: column; align-items: center; gap: 0.45rem;">
+            <!-- Live Preview of Current Logo -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.resetLogo()" style="font-weight: 700;">
+          <i data-lucide="rotate-ccw"></i>
+          <span>ប្រើ Logo ដើម</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="reportsController.closeLogoModal()" style="font-weight: 700; padding: 0.5rem 1.25rem;">
+          <i data-lucide="check"></i>
+          <span>រួចរាល់ (Done)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT KINGDOM DIVIDER CUSTOMIZER MODAL ==================== -->
+  <div class="modal-backdrop" id="report-divider-modal" style="display: none; z-index: 100050; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 540px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(79, 70, 229, 0.12); color: var(--primary); display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">កែប្រែ ឬប្តូរម៉ូតបន្ទាត់ក្បាច់របាយការណ៍</h3>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Customize Kingdom Motto Divider Shape & Color</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="reportsController.closeDividerModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.15rem;">
+        <!-- Preset Divider Styles Grid -->
+        <div>
+          <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.6rem; display: block;">
+            ⚜️ ជ្រើសរើសម៉ូតបន្ទាត់ក្បាច់ផ្លូវការ (Select Divider Style):
+          </label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.65rem;">
+            <!-- Style 1: Ribbon Gold -->
+            <div class="divider-preset-card" data-style="ribbon_gold" onclick="reportsController.setDividerStyle('ribbon_gold')">
+              <div class="preset-preview">
+                <svg width="100" height="12" viewBox="0 0 130 12">
+                  <path d="M5 6 Q 65 -1 125 6 Q 65 13 5 6 Z" fill="#003366" />
+                  <circle cx="65" cy="6" r="3" fill="#b8860b" />
+                </svg>
+              </div>
+              <span class="preset-label">ក្បាច់កោងកណ្តាលគ្រាប់មាស</span>
+            </div>
+
+            <!-- Style 2: Wave Ornament -->
+            <div class="divider-preset-card" data-style="wave_ornament" onclick="reportsController.setDividerStyle('wave_ornament')">
+              <div class="preset-preview">
+                <svg width="100" height="12" viewBox="0 0 130 12">
+                  <path d="M10 6 C 30 1, 40 11, 60 6 C 70 3, 70 9, 80 6 C 100 1, 110 11, 120 6" stroke="#003366" stroke-width="1.8" fill="none" />
+                  <polygon points="65,2 69,6 65,10 61,6" fill="#b8860b" />
+                </svg>
+              </div>
+              <span class="preset-label">បន្ទាត់រលកក្បាច់ខ្មែរ</span>
+            </div>
+
+            <!-- Style 3: Double Line -->
+            <div class="divider-preset-card" data-style="double_line" onclick="reportsController.setDividerStyle('double_line')">
+              <div class="preset-preview">
+                <svg width="100" height="12" viewBox="0 0 130 12">
+                  <line x1="10" y1="4" x2="120" y2="4" stroke="#003366" stroke-width="1.5" />
+                  <line x1="25" y1="8" x2="105" y2="8" stroke="#003366" stroke-width="1" />
+                  <circle cx="65" cy="4" r="2.5" fill="#b8860b" />
+                </svg>
+              </div>
+              <span class="preset-label">បន្ទាត់ភ្លោះស្តង់ដារ</span>
+            </div>
+
+            <!-- Style 4: Lotus Floral -->
+            <div class="divider-preset-card" data-style="lotus_floral" onclick="reportsController.setDividerStyle('lotus_floral')">
+              <div class="preset-preview">
+                <svg width="100" height="14" viewBox="0 0 130 14">
+                  <path d="M15 7 L54 7 M76 7 L115 7" stroke="#003366" stroke-width="1.5" />
+                  <path d="M65 1 C62 5, 58 7, 65 12 C72 7, 68 5, 65 1 Z" fill="#b8860b" />
+                </svg>
+              </div>
+              <span class="preset-label">ក្បាច់ផ្កាឈូករដ្ឋបាល</span>
+            </div>
+
+            <!-- Style 5: Sleek Taper -->
+            <div class="divider-preset-card" data-style="sleek_taper" onclick="reportsController.setDividerStyle('sleek_taper')">
+              <div class="preset-preview">
+                <svg width="100" height="8" viewBox="0 0 130 8">
+                  <polygon points="10,4 65,1 120,4 65,7" fill="#003366" />
+                </svg>
+              </div>
+              <span class="preset-label">បន្ទាត់ស្រួចសងខាង</span>
+            </div>
+
+            <!-- Style 7: Royal Calligraphic Filigree (Official Ornate Calligraphy) -->
+            <div class="divider-preset-card" data-style="royal_filigree" onclick="reportsController.setDividerStyle('royal_filigree')">
+              <div class="preset-preview" style="height: 24px; display: flex; align-items: center; justify-content: center;">
+                <img src="img/divider-royal-filigree.png" alt="Royal Filigree" style="max-width: 105px; max-height: 15px; object-fit: contain;">
+              </div>
+              <span class="preset-label">ក្បាច់រាជការបុរាណ (Royal Filigree)</span>
+            </div>
+
+            <!-- Style 6: None -->
+            <div class="divider-preset-card" data-style="none" onclick="reportsController.setDividerStyle('none')">
+              <div class="preset-preview">
+                <span style="font-size: 0.76rem; color: #94a3b8;">(លាក់បន្ទាត់)</span>
+              </div>
+              <span class="preset-label">គ្មានបន្ទាត់ (None)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Divider Upload Dropzone -->
+        <div style="border: 1px dashed var(--border-color); border-radius: 10px; padding: 0.75rem 1rem; background: var(--bg-card-subtle, rgba(0,0,0,0.02));">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); display: block;">📤 ផ្ទុកឡើងរូបភាពបន្ទាត់ក្បាច់ផ្ទាល់ខ្លួន (Custom Image)</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">ទ្រទ្រង់រូបភាព PNG, SVG, JPG តូចៗ</span>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('report-divider-file-input').click()" style="font-weight: 700; font-size: 0.74rem;">
+              <i data-lucide="upload"></i> ជ្រើសរើសរូបភាព
+            </button>
+            <input type="file" id="report-divider-file-input" accept="image/*" style="display: none;" onchange="reportsController.handleDividerFileUpload(event)">
+          </div>
+        </div>
+
+        <!-- Controls: Alignment, Offset, Width & Colors -->
+        <div style="background: var(--bg-card-subtle, rgba(0,0,0,0.02)); padding: 1rem; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.85rem;">
+          <!-- Alignment Buttons (Left / Center / Right) -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              តម្រឹមក្បាលលិខិត & បន្ទាត់ (Alignment):
+            </label>
+            <div style="display: flex; gap: 0.35rem;">
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-divider-align-left" onclick="reportsController.setDividerAlign('left')" title="តម្រឹមទៅខាងឆ្វេង (Left)" style="font-weight: 700; font-size: 0.72rem; padding: 3px 8px;">
+                ⬅️ ឆ្វេង
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-divider-align-center" onclick="reportsController.setDividerAlign('center')" title="តម្រឹមទៅកណ្តាល (Center)" style="font-weight: 700; font-size: 0.72rem; padding: 3px 8px;">
+                ⏺️ កណ្តាល
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btn-divider-align-right" onclick="reportsController.setDividerAlign('right')" title="តម្រឹមទៅខាងស្តាំ (Right)" style="font-weight: 700; font-size: 0.72rem; padding: 3px 8px;">
+                ➡️ ស្តាំ
+              </button>
+            </div>
+          </div>
+
+          <!-- Ministry Header (Left) Position Offset X Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-header-left-offset-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលក្បាលស្ថាប័ន ឆ្វេង/ស្តាំ (Left Header X): <span id="report-header-left-offset-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-header-left-offset-range" min="-120" max="120" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setHeaderLeftOffsetX(this.value)">
+          </div>
+
+          <!-- Ministry Header (Left) Position Offset Y Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-header-left-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលក្បាលស្ថាប័ន លើ/ក្រោម (Left Header Y): <span id="report-header-left-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-header-left-offset-y-range" min="-50" max="50" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setHeaderLeftOffsetY(this.value)">
+          </div>
+
+          <!-- Kingdom Title & Motto Position Offset X Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-kingdom-offset-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលពាក្យស្លោក ឆ្វេង/ស្តាំ (X-Offset): <span id="report-kingdom-offset-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-kingdom-offset-range" min="-120" max="120" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setKingdomOffsetX(this.value)">
+          </div>
+
+          <!-- Kingdom Title & Motto Position Offset Y Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-kingdom-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលពាក្យស្លោក លើ/ក្រោម (Y-Offset): <span id="report-kingdom-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-kingdom-offset-y-range" min="-50" max="50" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setKingdomOffsetY(this.value)">
+          </div>
+
+          <!-- Divider Position Offset X Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-divider-offset-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលបន្ទាត់ក្បាច់ ឆ្វេង/ស្តាំ (Line X): <span id="report-divider-offset-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-divider-offset-range" min="-100" max="100" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setDividerOffsetX(this.value)">
+          </div>
+
+          <!-- Divider Position Offset Y Slider (Up / Down) -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-divider-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលបន្ទាត់ក្បាច់ លើ/ក្រោម (Line Y): <span id="report-divider-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-divider-offset-y-range" min="-40" max="40" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setDividerOffsetY(this.value)">
+          </div>
+
+          <!-- Signature Block Position Offset X Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-sig-offset-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលហត្ថលេខា ឆ្វេង/ស្តាំ (Sig X): <span id="report-sig-offset-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-sig-offset-range" min="-120" max="120" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setSigOffsetX(this.value)">
+          </div>
+
+          <!-- Signature Block Position Offset Y Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-sig-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលហត្ថលេខា លើ/ក្រោម (Sig Y): <span id="report-sig-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-sig-offset-y-range" min="-60" max="60" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setSigOffsetY(this.value)">
+          </div>
+
+          <!-- Page Number Position Offset X Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-page-num-offset-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលលេខទំព័រ ឆ្វេង/ស្តាំ (Page X): <span id="report-page-num-offset-x-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-page-num-offset-range" min="-150" max="150" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setPageNumberOffsetX(this.value)">
+          </div>
+
+          <!-- Page Number Position Offset Y Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-page-num-offset-y-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              រំកិលលេខទំព័រ លើ/ក្រោម (Page Y): <span id="report-page-num-offset-y-val" style="color: var(--primary);">0px</span>
+            </label>
+            <input type="range" id="report-page-num-offset-y-range" min="-50" max="50" value="0" style="width: 140px; cursor: pointer;" oninput="reportsController.setPageNumberOffsetY(this.value)">
+          </div>
+
+          <!-- Width Slider -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="report-divider-width-range" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">
+              ប្រវែងបន្ទាត់ (Divider Width): <span id="report-divider-width-val" style="color: var(--primary);">140px</span>
+            </label>
+            <input type="range" id="report-divider-width-range" min="80" max="260" value="140" style="width: 140px; cursor: pointer;" oninput="reportsController.setDividerWidth(this.value)">
+          </div>
+
+          <!-- Color Pickers -->
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary);">ពណ៌បន្ទាត់ (Line & Accent Colors):</span>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <label style="font-size: 0.74rem; display: flex; align-items: center; gap: 0.25rem;">
+                <span>បន្ទាត់:</span>
+                <input type="color" id="report-divider-color-primary" value="#003366" style="width: 28px; height: 26px; border: none; border-radius: 4px; cursor: pointer;" onchange="reportsController.setDividerColors(this.value, null)">
+              </label>
+              <label style="font-size: 0.74rem; display: flex; align-items: center; gap: 0.25rem;">
+                <span>ក្បាច់មាស:</span>
+                <input type="color" id="report-divider-color-accent" value="#b8860b" style="width: 28px; height: 26px; border: none; border-radius: 4px; cursor: pointer;" onchange="reportsController.setDividerColors(null, this.value)">
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.resetDivider()" style="font-weight: 700;">
+          <i data-lucide="rotate-ccw"></i>
+          <span>ប្រើម៉ូតដើម</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="reportsController.closeDividerModal()" style="font-weight: 700; padding: 0.5rem 1.25rem;">
+          <i data-lucide="check"></i>
+          <span>រួចរាល់ (Done)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT EXCEL EXPORT CONFIRMATION MODAL ==================== -->
+  <div class="modal-backdrop" id="report-excel-confirm-modal" style="display: none; z-index: 100050; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 480px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(16, 185, 129, 0.12); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="file-spreadsheet"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">បញ្ជាក់ការនាំចេញរបាយការណ៍ជា Excel</h3>
+            <span style="font-size: 0.76rem; color: var(--text-muted);">Export Official Report as Excel Worksheet</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="reportsController.closeExcelConfirmModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.5;">
+          តើលោកអ្នកពិតជាចង់ទាញយកឯកសាររបាយការណ៍ផ្លូវការជា Excel ដោយរក្សាទម្រង់ក្បាលលិខិត តារាង និងហត្ថលេខាពេញលេញដូចលើអេក្រង់មែនទេ?
+        </div>
+
+        <div style="background: var(--bg-card-subtle, rgba(0,0,0,0.02)); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.45rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">មូលហេតុនៃសំណើ:</span>
+            <strong id="excel-confirm-reason-val" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">អង្គភាព/នាយកដ្ឋាន:</span>
+            <strong id="excel-confirm-dept-val" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">ប្រចាំឆ្នាំ / កាលបរិច្ឆេទ:</span>
+            <strong id="excel-confirm-year-val" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px dashed var(--border-color); padding-top: 0.45rem; margin-top: 0.2rem;">
+            <span style="color: var(--text-muted);">ទិន្នន័យសរុប (Total Records):</span>
+            <strong id="excel-confirm-count-val" style="color: #10b981;">0 នាក់</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; gap: 0.65rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.closeExcelConfirmModal()" style="font-weight: 700; padding: 0.5rem 1rem;">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-success btn-sm" onclick="reportsController.executeFullExcelExport()" style="font-weight: 700; padding: 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i data-lucide="download"></i>
+          <span>📥 ទាញយកជា Excel ផ្លូវការ</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== REPORT ADMIN PERMISSION VERIFICATION MODAL ==================== -->
+  <div class="modal-backdrop" id="report-admin-permission-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 440px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(239, 68, 68, 0.04);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(239, 68, 68, 0.12); color: #ef4444; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="shield-alert"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);" id="report-admin-perm-title">ផ្ទៀងផ្ទាត់សិទ្ធិអ្នកគ្រប់គ្រង (Admin Permission)</h3>
+            <span style="font-size: 0.74rem; color: var(--text-muted);" id="report-admin-perm-subtitle">បញ្ចូលពាក្យសម្ងាត់ Admin ដើម្បីអនុញ្ញាត</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="reportsController.closeAdminPermissionModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <form onsubmit="event.preventDefault(); reportsController.submitAdminPermission();" style="margin: 0;">
+        <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <div id="report-admin-perm-message" style="font-size: 0.84rem; color: var(--text-primary); line-height: 1.5; background: var(--bg-card-subtle, rgba(0,0,0,0.02)); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border-color);">
+            ⚠️ ការកំណត់ទៅលំនាំដើមវិញ (Reset to Default) នឹងលុបការកែប្រែទម្រង់តារាង ទំហំអក្សរ ហត្ថលេខា និង Logo ទាំងអស់។
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="report-admin-perm-password-input" style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem; display: block;">
+              🔑 ពាក្យសម្ងាត់ Admin (Admin Password):
+            </label>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="report-admin-perm-password-input" class="form-control" placeholder="បញ្ចូលពាក្យសម្ងាត់ Admin..." style="width: 100%; padding: 0.6rem 2.5rem 0.6rem 0.85rem; font-size: 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);" required autofocus autocomplete="current-password">
+              <button type="button" onclick="reportsController.toggleAdminPasswordVisibility()" style="position: absolute; right: 8px; border: none; background: transparent; cursor: pointer; color: var(--text-muted); padding: 4px;" title="បង្ហាញ/លាក់ពាក្យសម្ងាត់">
+                <i data-lucide="eye" id="report-admin-perm-eye-icon" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            <div id="report-admin-perm-error" style="display: none; color: #ef4444; font-size: 0.76rem; font-weight: 700; margin-top: 0.35rem;">
+              ❌ ពាក្យសម្ងាត់ Admin មិនត្រឹមត្រូវឡើយ! សូមព្យាយាមម្តងទៀត។
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; gap: 0.65rem;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="reportsController.closeAdminPermissionModal()" style="font-weight: 700; padding: 0.5rem 1rem;">
+            <span>បោះបង់ (Cancel)</span>
+          </button>
+          <button type="submit" class="btn btn-danger btn-sm" style="font-weight: 700; padding: 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="lock"></i>
+            <span id="report-admin-perm-submit-btn-text">បញ្ជាក់ & កំណត់ដើម (Confirm Reset)</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
@@ -2251,6 +3744,8 @@ function doGet(e) {
   <script src="js/dashboard.js"></script>
   <script src="js/userform.js"></script>
   <script src="js/multi-filter.js"></script>
+  <script src="js/reports.js"></script>
+  <script src="js/persistent-filters.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -15,9 +15,9 @@ const DEFAULT_MASTER_FIELDS = [
   { key: 'gender', kh: 'ភេទ', en: 'Gender', index: 9, type: 'select', required: true, align: 'center', desc: 'ភេទ' },
   { key: 'dob', kh: 'ថ្ងៃខែឆ្នាំកំណើត', en: 'Date of Birth', index: 10, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃខែឆ្នាំកំណើត' },
   { key: 'serviceStartDate', kh: 'ថ្ងៃខែឆ្នាំបម្រើការងារ', en: 'Service Start Date', index: 11, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃចូលបម្រើការងារ' },
-  { key: 'requestDate', kh: 'ថ្ងៃខែឆ្នាំស្នើសុំ', en: 'Request Date', index: 12, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃដាក់ពាក្យស្នើសុំ' },
-  { key: 'endDate', kh: 'ថ្ងៃខែឆ្នាំបញ្ចប់', en: 'End Date', index: 13, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃបញ្ចប់សុពលភាព' },
-  { key: 'startDate', kh: 'ថ្ងៃខែឆ្នាំចាប់ផ្តើម', en: 'Start Date', index: 14, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃចាប់ផ្តើមអនុវត្ត' },
+  { key: 'requestDate', kh: 'ថ្ងៃស្នើសុំ', en: 'Request Date', index: 12, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃដាក់ពាក្យស្នើសុំ' },
+  { key: 'endDate', kh: 'ថ្ងៃបញ្ចប់', en: 'End Date', index: 13, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃបញ្ចប់សុពលភាព' },
+  { key: 'startDate', kh: 'ថ្ងៃចាប់ផ្តើម', en: 'Start Date', index: 14, type: 'date', required: false, align: 'left', desc: 'ថ្ងៃចាប់ផ្តើមអនុវត្ត' },
   { key: 'annualPeriod', kh: 'ប្រចាំឆ្នាំ', en: 'Annual Period', index: 15, type: 'select', required: false, align: 'center', desc: 'ឆ្នាំអនុវត្ត' },
   { key: 'requestReason', kh: 'មូលហេតុនៃសំណើ', en: 'Reason for Request', index: 16, type: 'select', required: false, align: 'left', desc: 'មូលហេតុស្នើសុំ' },
   { key: 'prakasNo', kh: 'ប្រកាសលេខ', en: 'Prakas No.', index: 17, type: 'text', required: false, align: 'left', desc: 'លេខប្រកាស ឬសេចក្តីសម្រេច' },
@@ -71,7 +71,10 @@ const DEFAULT_SETTINGS = {
     'ជំនួយការការិយាល័យ'
   ],
   genders: ['ប្រុស', 'ស្រី'],
-  annualPeriods: ['2023', '2024', '2025', '2026', '2027'],
+  annualPeriods: [
+    '2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019',
+    '2020', '2021', '2022', '2023', '2024', '2025', '2026', '2027', '2028', '2029', '2030'
+  ],
   requestReasons: [
     'ស្នើសុំផ្ទេរភារកិច្ច',
     'ស្នើសុំតម្លើងឋានន្តរស័ក្តិ',
@@ -118,6 +121,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'នាយកដ្ឋានបច្ចេកវិទ្យាព័ត៌មាន',
     office: 'ការិយាល័យអភិវឌ្ឍន៍ប្រព័ន្ធ',
     position: 'ប្រធានការិយាល័យ',
+    staffType: 'មន្ត្រីក្របខណ្ឌ (Civil Servant)',
     gender: 'ប្រុស',
     dob: '1988-05-14',
     serviceStartDate: '2012-03-01',
@@ -133,8 +137,9 @@ const SAMPLE_STAFF_DATA = [
     receivedDate: '2026-01-20',
     remark: 'ទិន្នន័យពេញលេញ និងមានសុពលភាព',
     attachments: [
-      { id: 'att-101', name: 'Prakas_542_MEF_Signed.pdf', size: '345 KB', type: 'application/pdf', uploadDate: '2026-01-20 14:30' },
-      { id: 'att-102', name: 'Letter_089_Ref_Doc.pdf', size: '180 KB', type: 'application/pdf', uploadDate: '2026-01-20 14:32' }
+      { id: 'att-101', name: 'Prakas_542_MEF_Signed.pdf', locationPath: 'D:\\GDT_Documents\\Staff_2026\\Prakas_542_MEF_Signed.pdf', size: '345 KB', type: 'application/pdf', uploadDate: '2026-01-20 14:30' },
+      { id: 'att-102', name: 'Letter_089_Ref_Doc.pdf', locationPath: 'D:\\GDT_Documents\\Staff_2026\\Letter_089_Ref_Doc.pdf', size: '180 KB', type: 'application/pdf', uploadDate: '2026-01-20 14:32' },
+      { id: 'att-103', isCode: true, type: 'code', code: 'MXC0231536', name: 'MXC0231536', title: 'លិខិតផ្ទេរភារកិច្ចអនឡាញ (Online Doc)', size: 'Text / Code', uploadDate: '2026-01-20 14:35' }
     ],
     metadata: {
       createdAt: '2026-01-10 09:15',
@@ -157,6 +162,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'នាយកដ្ឋានបុគ្គលិក និងការបណ្តុះបណ្តាល',
     office: 'ការិយាល័យគ្រប់គ្រងបុគ្គលិក',
     position: 'អនុប្រធានការិយាល័យ',
+    staffType: 'មន្ត្រីក្របខណ្ឌ (Civil Servant)',
     gender: 'ស្រី',
     dob: '1992-09-22',
     serviceStartDate: '2015-07-15',
@@ -195,6 +201,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'នាយកដ្ឋានរដ្ឋបាល និងកិច្ចការទូទៅ',
     office: 'ការិយាល័យរដ្ឋបាល',
     position: 'មន្ត្រីជំនាញ',
+    staffType: 'មន្ត្រីក្របខណ្ឌ (Civil Servant)',
     gender: 'ប្រុស',
     dob: '1995-11-03',
     serviceStartDate: '2019-10-01',
@@ -233,6 +240,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'សាខាពន្ធដារខេត្តសៀមរាប',
     office: 'ការិយាល័យសេវាអ្នកជាប់ពន្ធ',
     position: 'មន្ត្រីបច្ចេកទេស',
+    staffType: 'មន្ត្រីជាប់កិច្ចសន្យា (Contract Staff)',
     gender: 'ប្រុស',
     dob: '1990-04-18',
     serviceStartDate: '2016-01-10',
@@ -268,6 +276,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'នាយកដ្ឋានសវនកម្មផ្ទៃក្នុង',
     office: 'ការិយាល័យសវនកម្ម',
     position: 'អនុប្រធាននាយកដ្ឋាន',
+    staffType: 'មន្ត្រីក្របខណ្ឌ (Civil Servant)',
     gender: 'ស្រី',
     dob: '1984-12-08',
     serviceStartDate: '2008-05-15',
@@ -305,6 +314,7 @@ const SAMPLE_STAFF_DATA = [
     department: 'នាយកដ្ឋានច្បាប់ និងវិវាទ',
     office: 'ការិយាល័យរដ្ឋបាល',
     position: 'មន្ត្រីរដ្ឋបាល',
+    staffType: 'មន្ត្រីកម្មសិក្សា (Intern / Probationary)',
     gender: 'ស្រី',
     dob: '1998-07-29',
     serviceStartDate: '2022-09-01',
@@ -377,6 +387,24 @@ class DataStore {
               }
             }
           });
+
+          // Normalize Staff IDs to 4 digits (e.g. 160 -> 0160)
+          if (StatusCalculator.format4DigitId) {
+            if (r.staffId) {
+              const formatted = StatusCalculator.format4DigitId(r.staffId);
+              if (formatted !== r.staffId) {
+                r.staffId = formatted;
+                modified = true;
+              }
+            }
+            if (r.secondaryId) {
+              const formatted = StatusCalculator.format4DigitId(r.secondaryId);
+              if (formatted !== r.secondaryId) {
+                r.secondaryId = formatted;
+                modified = true;
+              }
+            }
+          }
         }
       });
       if (modified) {
@@ -400,6 +428,12 @@ class DataStore {
     try {
       const stored = JSON.parse(localStorage.getItem(this.STORAGE_KEY_HEADERS));
       if (Array.isArray(stored) && stored.length === 22) {
+        const reqF = stored.find(f => f.key === 'requestDate');
+        if (reqF) { reqF.kh = 'ថ្ងៃស្នើសុំ'; reqF.en = 'Request Date'; }
+        const endF = stored.find(f => f.key === 'endDate');
+        if (endF) { endF.kh = 'ថ្ងៃបញ្ចប់'; endF.en = 'End Date'; }
+        const startF = stored.find(f => f.key === 'startDate');
+        if (startF) { startF.kh = 'ថ្ងៃចាប់ផ្តើម'; startF.en = 'Start Date'; }
         MASTER_FIELDS = stored;
       } else {
         MASTER_FIELDS = [...DEFAULT_MASTER_FIELDS];
@@ -468,6 +502,16 @@ class DataStore {
             if (item.gender) item.gender = StatusCalculator.normalizeGender(item.gender);
           });
         }
+        if (StatusCalculator.format4DigitId) {
+          data.forEach(item => {
+            if (item.staffId !== undefined && item.staffId !== null && item.staffId !== '') {
+              item.staffId = StatusCalculator.format4DigitId(item.staffId);
+            }
+            if (item.secondaryId !== undefined && item.secondaryId !== null && item.secondaryId !== '') {
+              item.secondaryId = StatusCalculator.format4DigitId(item.secondaryId);
+            }
+          });
+        }
       }
       return data;
     } catch (e) {
@@ -483,6 +527,16 @@ class DataStore {
       if (StatusCalculator.normalizeGender) {
         data.forEach(item => {
           if (item.gender) item.gender = StatusCalculator.normalizeGender(item.gender);
+        });
+      }
+      if (StatusCalculator.format4DigitId) {
+        data.forEach(item => {
+          if (item.staffId !== undefined && item.staffId !== null && item.staffId !== '') {
+            item.staffId = StatusCalculator.format4DigitId(item.staffId);
+          }
+          if (item.secondaryId !== undefined && item.secondaryId !== null && item.secondaryId !== '') {
+            item.secondaryId = StatusCalculator.format4DigitId(item.secondaryId);
+          }
         });
       }
     }
@@ -517,6 +571,20 @@ class DataStore {
         }
       });
 
+      // Always ensure annualPeriods is de-duplicated and sorted numerically ascending
+      if (Array.isArray(settings.annualPeriods)) {
+        const sorted = [...new Set(settings.annualPeriods.map(y => String(y).trim()).filter(Boolean))].sort((a, b) => {
+          const numA = parseInt(a, 10);
+          const numB = parseInt(b, 10);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return String(a).localeCompare(String(b));
+        });
+        if (JSON.stringify(sorted) !== JSON.stringify(settings.annualPeriods)) {
+          settings.annualPeriods = sorted;
+          modified = true;
+        }
+      }
+
       // Ensure requestReasonRules exist
       if (!settings.requestReasonRules || typeof settings.requestReasonRules !== 'object') {
         settings.requestReasonRules = { ...DEFAULT_SETTINGS.requestReasonRules };
@@ -534,6 +602,14 @@ class DataStore {
   }
 
   saveSettings(settings) {
+    if (settings && Array.isArray(settings.annualPeriods)) {
+      settings.annualPeriods = [...new Set(settings.annualPeriods.map(y => String(y).trim()).filter(Boolean))].sort((a, b) => {
+        const numA = parseInt(a, 10);
+        const numB = parseInt(b, 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return String(a).localeCompare(String(b));
+      });
+    }
     localStorage.setItem(this.STORAGE_KEY_SETTINGS, JSON.stringify(settings));
   }
 

@@ -94,6 +94,11 @@ class UserFormController {
     const secondaryIdInput = document.getElementById('uf-secondaryId');
 
     const performStaffVlookup = (searchVal, isSecondary = false) => {
+      const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+      if (role.id === 'VIEWER' || !role.canEdit) {
+        return; // Viewer cannot edit or trigger VLOOKUP modifications
+      }
+
       const q = (searchVal || '').trim().toLowerCase();
       const badge = document.getElementById('uf-vlookup-badge');
       const sec1Card = document.getElementById('uf-sec1-card');
@@ -224,6 +229,11 @@ class UserFormController {
         performStaffVlookup(e.target.value, false);
       });
       staffIdInput.addEventListener('change', (e) => performStaffVlookup(e.target.value, false));
+      staffIdInput.addEventListener('blur', (e) => {
+        if (e.target.value && typeof StatusCalculator !== 'undefined') {
+          e.target.value = StatusCalculator.format4DigitId(e.target.value);
+        }
+      });
     }
 
     if (secondaryIdInput) {
@@ -234,6 +244,11 @@ class UserFormController {
         performStaffVlookup(e.target.value, true);
       });
       secondaryIdInput.addEventListener('change', (e) => performStaffVlookup(e.target.value, true));
+      secondaryIdInput.addEventListener('blur', (e) => {
+        if (e.target.value && typeof StatusCalculator !== 'undefined') {
+          e.target.value = StatusCalculator.format4DigitId(e.target.value);
+        }
+      });
     }
 
     // Dynamic date calculations on change
@@ -263,15 +278,29 @@ class UserFormController {
         const val = e.target.value;
         const closingDateInput = document.getElementById('uf-systemClosingDate');
 
-        // If user selects 'closed', auto-fill today's closing date if empty
+        // If user selects 'closed', auto-fill today's closing date if empty and set remark to 'Inactive'
         if (val === 'closed') {
           if (closingDateInput && !closingDateInput.value) {
             closingDateInput.value = new Date().toISOString().slice(0, 10);
           }
-        } else if (val === 'active' || val === 'AUTO') {
-          // If user switches away from closed, clear closing date so it unlocks completely
+          const remarkInput = document.getElementById('uf-remark');
+          const remarkSelect = document.getElementById('uf-remark-select');
+          if (remarkInput) remarkInput.value = 'Inactive';
+          if (remarkSelect) remarkSelect.value = 'Inactive';
+        } else {
+          // If user switches away from closed (e.g. active, AUTO, pending...), clear closing date so it unlocks completely
           if (closingDateInput && closingDateInput.value) {
             closingDateInput.value = '';
+          }
+          const remarkInput = document.getElementById('uf-remark');
+          const remarkSelect = document.getElementById('uf-remark-select');
+          if (val === 'active') {
+            if (remarkInput && (!remarkInput.value || remarkInput.value.toLowerCase().includes('inactive'))) {
+              remarkInput.value = 'Active';
+            }
+            if (remarkSelect && (!remarkSelect.value || remarkSelect.value.toLowerCase().includes('inactive'))) {
+              remarkSelect.value = 'Active';
+            }
           }
         }
 
@@ -285,6 +314,10 @@ class UserFormController {
         }
 
         this.updateFormLockState();
+
+        if (typeof app !== 'undefined' && val === 'active') {
+          app.showToast('🟢 បានប្តូរស្ថានភាពទៅជា «កំពុងដំណើរការ (Active)» និងបើកសិទ្ធិកែប្រែ!', 'success');
+        }
       });
     }
 
@@ -428,18 +461,28 @@ class UserFormController {
   }
 
   /**
-   * Lock/Unlock form inputs when status is 'closed' or role is 'VIEWER'
-   */
+    * Lock/Unlock form inputs when status is 'closed' or role is 'VIEWER'
+    */
   updateFormLockState() {
     const statusSelect = document.getElementById('uf-customStatus');
     const statusVal = statusSelect ? statusSelect.value : 'AUTO';
-    const fakeRec = this.getFormData();
-    fakeRec.customStatus = statusVal;
-    const calcStatus = StatusCalculator.calculateStatus(fakeRec);
 
     const role = UserControl.getCurrentRole();
     const isViewer = role.id === 'VIEWER';
-    const isClosed = statusVal === 'closed' || (statusVal === 'AUTO' && calcStatus.key === 'closed');
+
+    let isClosed = false;
+    if (statusVal === 'closed') {
+      isClosed = true;
+    } else if (['active', 'pending', 'completed', 'expired', 'missing'].includes(statusVal)) {
+      isClosed = false;
+    } else {
+      // AUTO calculation
+      const fakeRec = this.getFormData();
+      fakeRec.customStatus = 'AUTO';
+      const calcStatus = StatusCalculator.calculateStatus(fakeRec);
+      isClosed = calcStatus.key === 'closed';
+    }
+
     const isLocked = isClosed || isViewer;
 
     const banner = document.getElementById('uf-locked-banner');
@@ -483,7 +526,7 @@ class UserFormController {
     const inputIds = [
       'uf-staffId', 'uf-secondaryId', 'uf-latinName', 'uf-khmerName',
       'uf-dob', 'uf-serviceStartDate', 'uf-gender',
-      'uf-department', 'uf-office', 'uf-position',
+      'uf-department', 'uf-office', 'uf-position', 'uf-staffType',
       'uf-requestDate', 'uf-startDate', 'uf-endDate', 'uf-annualPeriod',
       'uf-requestReason', 'uf-prakasNo', 'uf-refDocument', 'uf-receivedDate',
       'uf-systemClosingDate', 'uf-description', 'uf-remark', 'uf-remark-select'
@@ -504,6 +547,9 @@ class UserFormController {
     if (statusSelect && isViewer) {
       statusSelect.disabled = true;
       statusSelect.classList.add('input-locked-readonly');
+    } else if (statusSelect) {
+      statusSelect.disabled = false;
+      statusSelect.classList.remove('input-locked-readonly');
     }
 
     // Dropzone lock
@@ -514,19 +560,118 @@ class UserFormController {
       dropzone.style.display = isViewer ? 'none' : '';
     }
 
-    // Attachment delete buttons
+    const codePanel = document.getElementById('uf-att-code-panel');
+    const pathPanel = document.getElementById('uf-att-path-panel');
+    const optionTabs = document.querySelector('.attachment-option-tabs');
+    const docCodeInput = document.getElementById('uf-input-doc-code');
+    const docTitleInput = document.getElementById('uf-input-doc-title');
+    const customPathInput = document.getElementById('uf-input-custom-path');
+    const customTitleInput = document.getElementById('uf-input-custom-path-title');
+    const defaultFolderInput = document.getElementById('uf-default-folder-path');
+
+    if (optionTabs) {
+      optionTabs.style.display = isViewer ? 'none' : 'flex';
+    }
+    if (codePanel) {
+      if (isViewer) codePanel.style.display = 'none';
+      if (docCodeInput) docCodeInput.disabled = isLocked;
+      if (docTitleInput) docTitleInput.disabled = isLocked;
+    }
+    if (pathPanel) {
+      if (isViewer) pathPanel.style.display = 'none';
+      if (customPathInput) customPathInput.disabled = isLocked;
+      if (customTitleInput) customTitleInput.disabled = isLocked;
+    }
+    if (defaultFolderInput) {
+      defaultFolderInput.disabled = isLocked;
+      defaultFolderInput.readOnly = isLocked;
+      if (isLocked) {
+        defaultFolderInput.classList.add('input-locked-readonly');
+      } else {
+        defaultFolderInput.classList.remove('input-locked-readonly');
+      }
+    }
+
+    // Quick drive buttons (D:\, C:\) - Hide for Viewer / Locked mode
+    document.querySelectorAll('.btn-quick-drive').forEach(btn => {
+      btn.style.display = isLocked ? 'none' : 'inline-block';
+      btn.disabled = isLocked;
+    });
+
+    // Attachment delete and edit buttons - Hide for Viewer / Locked mode
     document.querySelectorAll('.attachment-delete-btn').forEach(btn => {
       btn.style.display = isLocked ? 'none' : 'inline-flex';
     });
+    document.querySelectorAll('.att-edit-btn').forEach(btn => {
+      btn.style.display = isLocked ? 'none' : 'inline-flex';
+    });
 
-    // Hide edit/delete/save buttons in Viewer mode
-    if (isViewer) {
-      const saveBtn = document.getElementById('btn-uf-save');
-      const updateBtn = document.getElementById('btn-uf-update');
-      const deleteBtn = document.getElementById('btn-uf-delete');
+    // Excel VLOOKUP Template Button & Hint Banner Lock for Viewer
+    const vlookupBtn = document.getElementById('btn-uf-vlookup-template');
+    if (vlookupBtn) {
+      vlookupBtn.style.display = isViewer ? 'none' : 'inline-flex';
+      vlookupBtn.disabled = isLocked;
+    }
+    const vlookupHint = document.getElementById('uf-vlookup-hint-banner');
+    if (vlookupHint) {
+      vlookupHint.style.display = isViewer ? 'none' : 'flex';
+    }
+
+    // Action buttons display handling
+    const saveBtn = document.getElementById('btn-uf-save');
+    const updateBtn = document.getElementById('btn-uf-update');
+    const deleteBtn = document.getElementById('btn-uf-delete');
+    const leftFooterActions = document.getElementById('uf-footer-left-actions');
+    const newBtn = document.getElementById('btn-uf-new');
+    const searchBtn = document.getElementById('btn-uf-search');
+    const clearBtn = document.getElementById('btn-uf-clear');
+
+    // Synchronize Remark with Status: Closed -> Inactive; Active -> Active
+    const remarkEl = document.getElementById('uf-remark');
+    if (remarkEl) {
+      if (isClosed) {
+        if (!remarkEl.value || remarkEl.value.trim() === '' || remarkEl.value.trim().toLowerCase() === 'active') {
+          remarkEl.value = 'Inactive';
+        }
+      } else if (statusVal === 'active' || (calcStatus && calcStatus.key === 'active')) {
+        if (!remarkEl.value || remarkEl.value.trim() === '' || remarkEl.value.trim().toLowerCase() === 'inactive') {
+          remarkEl.value = 'Active';
+        }
+      }
+    }
+
+    // Hide folder storage bar in closed/viewer mode
+    const folderBar = document.getElementById('uf-folder-storage-bar');
+    if (folderBar) {
+      folderBar.style.display = isLocked ? 'none' : 'flex';
+    }
+
+    // For Viewer or Closed Status: strictly view-only, hide left actions (Search, Clear, New), attachment options & mutation buttons
+    if (isViewer || isClosed) {
+      if (leftFooterActions) leftFooterActions.style.display = 'none';
+      if (newBtn) newBtn.style.display = 'none';
+      if (searchBtn) searchBtn.style.display = 'none';
+      if (clearBtn) clearBtn.style.display = 'none';
       if (saveBtn) saveBtn.style.display = 'none';
       if (updateBtn) updateBtn.style.display = 'none';
       if (deleteBtn) deleteBtn.style.display = 'none';
+    } else {
+      // Unlocked Admin / Officer mode
+      if (leftFooterActions) leftFooterActions.style.display = 'flex';
+      if (newBtn) newBtn.style.display = 'inline-flex';
+      if (searchBtn) searchBtn.style.display = 'inline-flex';
+      if (clearBtn) clearBtn.style.display = 'inline-flex';
+
+      if (this.currentMode === 'NEW') {
+        if (saveBtn) saveBtn.style.display = 'inline-flex';
+        if (updateBtn) updateBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+      } else {
+        // EDIT mode
+        if (saveBtn) saveBtn.style.display = 'none';
+        if (updateBtn) updateBtn.style.display = 'inline-flex';
+        if (deleteBtn) deleteBtn.style.display = (role.canDelete !== false) ? 'inline-flex' : 'none';
+      }
     }
 
     if (typeof app !== 'undefined' && app.refreshIcons) {
@@ -566,8 +711,61 @@ class UserFormController {
     }
   }
 
+  getDefaultFolderPath() {
+    return localStorage.getItem('STAFF_CONTROL_DEFAULT_FOLDER_PATH') || 'D:\\GDT_Documents\\Staff_2026\\';
+  }
+
+  saveDefaultFolderPath(path) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      return;
+    }
+    if (path) {
+      let formatted = path.trim();
+      if (!formatted.endsWith('\\') && !formatted.endsWith('/')) {
+        formatted += '\\';
+      }
+      localStorage.setItem('STAFF_CONTROL_DEFAULT_FOLDER_PATH', formatted);
+      const el = document.getElementById('uf-default-folder-path');
+      if (el) el.value = formatted;
+    }
+  }
+
+  setQuickDrive(drivePrefix) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      if (typeof app !== 'undefined') {
+        app.showToast('គណនីរបស់អ្នកជា Viewer Mode មិនអាចកែប្រែទីតាំង Folder បានទេ (Read-Only)', 'error');
+      }
+      return;
+    }
+    this.saveDefaultFolderPath(drivePrefix);
+    const input = document.getElementById('uf-input-custom-path');
+    if (input && !input.value) input.value = drivePrefix;
+    if (typeof app !== 'undefined') {
+      app.showToast(`បានជ្រើសរើសផ្លូវ Folder: ${drivePrefix}`, 'info');
+    }
+  }
+
+  fillPathPreset(path) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) return;
+    const input = document.getElementById('uf-input-custom-path');
+    if (input) {
+      input.value = path;
+      input.focus();
+    }
+  }
+
   handleFilesSelected(fileList) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      alert('គណនីរបស់អ្នកជា Viewer Mode មិនអាចភ្ជាប់ឯកសារថ្មីបានទេ (Read-Only)');
+      return;
+    }
     if (!fileList || fileList.length === 0) return;
+
+    const defaultFolder = this.getDefaultFolderPath();
 
     Array.from(fileList).forEach(file => {
       // Max 10MB per file
@@ -585,6 +783,7 @@ class UserFormController {
         const newAtt = {
           id: 'att-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
           name: file.name,
+          locationPath: defaultFolder + file.name,
           size: sizeStr,
           type: file.type || 'application/octet-stream',
           uploadDate: new Date().toLocaleString(),
@@ -594,12 +793,175 @@ class UserFormController {
         this.currentAttachments.push(newAtt);
         this.renderAttachmentsList();
         if (typeof app !== 'undefined') {
-          app.showToast(`បានភ្ជាប់ឯកសារ "${file.name}"`, 'success');
+          app.showToast(`បានភ្ជាប់ឯកសារ "${file.name}" (ទីតាំង៖ ${newAtt.locationPath})`, 'success');
         }
       };
 
       // Read as DataURL for direct preview / download
       reader.readAsDataURL(file);
+    });
+  }
+
+  switchAttachmentMode(mode) {
+    const filePanel = document.getElementById('uf-att-file-panel');
+    const codePanel = document.getElementById('uf-att-code-panel');
+    const btnFile = document.getElementById('btn-att-tab-file');
+    const btnCode = document.getElementById('btn-att-tab-code');
+
+    if (btnFile) btnFile.classList.toggle('active', mode === 'file');
+    if (btnCode) btnCode.classList.toggle('active', mode === 'code');
+
+    if (filePanel) filePanel.style.display = mode === 'file' ? 'block' : 'none';
+    if (codePanel) {
+      codePanel.style.display = mode === 'code' ? 'block' : 'none';
+      if (mode === 'code') {
+        const input = document.getElementById('uf-input-doc-code');
+        if (input) input.focus();
+      }
+    }
+    if (typeof app !== 'undefined' && app.refreshIcons) {
+      app.refreshIcons();
+    }
+  }
+
+  addDocEntryCode() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      alert('គណនីរបស់អ្នកជា Viewer Mode មិនអាចបញ្ចូលលេខកូដឯកសារថ្មីបានទេ (Read-Only)');
+      return;
+    }
+    const codeInput = document.getElementById('uf-input-doc-code');
+    const titleInput = document.getElementById('uf-input-doc-title');
+    if (!codeInput) return;
+
+    const code = codeInput.value.trim();
+    const title = titleInput ? titleInput.value.trim() : '';
+
+    if (!code) {
+      alert('សូមបញ្ចូលលេខកូដសម្គាល់ឯកសារ (ឧទាហរណ៍៖ MXC0231536)');
+      codeInput.focus();
+      return;
+    }
+
+    if (!Array.isArray(this.currentAttachments)) {
+      this.currentAttachments = [];
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('km-KH') + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newDoc = {
+      id: 'doc-code-' + Date.now(),
+      type: 'code',
+      isCode: true,
+      name: code,
+      code: code,
+      title: title || 'លិខិតបទដ្ឋាន / Document Entry',
+      size: 'Text / Code',
+      uploadDate: timeStr
+    };
+
+    this.currentAttachments.push(newDoc);
+    codeInput.value = '';
+    if (titleInput) titleInput.value = '';
+
+    this.renderAttachmentsList();
+    if (typeof app !== 'undefined') {
+      app.showToast(`បានបន្ថែមលេខកូដឯកសារ "${code}" ដោយជោគជ័យ!`, 'success');
+    }
+  }
+
+  addCustomFilePath() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      alert('គណនីរបស់អ្នកជា Viewer Mode មិនអាចបន្ថែមទីតាំងឯកសារបានទេ (Read-Only)');
+      return;
+    }
+    const pathInput = document.getElementById('uf-input-custom-path');
+    const titleInput = document.getElementById('uf-input-custom-path-title');
+    if (!pathInput) return;
+
+    const fullPath = pathInput.value.trim();
+    const title = titleInput ? titleInput.value.trim() : '';
+
+    if (!fullPath) {
+      alert('សូមបញ្ចូលផ្លូវទីតាំងឯកសារក្នុងកុំព្យូទ័រ (ឧទាហរណ៍៖ D:\\GDT_Documents\\Prakas_542.pdf)');
+      pathInput.focus();
+      return;
+    }
+
+    if (!Array.isArray(this.currentAttachments)) {
+      this.currentAttachments = [];
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleDateString('km-KH') + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const fileName = fullPath.split(/[\/\\]/).pop() || fullPath;
+
+    const newDoc = {
+      id: 'doc-path-' + Date.now(),
+      type: 'local_path',
+      isPath: true,
+      name: fileName,
+      locationPath: fullPath,
+      title: title || 'ទីតាំងឯកសារក្នុងកុំព្យូទ័រ (Local Path)',
+      size: fullPath.startsWith('D:') ? 'Drive D:' : (fullPath.startsWith('C:') ? 'Drive C:' : 'Local Disk'),
+      uploadDate: timeStr
+    };
+
+    this.currentAttachments.push(newDoc);
+    pathInput.value = '';
+    if (titleInput) titleInput.value = '';
+
+    this.renderAttachmentsList();
+    if (typeof app !== 'undefined') {
+      app.showToast(`បានបន្ថែមទីតាំងឯកសារ "${fileName}" ដោយជោគជ័យ!`, 'success');
+    }
+  }
+
+  editAttachmentPath(idx) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      alert('គណនីរបស់អ្នកជា Viewer Mode មិនអាចកែប្រែទីតាំងឯកសារបានទេ (Read-Only: Cannot edit location files)');
+      return;
+    }
+    const att = this.currentAttachments[idx];
+    if (!att) return;
+
+    const currentPath = att.locationPath || (this.getDefaultFolderPath() + (att.name || ''));
+    const newPath = prompt(`កែប្រែផ្លូវទីតាំងឯកសារក្នុងកុំព្យូទ័រ (Edit Computer Folder/Drive Location):`, currentPath);
+    if (newPath !== null && newPath.trim() !== '') {
+      att.locationPath = newPath.trim();
+      this.renderAttachmentsList();
+      if (typeof app !== 'undefined') {
+        app.showToast(`បានកែប្រែទីតាំងឯកសារទៅជា "${att.locationPath}"`, 'success');
+      }
+    }
+  }
+
+  copyAttachmentPath(path) {
+    if (!path) return;
+    navigator.clipboard.writeText(path).then(() => {
+      if (typeof app !== 'undefined') {
+        app.showToast(`📁 បានចម្លងទីតាំង "${path}" ទៅក្នុង Clipboard`, 'info');
+      } else {
+        alert(`បានចម្លងទីតាំងឯកសារ: ${path}`);
+      }
+    }).catch(() => {
+      prompt('ចម្លងផ្លូវទីតាំងឯកសារ (Copy path):', path);
+    });
+  }
+
+  copyDocCode(code) {
+    if (!code) return;
+    navigator.clipboard.writeText(code).then(() => {
+      if (typeof app !== 'undefined') {
+        app.showToast(`📋 បានចម្លងលេខកូដ "${code}" ទៅក្នុង Clipboard`, 'info');
+      } else {
+        alert(`បានចម្លងលេខកូដ: ${code}`);
+      }
+    }).catch(() => {
+      prompt('ចម្លងលេខកូដឯកសារ (Copy code):', code);
     });
   }
 
@@ -610,27 +972,103 @@ class UserFormController {
     if (!this.currentAttachments || this.currentAttachments.length === 0) {
       container.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.8rem;">
-          គ្មានឯកសារភ្ជាប់នៅឡើយទេ (No attached files yet)
+          គ្មានឯកសារភ្ជាប់ លេខកូដឯកសារ ឬទីតាំង Folder នៅឡើយទេ (No attached files, codes or folder paths yet)
         </div>
       `;
       return;
     }
 
+    const defaultFolder = this.getDefaultFolderPath();
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    const isViewer = role.id === 'VIEWER';
+    const statusSelect = document.getElementById('uf-customStatus');
+    const isClosed = statusSelect && statusSelect.value === 'closed';
+    const isLocked = isViewer || isClosed;
+
     container.innerHTML = this.currentAttachments.map((att, idx) => {
+      // 1. Document Entry Code / Text Reference (e.g. MXC0231536)
+      if (att.isCode || att.type === 'code') {
+        return `
+          <div class="attachment-item-card is-code" style="border-left: 3px solid var(--primary); background: var(--bg-card);">
+            <div class="att-file-info">
+              <div class="att-icon-box code" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
+                <i data-lucide="hash"></i>
+              </div>
+              <div class="att-text">
+                <div class="att-name" style="color: var(--primary); font-weight: 700; letter-spacing: 0.5px;" title="${att.code || att.name}">
+                  ${att.code || att.name}
+                </div>
+                <div class="att-meta">${att.title ? att.title + ' • ' : ''}${att.uploadDate || ''}</div>
+              </div>
+            </div>
+            <div class="att-actions">
+              <button class="icon-btn" type="button" title="ចម្លងលេខកូដ (Copy Code)" onclick="userformController.copyDocCode('${att.code || att.name}')">
+                <i data-lucide="copy"></i>
+              </button>
+              ${!isLocked ? `
+                <button class="icon-btn icon-btn-danger attachment-delete-btn" type="button" title="លុបលេខកូដ (Delete)" onclick="userformController.removeAttachment(${idx})">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. Direct Location Path (Drive C:, D:, Network)
+      if (att.isPath || att.type === 'local_path') {
+        return `
+          <div class="attachment-item-card" style="border-left: 3px solid #059669; background: var(--bg-card);">
+            <div class="att-file-info">
+              <div class="att-icon-box" style="background: #ecfdf5; color: #059669;">
+                <i data-lucide="hard-drive"></i>
+              </div>
+              <div class="att-text">
+                <div class="att-name" title="${att.name}" style="font-weight: 700;">${att.name}</div>
+                <div class="att-meta" style="font-family: monospace; font-size: 0.68rem; color: #059669; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;" title="${att.locationPath || ''}">
+                  📍 ${att.locationPath || ''}
+                </div>
+              </div>
+            </div>
+            <div class="att-actions">
+              <button class="icon-btn" type="button" title="ចម្លងទីតាំងឯកសារ (Copy Path)" onclick="userformController.copyAttachmentPath('${(att.locationPath || '').replace(/\\/g, '\\\\')}')">
+                <i data-lucide="copy"></i>
+              </button>
+              ${!isLocked ? `
+                <button class="icon-btn att-edit-btn" type="button" title="កែប្រែទីតាំងឯកសារ (Edit Path)" onclick="userformController.editAttachmentPath(${idx})">
+                  <i data-lucide="edit-2"></i>
+                </button>
+                <button class="icon-btn icon-btn-danger attachment-delete-btn" type="button" title="លុបទីតាំង (Delete)" onclick="userformController.removeAttachment(${idx})">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. Physical File Attachment (with Location Path on Drive)
       let icon = 'file-text';
       let iconClass = 'word';
-      const ext = att.name.split('.').pop().toLowerCase();
+      const ext = att.name ? att.name.split('.').pop().toLowerCase() : '';
+      const isPdf = ext === 'pdf' || (att.type && att.type.includes('pdf'));
 
-      if (att.type.includes('pdf') || ext === 'pdf') {
+      if (isPdf) {
         icon = 'file-text';
         iconClass = 'pdf';
-      } else if (att.type.includes('image') || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) {
+      } else if (att.type && (att.type.includes('image') || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext))) {
         icon = 'image';
         iconClass = 'image';
       } else if (['xls', 'xlsx', 'csv'].includes(ext)) {
         icon = 'sheet';
         iconClass = 'excel';
       }
+
+      const filePath = att.locationPath || (defaultFolder + (att.name || ''));
+
+      // Viewer Rights: Can view ONLY PDF files, and NO right to download any files
+      const canPreview = att.dataUrl && (!isViewer || isPdf);
+      const canDownload = !isViewer && att.dataUrl;
 
       return `
         <div class="attachment-item-card">
@@ -640,19 +1078,33 @@ class UserFormController {
             </div>
             <div class="att-text">
               <div class="att-name" title="${att.name}">${att.name}</div>
-              <div class="att-meta">${att.size} • ${att.uploadDate || ''}</div>
+              <div class="att-meta" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 170px;" title="${filePath}">
+                <span style="font-family: monospace; font-size: 0.66rem; color: var(--text-muted);">📍 ${filePath}</span>
+              </div>
             </div>
           </div>
           <div class="att-actions">
-            <button class="icon-btn" type="button" title="មើលឯកសារ (Preview)" onclick="userformController.previewAttachment(${idx})">
-              <i data-lucide="eye"></i>
+            ${canPreview ? `
+              <button class="icon-btn" type="button" title="${isPdf ? 'មើលឯកសារ PDF (Preview PDF)' : 'មើលឯកសារ (Preview)'}" onclick="userformController.previewAttachment(${idx})">
+                <i data-lucide="eye"></i>
+              </button>
+            ` : ''}
+            ${canDownload ? `
+              <button class="icon-btn" type="button" title="ទាញយក (Download)" onclick="userformController.downloadAttachment(${idx})">
+                <i data-lucide="download"></i>
+              </button>
+            ` : ''}
+            <button class="icon-btn" type="button" title="ចម្លងទីតាំងឯកសារ (Copy Path)" onclick="userformController.copyAttachmentPath('${filePath.replace(/\\/g, '\\\\')}')">
+              <i data-lucide="copy"></i>
             </button>
-            <button class="icon-btn" type="button" title="ទាញយក (Download)" onclick="userformController.downloadAttachment(${idx})">
-              <i data-lucide="download"></i>
-            </button>
-            <button class="icon-btn icon-btn-danger" type="button" title="លុបឯកសារ (Delete)" onclick="userformController.removeAttachment(${idx})">
-              <i data-lucide="trash-2"></i>
-            </button>
+            ${!isLocked ? `
+              <button class="icon-btn att-edit-btn" type="button" title="កែប្រែទីតាំងឯកសារ (Edit Path)" onclick="userformController.editAttachmentPath(${idx})">
+                <i data-lucide="edit-2"></i>
+              </button>
+              <button class="icon-btn icon-btn-danger attachment-delete-btn" type="button" title="លុបឯកសារ (Delete)" onclick="userformController.removeAttachment(${idx})">
+                <i data-lucide="trash-2"></i>
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
@@ -663,8 +1115,32 @@ class UserFormController {
     }
   }
 
-  removeAttachment(idx) {
-    if (confirm('តើអ្នកពិតជាចង់លុបឯកសារភ្ជាប់នេះមែនទេ?')) {
+  async removeAttachment(idx) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      alert('គណនីរបស់អ្នកជា Viewer Mode មិនអាចលុបឯកសារបានទេ (Read-Only)');
+      return;
+    }
+
+    const att = this.currentAttachments[idx];
+    const attName = att ? (att.code || att.name || 'ឯកសារភ្ជាប់') : 'ឯកសារភ្ជាប់';
+
+    let confirmed = true;
+    if (typeof app !== 'undefined' && app.showConfirm) {
+      confirmed = await app.showConfirm({
+        title: 'ការបញ្ជាក់ការលុបឯកសារ',
+        messageKh: `តើអ្នកពិតជាចង់លុប <strong>"${attName}"</strong> នេះចេញមែនទេ?`,
+        messageEn: 'This attachment will be removed from this document record.',
+        icon: 'trash-2',
+        type: 'danger',
+        confirmText: 'លុបឯកសារ',
+        cancelText: 'បោះបង់'
+      });
+    } else {
+      confirmed = confirm('តើអ្នកពិតជាចង់លុបឯកសារភ្ជាប់នេះមែនទេ?');
+    }
+
+    if (confirmed) {
       this.currentAttachments.splice(idx, 1);
       this.renderAttachmentsList();
     }
@@ -674,27 +1150,42 @@ class UserFormController {
     const att = this.currentAttachments[idx];
     if (!att) return;
 
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    const ext = att.name ? att.name.split('.').pop().toLowerCase() : '';
+    const isPdf = ext === 'pdf' || (att.type && att.type.includes('pdf'));
+
+    if (role.id === 'VIEWER' && !isPdf) {
+      if (typeof app !== 'undefined') {
+        app.showToast('គណនី Viewer អាចបើកមើលបានតែឯកសារប្រភេទ PDF ប៉ុណ្ណោះ (Viewer can only view PDF files)', 'warning');
+      } else {
+        alert('គណនី Viewer អាចបើកមើលបានតែឯកសារប្រភេទ PDF ប៉ុណ្ណោះ (Viewer can only view PDF files)');
+      }
+      return;
+    }
+
     const modal = document.getElementById('lightbox-preview-modal');
     const title = document.getElementById('lightbox-file-name');
     const body = document.getElementById('lightbox-body-content');
 
     if (modal && title && body) {
       title.textContent = att.name;
-      const ext = att.name.split('.').pop().toLowerCase();
 
-      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) || att.type.includes('image')) {
-        body.innerHTML = `<img src="${att.dataUrl || ''}" alt="${att.name}">`;
-      } else if (ext === 'pdf' || att.type.includes('pdf')) {
-        body.innerHTML = `<iframe src="${att.dataUrl || ''}"></iframe>`;
+      if (isPdf) {
+        body.innerHTML = `<iframe src="${att.dataUrl || ''}" style="width: 100%; height: 75vh; border: none; border-radius: 8px;"></iframe>`;
+      } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) || (att.type && att.type.includes('image'))) {
+        body.innerHTML = `<img src="${att.dataUrl || ''}" alt="${att.name}" style="max-width: 100%; max-height: 75vh; border-radius: 8px; object-fit: contain;">`;
       } else {
+        const canDownload = role.id !== 'VIEWER';
         body.innerHTML = `
           <div style="padding: 2rem; text-align: center;">
             <i data-lucide="file-text" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 1rem;"></i>
             <h4 style="margin-bottom: 0.5rem;">${att.name}</h4>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">ប្រភេទឯកសារនេះមិនអាច Preview ផ្ទាល់បានទេ សូមទាញយកដើម្បីបើកមើល។</p>
-            <button class="btn btn-primary" onclick="userformController.downloadAttachment(${idx})">
-              <i data-lucide="download"></i> <span>ទាញយកឯកសារ (${att.size})</span>
-            </button>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">${canDownload ? 'ប្រភេទឯកសារនេះមិនអាច Preview ផ្ទាល់បានទេ សូមទាញយកដើម្បីបើកមើល។' : 'គណនី Viewer មិនមានសិទ្ធិទាញយកឯកសារនេះទេ។'}</p>
+            ${canDownload ? `
+              <button class="btn btn-primary" onclick="userformController.downloadAttachment(${idx})">
+                <i data-lucide="download"></i> <span>ទាញយកឯកសារ (${att.size})</span>
+              </button>
+            ` : ''}
           </div>
         `;
       }
@@ -707,6 +1198,16 @@ class UserFormController {
   }
 
   downloadAttachment(idx) {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER') {
+      if (typeof app !== 'undefined') {
+        app.showToast('គណនី Viewer គ្មានសិទ្ធិទាញយកឯកសារទេ (Viewer has no right to download files)', 'error');
+      } else {
+        alert('គណនី Viewer គ្មានសិទ្ធិទាញយកឯកសារទេ (Viewer has no right to download files)');
+      }
+      return;
+    }
+
     const att = this.currentAttachments[idx];
     if (!att) return;
 
@@ -774,43 +1275,72 @@ class UserFormController {
    * Open UserForm in NEW mode
    */
   openNew() {
-    const role = UserControl.getCurrentRole();
-    if (!role.canAdd || role.id === 'VIEWER') {
-      alert('🔒 សិទ្ធិមើលតែប៉ុណ្ណោះ (Read-Only Viewer): មិនអនុញ្ញាតឱ្យចុះឈ្មោះ ឬបន្ថែមទិន្នន័យថ្មីឡើយ');
-      return;
+    try {
+      const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { canAdd: true, id: 'ADMIN' };
+      if (role.id === 'VIEWER') {
+        alert('🔒 សិទ្ធិមើលតែប៉ុណ្ណោះ (Read-Only Viewer): មិនអនុញ្ញាតឱ្យចុះឈ្មោះ ឬបន្ថែមទិន្នន័យថ្មីឡើយ');
+        return;
+      }
+
+      this.currentMode = 'NEW';
+      this.selectedRecordNo = null;
+      this.currentAttachments = [];
+      this.populateDropdowns();
+      this.updateFieldLabels();
+      this.clearForm();
+      this.renderAttachmentsList();
+      this.renderUpdateMetadata(null);
+
+      const nextNo = dataStore.getNextSerialNo();
+      const noEl = document.getElementById('uf-no');
+      if (noEl) noEl.value = nextNo;
+
+      const titleEl = document.getElementById('modal-title-text');
+      if (titleEl) {
+        titleEl.innerHTML = '<i data-lucide="user-plus"></i> <span>ចុះឈ្មោះបុគ្គលិកថ្មី (New Staff Registration)</span>';
+      }
+      
+      // Update button states
+      const saveBtn = document.getElementById('btn-uf-save');
+      const updateBtn = document.getElementById('btn-uf-update');
+      const deleteBtn = document.getElementById('btn-uf-delete');
+
+      if (saveBtn) saveBtn.style.display = 'inline-flex';
+      if (updateBtn) updateBtn.style.display = 'none';
+      if (deleteBtn) deleteBtn.style.display = 'none';
+
+      // Unlock all inputs unconditionally for NEW registration
+      const banner = document.getElementById('uf-locked-banner');
+      if (banner) banner.style.display = 'none';
+
+      const inputIds = [
+        'uf-staffId', 'uf-secondaryId', 'uf-latinName', 'uf-khmerName',
+        'uf-dob', 'uf-serviceStartDate', 'uf-gender',
+        'uf-department', 'uf-office', 'uf-position', 'uf-staffType',
+        'uf-requestDate', 'uf-startDate', 'uf-endDate', 'uf-annualPeriod',
+        'uf-requestReason', 'uf-prakasNo', 'uf-refDocument', 'uf-receivedDate',
+        'uf-systemClosingDate', 'uf-description', 'uf-remark', 'uf-remark-select'
+      ];
+      inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = false;
+          el.readOnly = false;
+        }
+      });
+
+      const startRadio = document.getElementById('uf-maturity-start');
+      const endRadio = document.getElementById('uf-maturity-end');
+      if (startRadio) startRadio.checked = false;
+      if (endRadio) endRadio.checked = true;
+
+      this.isStartDateManuallyEdited = false;
+      this.updateStartDateIndicator(true);
+      this.showModal();
+    } catch (err) {
+      console.error('openNew error:', err);
+      this.showModal();
     }
-
-    this.currentMode = 'NEW';
-    this.selectedRecordNo = null;
-    this.currentAttachments = [];
-    this.populateDropdowns();
-    this.updateFieldLabels();
-    this.clearForm();
-    this.renderAttachmentsList();
-    this.renderUpdateMetadata(null);
-
-    const nextNo = dataStore.getNextSerialNo();
-    const noEl = document.getElementById('uf-no');
-    if (noEl) noEl.value = nextNo;
-
-    const titleEl = document.getElementById('modal-title-text');
-    if (titleEl) {
-      titleEl.innerHTML = '<i data-lucide="user-plus"></i> <span>ចុះឈ្មោះបុគ្គលិកថ្មី (New Staff Registration)</span>';
-    }
-    
-    // Update button states
-    const saveBtn = document.getElementById('btn-uf-save');
-    const updateBtn = document.getElementById('btn-uf-update');
-    const deleteBtn = document.getElementById('btn-uf-delete');
-
-    if (saveBtn) saveBtn.style.display = 'inline-flex';
-    if (updateBtn) updateBtn.style.display = 'none';
-    if (deleteBtn) deleteBtn.style.display = 'none';
-
-    this.updateFormLockState();
-    this.isStartDateManuallyEdited = false;
-    this.updateStartDateIndicator(true);
-    this.showModal();
   }
 
   /**
@@ -855,6 +1385,11 @@ class UserFormController {
         }
       }
     });
+
+    const staffTypeSelect = document.getElementById('uf-staffType');
+    if (staffTypeSelect) {
+      staffTypeSelect.value = record.staffType || 'មន្ត្រីក្របខណ្ឌ (Civil Servant)';
+    }
 
     // Check if startDate matches requestDate or is custom
     if (record.startDate && record.requestDate && record.startDate !== record.requestDate) {
@@ -904,6 +1439,13 @@ class UserFormController {
     if (updateBtn) updateBtn.style.display = isViewer ? 'none' : 'inline-flex';
     if (deleteBtn) deleteBtn.style.display = (isViewer || !role.canDelete) ? 'none' : 'inline-flex';
 
+    // Update maturityBase radio selection
+    const maturityBase = record.maturityBase || 'endDate';
+    const startRadio = document.getElementById('uf-maturity-start');
+    const endRadio = document.getElementById('uf-maturity-end');
+    if (startRadio) startRadio.checked = (maturityBase === 'startDate');
+    if (endRadio) endRadio.checked = (maturityBase !== 'startDate');
+
     this.updateFormLockState();
     this.showModal();
   }
@@ -931,6 +1473,11 @@ class UserFormController {
   }
 
   clearForm() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      return; // Viewer cannot clear or reset form
+    }
+
     if (!this.formEl) {
       this.formEl = document.getElementById('staff-userform');
     }
@@ -960,6 +1507,24 @@ class UserFormController {
     const vlookupBadge = document.getElementById('uf-vlookup-badge');
     if (vlookupBadge) vlookupBadge.style.display = 'none';
 
+    const docCodeInput = document.getElementById('uf-input-doc-code');
+    if (docCodeInput) docCodeInput.value = '';
+    const docTitleInput = document.getElementById('uf-input-doc-title');
+    if (docTitleInput) docTitleInput.value = '';
+
+    const customPathInput = document.getElementById('uf-input-custom-path');
+    if (customPathInput) customPathInput.value = '';
+    const customTitleInput = document.getElementById('uf-input-custom-path-title');
+    if (customTitleInput) customTitleInput.value = '';
+
+    const defaultFolderInput = document.getElementById('uf-default-folder-path');
+    if (defaultFolderInput) defaultFolderInput.value = this.getDefaultFolderPath();
+
+    this.switchAttachmentMode('file');
+
+    const staffTypeSelect = document.getElementById('uf-staffType');
+    if (staffTypeSelect) staffTypeSelect.value = 'មន្ត្រីក្របខណ្ឌ (Civil Servant)';
+
     this.currentAttachments = [];
     this.renderAttachmentsList();
     this.clearErrors();
@@ -977,12 +1542,40 @@ class UserFormController {
         record[f.key] = '';
       }
     });
+
+    const staffTypeSelect = document.getElementById('uf-staffType');
+    if (staffTypeSelect) {
+      record.staffType = staffTypeSelect.value || 'មន្ត្រីក្របខណ្ឌ (Civil Servant)';
+    }
+
+    if (record.staffId && typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId) {
+      record.staffId = StatusCalculator.format4DigitId(record.staffId);
+    }
+    if (record.secondaryId && typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId) {
+      record.secondaryId = StatusCalculator.format4DigitId(record.secondaryId);
+    }
+
     const noVal = document.getElementById('uf-no')?.value;
     record.no = noVal ? parseInt(noVal, 10) : dataStore.getNextSerialNo();
     record.attachments = Array.isArray(this.currentAttachments) ? [...this.currentAttachments] : [];
     const statusVal = document.getElementById('uf-customStatus')?.value;
     record.customStatus = statusVal || 'AUTO';
+
+    const maturityStartRadio = document.getElementById('uf-maturity-start');
+    record.maturityBase = (maturityStartRadio && maturityStartRadio.checked) ? 'startDate' : 'endDate';
+
     return record;
+  }
+
+  handleMaturityBaseChange(base) {
+    const fakeRec = this.getFormData();
+    fakeRec.maturityBase = base;
+    const calc = StatusCalculator.calculateStatus(fakeRec);
+    const statusEl = document.getElementById('uf-status-calculated');
+    if (statusEl) {
+      statusEl.textContent = `${calc.labelKh} (${calc.labelEn})`;
+      statusEl.className = `status-badge ${calc.cssClass}`;
+    }
   }
 
   clearErrors() {
@@ -1005,9 +1598,9 @@ class UserFormController {
    */
   handleSave() {
     try {
-      const role = UserControl.getCurrentRole();
-      if (!role.canAdd) {
-        alert('អ្នកមិនមានសិទ្ធិបញ្ចូលទិន្នន័យថ្មីទេ (Permission denied)');
+      const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { canAdd: true, id: 'ADMIN', titleKh: 'អ្នកគ្រប់គ្រង' };
+      if (role.id === 'VIEWER') {
+        alert('អ្នកមិនមានសិទ្ធិបញ្ចូលទិន្នន័យថ្មីទេ (Permission denied - Viewer Read Only)');
         return;
       }
 
@@ -1091,11 +1684,11 @@ class UserFormController {
   /**
    * Action: Update Existing Record
    */
-  handleUpdate() {
+  async handleUpdate() {
     try {
-      const role = UserControl.getCurrentRole();
-      if (!role.canEdit) {
-        alert('អ្នកមិនមានសិទ្ធិកែប្រែទិន្នន័យទេ (Permission denied)');
+      const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { canEdit: true, id: 'ADMIN', titleKh: 'អ្នកគ្រប់គ្រង' };
+      if (role.id === 'VIEWER') {
+        alert('អ្នកមិនមានសិទ្ធិកែប្រែទិន្នន័យទេ (Permission denied - Viewer Read Only)');
         return;
       }
 
@@ -1143,8 +1736,21 @@ class UserFormController {
         return;
       }
 
-      // Confirmation before updating
-      const confirmed = confirm(`តើលោកអ្នកពិតជាចង់កែប្រែទិន្នន័យរបស់ "${updatedRecord.khmerName}" (អត្តលេខ: ${updatedRecord.staffId}) មែនទេ?`);
+      // Confirmation before updating - Beautiful Centered Custom Modal
+      let confirmed = true;
+      if (typeof app !== 'undefined' && app.showConfirm) {
+        confirmed = await app.showConfirm({
+          title: 'ការបញ្ជាក់ការកែប្រែទិន្នន័យ',
+          messageKh: `តើលោកអ្នកពិតជាចង់កែប្រែទិន្នន័យរបស់ <strong>"${updatedRecord.khmerName}"</strong> (អត្តលេខ: <code>${updatedRecord.staffId}</code>) មែនទេ?`,
+          messageEn: 'Are you sure you want to save your modifications to this staff record in the master database?',
+          icon: 'edit-3',
+          type: 'warning',
+          confirmText: 'កែប្រែទិន្នន័យ',
+          cancelText: 'បោះបង់'
+        });
+      } else {
+        confirmed = confirm(`តើលោកអ្នកពិតជាចង់កែប្រែទិន្នន័យរបស់ "${updatedRecord.khmerName}" (អត្តលេខ: ${updatedRecord.staffId}) មែនទេ?`);
+      }
       if (!confirmed) return;
 
       const oldRecord = existingList[targetIdx];
@@ -1202,9 +1808,9 @@ class UserFormController {
   /**
    * Action: Delete Record
    */
-  handleDelete() {
-    const role = UserControl.getCurrentRole();
-    if (!role.canDelete) {
+  async handleDelete() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { canDelete: true, id: 'ADMIN' };
+    if (!role.canDelete && role.id === 'VIEWER') {
       alert('អ្នកមិនមានសិទ្ធិលុបទិន្នន័យទេ (Only Administrator can delete)');
       return;
     }
@@ -1214,7 +1820,22 @@ class UserFormController {
     if (targetIdx === -1) return;
 
     const record = existingList[targetIdx];
-    const confirmed = confirm(`⚠️ ការព្រមាន៖ តើលោកអ្នកពិតជាចង់លុបកំណត់ត្រាបុគ្គលិក "${record.khmerName}" (អត្តលេខ: ${record.staffId}) នេះចេញពីប្រព័ន្ធមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ!`);
+
+    // Confirmation before deleting - Beautiful Centered Custom Modal
+    let confirmed = true;
+    if (typeof app !== 'undefined' && app.showConfirm) {
+      confirmed = await app.showConfirm({
+        title: 'ការបញ្ជាក់ការលុបទិន្នន័យ',
+        messageKh: `តើលោកអ្នកពិតជាចង់លុបកំណត់ត្រាបុគ្គលិក <strong>"${record.khmerName}"</strong> (អត្តលេខ: <code>${record.staffId}</code>) នេះចេញពីប្រព័ន្ធមែនទេ?`,
+        messageEn: 'Warning: This action cannot be undone! The record will be permanently deleted from the database.',
+        icon: 'alert-triangle',
+        type: 'danger',
+        confirmText: 'លុបទិន្នន័យ',
+        cancelText: 'បោះបង់'
+      });
+    } else {
+      confirmed = confirm(`⚠️ ការព្រមាន៖ តើលោកអ្នកពិតជាចង់លុបកំណត់ត្រាបុគ្គលិក "${record.khmerName}" (អត្តលេខ: ${record.staffId}) នេះចេញពីប្រព័ន្ធមែនទេ? សកម្មភាពនេះមិនអាចត្រឡប់វិញបានទេ!`);
+    }
     if (!confirmed) return;
 
     existingList.splice(targetIdx, 1);
@@ -1240,6 +1861,11 @@ class UserFormController {
    * Action: Quick Search inside Form
    */
   handleSearchPrompt() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER' || !role.canEdit) {
+      return; // Viewer cannot trigger in-form search prompt
+    }
+
     const query = prompt('សូមបញ្ចូលអត្តលេខ ឬឈ្មោះបុគ្គលិកដើម្បីស្វែងរកក្នុងទម្រង់ (Enter Staff ID or Name):');
     if (!query || !query.trim()) return;
 

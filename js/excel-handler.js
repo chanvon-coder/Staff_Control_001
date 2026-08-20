@@ -13,16 +13,53 @@ const ExcelHandler = {
   },
 
   /**
+   * Universal Cell Content Sanitizer & 32,767 Character Limit Protector
+   * Prevents SheetJS "Text length must not exceed 32767 characters" errors
+   */
+  sanitizeCellText(val) {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'number' || typeof val === 'boolean') return val;
+    if (typeof val === 'object') {
+      try {
+        if (Array.isArray(val)) {
+          if (val.length > 0 && typeof val[0] === 'object' && val[0].name) {
+            const names = val.map(a => a.name).join(', ');
+            return names.length > 32000 ? names.slice(0, 32000) + '...' : names;
+          }
+        }
+        let str = JSON.stringify(val);
+        if (str.length > 32000) str = str.slice(0, 32000) + '... (truncated)';
+        return str;
+      } catch (e) {
+        return String(val).slice(0, 32000);
+      }
+    }
+    let str = String(val);
+    if (str.startsWith('data:') && str.length > 250) {
+      return '[Attached File/Image Content]';
+    }
+    if (str.length > 32000) {
+      str = str.slice(0, 32000) + '... (truncated)';
+    }
+    return str;
+  },
+
+  /**
    * Convert internal record object to 22-column array
    */
   recordToRow(item, index) {
     const fields = dataStore.getMasterFields();
     return fields.map((f, fIdx) => {
       if (f.key === 'no') return item.no || (index + 1);
+      if (f.key === 'staffId' || f.key === 'secondaryId') {
+        return (typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId)
+          ? StatusCalculator.format4DigitId(item[f.key])
+          : this.sanitizeCellText(item[f.key] || '');
+      }
       if (f.type === 'date' && item[f.key]) {
         return StatusCalculator.formatDateDisplay(item[f.key]);
       }
-      return item[f.key] || '';
+      return this.sanitizeCellText(item[f.key] || '');
     });
   },
 
@@ -164,160 +201,175 @@ const ExcelHandler = {
       return;
     }
 
-    const staffData = dataStore.getStaffData();
-    const settings = dataStore.getSettings();
-    const logs = typeof auditLogger !== 'undefined' ? auditLogger.getLogs() : [];
-    const headersKh = this.getHeadersKh();
+    try {
+      const staffData = dataStore.getStaffData();
+      const settings = dataStore.getSettings();
+      const logs = typeof auditLogger !== 'undefined' ? auditLogger.getLogs() : [];
+      const headersKh = this.getHeadersKh();
 
-    const wb = XLSX.utils.book_new();
+      const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Staff_Data (Book1 Exact Header Sequence)
-    const staffRows = [headersKh];
-    staffData.forEach((item, idx) => {
-      staffRows.push(this.recordToRow(item, idx));
-    });
-    const wsStaff = XLSX.utils.aoa_to_sheet(staffRows);
+      // Sheet 1: Staff_Data (Book1 Exact Header Sequence)
+      const staffRows = [headersKh];
+      staffData.forEach((item, idx) => {
+        staffRows.push(this.recordToRow(item, idx));
+      });
+      const wsStaff = XLSX.utils.aoa_to_sheet(staffRows);
 
-    // Set column widths for readability
-    wsStaff['!cols'] = [
-      { wch: 6 },  // ល.រ
-      { wch: 16 }, // អត្តលេខ អពដ
-      { wch: 16 }, // អត្តលេខ កសហវ
-      { wch: 22 }, // ឈ្មោះឡាតាំង
-      { wch: 20 }, // ឈ្មោះខ្មែរ
-      { wch: 32 }, // អង្គភាព
-      { wch: 28 }, // ការិយាល័យ
-      { wch: 22 }, // តួនាទី
-      { wch: 10 }, // ភេទ
-      { wch: 16 }, // ថ្ងៃខែឆ្នាំកំណើត
-      { wch: 18 }, // ថ្ងៃខែឆ្នាំបម្រើការងារ
-      { wch: 16 }, // ថ្ងៃខែឆ្នាំស្នើសុំ
-      { wch: 16 }, // ថ្ងៃខែឆ្នាំបញ្ចប់
-      { wch: 16 }, // ថ្ងៃខែឆ្នាំចាប់ផ្តើម
-      { wch: 12 }, // ប្រចាំឆ្នាំ
-      { wch: 26 }, // មូលហេតុនៃសំណើ
-      { wch: 22 }, // ប្រកាសលេខ
-      { wch: 35 }, // ពិព័ណនាផ្សេងៗ
-      { wch: 18 }, // ថ្ងៃខែបិទប្រព័ន្ធ
-      { wch: 22 }, // ឯកសារយោង
-      { wch: 22 }, // ថ្ងៃខែទទួលឯកសារ
-      { wch: 30 }  // Remark
-    ];
-    XLSX.utils.book_append_sheet(wb, wsStaff, 'Staff_Data');
+      // Set column widths for readability
+      wsStaff['!cols'] = [
+        { wch: 6 },  // ល.រ
+        { wch: 16 }, // អត្តលេខ អពដ
+        { wch: 16 }, // អត្តលេខ កសហវ
+        { wch: 22 }, // ឈ្មោះឡាតាំង
+        { wch: 20 }, // ឈ្មោះខ្មែរ
+        { wch: 32 }, // អង្គភាព
+        { wch: 28 }, // ការិយាល័យ
+        { wch: 22 }, // តួនាទី
+        { wch: 10 }, // ភេទ
+        { wch: 16 }, // ថ្ងៃខែឆ្នាំកំណើត
+        { wch: 18 }, // ថ្ងៃខែឆ្នាំបម្រើការងារ
+        { wch: 16 }, // ថ្ងៃខែឆ្នាំស្នើសុំ
+        { wch: 16 }, // ថ្ងៃខែឆ្នាំបញ្ចប់
+        { wch: 16 }, // ថ្ងៃខែឆ្នាំចាប់ផ្តើម
+        { wch: 12 }, // ប្រចាំឆ្នាំ
+        { wch: 26 }, // មូលហេតុនៃសំណើ
+        { wch: 22 }, // ប្រកាសលេខ
+        { wch: 35 }, // ពិព័ណនាផ្សេងៗ
+        { wch: 18 }, // ថ្ងៃខែបិទប្រព័ន្ធ
+        { wch: 22 }, // ឯកសារយោង
+        { wch: 22 }, // ថ្ងៃខែទទួលឯកសារ
+        { wch: 30 }  // Remark
+      ];
+      XLSX.utils.book_append_sheet(wb, wsStaff, 'Staff_Data');
 
-    // Sheet 2: Setting (Controlled Lists)
-    const remarksList = settings.remarks || [];
-    const maxRows = Math.max(
-      settings.departments.length,
-      settings.offices.length,
-      settings.positions.length,
-      settings.genders.length,
-      settings.annualPeriods.length,
-      settings.requestReasons.length,
-      remarksList.length
-    );
+      // Sheet 2: Setting (Controlled Lists)
+      const remarksList = settings.remarks || [];
+      const reasonsList = settings.requestReasons || [];
+      const maxRows = Math.max(
+        settings.departments.length,
+        settings.offices.length,
+        settings.positions.length,
+        settings.genders.length,
+        settings.annualPeriods.length,
+        reasonsList.length,
+        remarksList.length
+      );
 
-    const settingRows = [
-      ['អង្គភាព (Department)', 'ការិយាល័យ (Office)', 'តួនាទី (Position)', 'ភេទ (Gender)', 'ប្រចាំឆ្នាំ (Year)', 'មូលហេតុសំណើ (Reason)', 'កំណត់សម្គាល់ (Remarks)']
-    ];
+      const settingRows = [
+        ['អង្គភាព (Department)', 'ការិយាល័យ (Office)', 'តួនាទី (Position)', 'ភេទ (Gender)', 'ប្រចាំឆ្នាំ (Year)', 'មូលហេតុសំណើ (Reason)', 'កំណត់សម្គាល់ (Remarks)']
+      ];
 
-    for (let i = 0; i < maxRows; i++) {
-      settingRows.push([
-        settings.departments[i] || '',
-        settings.offices[i] || '',
-        settings.positions[i] || '',
-        settings.genders[i] || '',
-        settings.annualPeriods[i] || '',
-        settings.requestReasons[i] || '',
-        remarksList[i] || ''
-      ]);
-    }
-    const wsSetting = XLSX.utils.aoa_to_sheet(settingRows);
-    XLSX.utils.book_append_sheet(wb, wsSetting, 'Setting');
+      for (let i = 0; i < maxRows; i++) {
+        const reasonObj = reasonsList[i];
+        const reasonStr = typeof reasonObj === 'object' && reasonObj !== null ? (reasonObj.name || '') : (reasonObj || '');
+        settingRows.push([
+          settings.departments[i] || '',
+          settings.offices[i] || '',
+          settings.positions[i] || '',
+          settings.genders[i] || '',
+          settings.annualPeriods[i] || '',
+          reasonStr,
+          remarksList[i] || ''
+        ]);
+      }
+      const wsSetting = XLSX.utils.aoa_to_sheet(settingRows);
+      XLSX.utils.book_append_sheet(wb, wsSetting, 'Setting');
 
-    // Sheet 3: Document_Control
-    const docRows = [
-      ['ល.រ', 'អត្តលេខ អពដ', 'ឈ្មោះខ្មែរ', 'ថ្ងៃស្នើសុំ', 'ថ្ងៃចាប់ផ្តើម', 'ថ្ងៃបញ្ចប់', 'ប្រកាសលេខ', 'ឯកសារយោង', 'ថ្ងៃទទួលឯកសារ', 'ស្ថានភាព']
-    ];
-    staffData.forEach((item, idx) => {
-      const status = StatusCalculator.calculateStatus(item);
-      docRows.push([
-        item.no || (idx + 1),
-        item.staffId || '',
-        item.khmerName || '',
-        StatusCalculator.formatDateDisplay(item.requestDate),
-        StatusCalculator.formatDateDisplay(item.startDate),
-        StatusCalculator.formatDateDisplay(item.endDate),
-        item.prakasNo || '',
-        item.refDocument || '',
-        StatusCalculator.formatDateDisplay(item.receivedDate),
-        status.labelKh
-      ]);
-    });
-    const wsDoc = XLSX.utils.aoa_to_sheet(docRows);
-    XLSX.utils.book_append_sheet(wb, wsDoc, 'Document_Control');
+      // Sheet 3: Document_Control
+      const docRows = [
+        ['ល.រ', 'អត្តលេខ អពដ', 'ឈ្មោះខ្មែរ', 'ថ្ងៃស្នើសុំ', 'ថ្ងៃចាប់ផ្តើម', 'ថ្ងៃបញ្ចប់', 'ប្រកាសលេខ', 'ឯកសារយោង', 'ថ្ងៃទទួលឯកសារ', 'ស្ថានភាព']
+      ];
+      staffData.forEach((item, idx) => {
+        const status = StatusCalculator.calculateStatus(item);
+        docRows.push([
+          item.no || (idx + 1),
+          item.staffId || '',
+          item.khmerName || '',
+          StatusCalculator.formatDateDisplay(item.requestDate),
+          StatusCalculator.formatDateDisplay(item.startDate),
+          StatusCalculator.formatDateDisplay(item.endDate),
+          item.prakasNo || '',
+          item.refDocument || '',
+          StatusCalculator.formatDateDisplay(item.receivedDate),
+          status.labelKh
+        ]);
+      });
+      const wsDoc = XLSX.utils.aoa_to_sheet(docRows);
+      XLSX.utils.book_append_sheet(wb, wsDoc, 'Document_Control');
 
-    // Sheet 4: Dashboard Summary
-    let total = staffData.length;
-    let active = 0, pending = 0, completed = 0, expired = 0, closed = 0, missing = 0;
-    staffData.forEach(item => {
-      const s = StatusCalculator.calculateStatus(item).key;
-      if (s === 'active') active++;
-      else if (s === 'pending') pending++;
-      else if (s === 'completed') completed++;
-      else if (s === 'expired') expired++;
-      else if (s === 'closed') closed++;
-      else if (s === 'missing') missing++;
-    });
+      // Sheet 4: Dashboard Summary
+      let total = staffData.length;
+      let active = 0, pending = 0, completed = 0, expired = 0, closed = 0, missing = 0;
+      staffData.forEach(item => {
+        const s = StatusCalculator.calculateStatus(item).key;
+        if (s === 'active') active++;
+        else if (s === 'pending') pending++;
+        else if (s === 'completed') completed++;
+        else if (s === 'expired') expired++;
+        else if (s === 'closed') closed++;
+        else if (s === 'missing') missing++;
+      });
 
-    const summaryRows = [
-      ['សូចនាករស្ថិតិ (Dashboard Metric)', 'ចំនួនសរុប (Count)'],
-      ['បុគ្គលិកសរុប (Total Staff)', total],
-      ['បុគ្គលិកកំពុងដំណើរការ (Active Staff)', active],
-      ['សំណើរង់ចាំ (Pending Records)', pending],
-      ['បានបញ្ចប់ (Completed Records)', completed],
-      ['ផុតសុពលភាព (Expired Records)', expired],
-      ['បានបិទប្រព័ន្ធ (Closed Records)', closed],
-      ['ខ្វះព័ត៌មាន (Missing Info)', missing],
-      ['', ''],
-      ['កាលបរិច្ឆេទបង្កើតរបាយការណ៍ (Generated At)', new Date().toLocaleString()]
-    ];
-    const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Dashboard');
+      const summaryRows = [
+        ['សូចនាករស្ថិតិ (Dashboard Metric)', 'ចំនួនសរុប (Count)'],
+        ['បុគ្គលិកសរុប (Total Staff)', total],
+        ['បុគ្គលិកកំពុងដំណើរការ (Active Staff)', active],
+        ['សំណើរង់ចាំ (Pending Records)', pending],
+        ['បានបញ្ចប់ (Completed Records)', completed],
+        ['ផុតសុពលភាព (Expired Records)', expired],
+        ['បានបិទប្រព័ន្ធ (Closed Records)', closed],
+        ['ខ្វះព័ត៌មាន (Missing Info)', missing],
+        ['', ''],
+        ['កាលបរិច្ឆេទបង្កើតរបាយការណ៍ (Generated At)', new Date().toLocaleString()]
+      ];
+      const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Dashboard');
 
-    // Sheet 5: User_Control
-    const userRows = [
-      ['តួនាទី (Role)', 'ឈ្មោះខ្មែរ (Khmer Title)', 'សិទ្ធិបញ្ចូល (Add)', 'សិទ្ធិកែប្រែ (Edit)', 'សិទ្ធិលុប (Delete)', 'សិទ្ធិកំណត់ប្រព័ន្ធ (Settings)'],
-      ['ADMIN', 'អ្នកគ្រប់គ្រងប្រព័ន្ធ', 'YES', 'YES', 'YES', 'YES'],
-      ['OFFICER', 'មន្ត្រីបញ្ចូលទិន្នន័យ', 'YES', 'YES', 'NO', 'NO'],
-      ['VIEWER', 'អ្នកត្រួតពិនិត្យ', 'NO', 'NO', 'NO', 'NO']
-    ];
-    const wsUsers = XLSX.utils.aoa_to_sheet(userRows);
-    XLSX.utils.book_append_sheet(wb, wsUsers, 'User_Control');
+      // Sheet 5: User_Control
+      const userRows = [
+        ['តួនាទី (Role)', 'ឈ្មោះខ្មែរ (Khmer Title)', 'សិទ្ធិបញ្ចូល (Add)', 'សិទ្ធិកែប្រែ (Edit)', 'សិទ្ធិលុប (Delete)', 'សិទ្ធិកំណត់ប្រព័ន្ធ (Settings)'],
+        ['ADMIN', 'អ្នកគ្រប់គ្រងប្រព័ន្ធ', 'YES', 'YES', 'YES', 'YES'],
+        ['OFFICER', 'មន្ត្រីបញ្ចូលទិន្នន័យ', 'YES', 'YES', 'NO', 'NO'],
+        ['VIEWER', 'អ្នកត្រួតពិនិត្យ', 'NO', 'NO', 'NO', 'NO']
+      ];
+      const wsUsers = XLSX.utils.aoa_to_sheet(userRows);
+      XLSX.utils.book_append_sheet(wb, wsUsers, 'User_Control');
 
-    // Sheet 6: Log (Audit Trail)
-    const logRows = [
-      ['Log ID', 'Timestamp', 'User', 'Action', 'Staff ID', 'Description', 'Details']
-    ];
-    logs.forEach(l => {
-      logRows.push([
-        l.id,
-        l.timestamp,
-        l.user,
-        l.action,
-        l.staffId,
-        l.description,
-        l.details
-      ]);
-    });
-    const wsLog = XLSX.utils.aoa_to_sheet(logRows);
-    XLSX.utils.book_append_sheet(wb, wsLog, 'Log');
+      // Sheet 6: Log (Audit Trail)
+      const logRows = [
+        ['Log ID', 'Timestamp', 'User', 'Action', 'Staff ID', 'Description', 'Details']
+      ];
+      logs.forEach(l => {
+        let detailsStr = l.details;
+        if (typeof detailsStr === 'object' && detailsStr !== null) {
+          try { detailsStr = JSON.stringify(detailsStr); } catch (e) { detailsStr = String(detailsStr); }
+        }
+        logRows.push([
+          this.sanitizeCellText(l.id),
+          this.sanitizeCellText(l.timestamp),
+          this.sanitizeCellText(l.user),
+          this.sanitizeCellText(l.action),
+          this.sanitizeCellText(l.staffId),
+          this.sanitizeCellText(l.description),
+          this.sanitizeCellText(detailsStr)
+        ]);
+      });
+      const wsLog = XLSX.utils.aoa_to_sheet(logRows);
+      XLSX.utils.book_append_sheet(wb, wsLog, 'Log');
 
-    // Generate and download file
-    const dateStr = new Date().toISOString().slice(0, 10);
-    XLSX.writeFile(wb, `Staff_System_Control_Book1_${dateStr}.xlsx`);
-    if (typeof auditLogger !== 'undefined') {
-      auditLogger.log('EXPORT_EXCEL', 'ALL', `បានទាញយកទិន្នន័យជាឯកសារ Excel (${staffData.length} records)`);
+      // Generate and download file
+      const dateStr = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, `Staff_System_Control_Book1_${dateStr}.xlsx`);
+      if (typeof auditLogger !== 'undefined') {
+        auditLogger.log('EXPORT_EXCEL', 'ALL', `បានទាញយកទិន្នន័យជាឯកសារ Excel Backup (${staffData.length} records)`);
+      }
+      if (typeof app !== 'undefined') {
+        app.showToast(`✅ បានទាញយកទិន្នន័យ Backup (.xlsx) ទាំង ${staffData.length} កំណត់ត្រាដោយជោគជ័យ!`, 'success');
+      }
+    } catch (err) {
+      console.error('Error exporting workbook:', err);
+      alert('កំហុសក្នុងការទាញយកទិន្នន័យ៖ ' + err.message);
     }
   },
 
@@ -382,8 +434,12 @@ const ExcelHandler = {
 
           const record = {
             no: parseInt(row[0], 10) || (rIdx + 1),
-            staffId: String(row[1] || '').trim(),
-            secondaryId: String(row[2] || '').trim(),
+            staffId: (typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId)
+              ? StatusCalculator.format4DigitId(row[1])
+              : String(row[1] || '').trim(),
+            secondaryId: (typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId)
+              ? StatusCalculator.format4DigitId(row[2])
+              : String(row[2] || '').trim(),
             latinName: String(row[3] || '').trim(),
             khmerName: String(row[4] || '').trim(),
             department: String(row[5] || '').trim(),
@@ -673,6 +729,16 @@ const ExcelHandler = {
    * Sheet 2: Staff_Master_Roster (Lookup source table)
    */
   downloadVLookupDataEntryTemplate() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER') {
+      if (typeof app !== 'undefined') {
+        app.showToast('គណនី Viewer គ្មានសិទ្ធិទាញយកគំរូ Excel ទេ (View Only Mode)', 'error');
+      } else {
+        alert('គណនី Viewer គ្មានសិទ្ធិទាញយកគំរូ Excel ទេ (View Only Mode)');
+      }
+      return;
+    }
+
     if (typeof XLSX === 'undefined') {
       alert('កំហុស៖ បណ្ណាល័យ XLSX មិនទាន់ផ្ទុក (XLSX library not loaded)');
       return;
@@ -784,10 +850,10 @@ const ExcelHandler = {
     ];
 
     const masterRows = [masterHeaders];
-    staffData.forEach(r => {
+    staffData.forEach((r, idx) => {
       masterRows.push([
-        r.staffId || '',
-        r.secondaryId || '',
+        (typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId) ? StatusCalculator.format4DigitId(r.staffId) : (r.staffId || ''),
+        (typeof StatusCalculator !== 'undefined' && StatusCalculator.format4DigitId) ? StatusCalculator.format4DigitId(r.secondaryId) : (r.secondaryId || ''),
         r.latinName || '',
         r.khmerName || '',
         r.department || '',

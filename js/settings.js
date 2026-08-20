@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Staff System Control - Settings & Controlled Lists Manager
  * Includes: 22-Column Master Database Headers Customization & Table Header Titles (Left, Middle, Right)
  */
@@ -17,6 +17,9 @@ const SettingsManager = {
     const cleanVal = value.trim();
     if (!settings[category].includes(cleanVal)) {
       settings[category].push(cleanVal);
+      if (category === 'annualPeriods') {
+        settings[category] = [...new Set(settings[category])].sort((a, b) => (parseInt(a, 10) || 0) - (parseInt(b, 10) || 0));
+      }
       dataStore.saveSettings(settings);
       if (typeof auditLogger !== 'undefined') {
         auditLogger.log('SETTING_ADD', 'SETTING', `បន្ថែម "${cleanVal}" ទៅក្នុង ${category}`);

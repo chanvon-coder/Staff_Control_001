@@ -59,22 +59,60 @@ const UserControl = {
       canClearLogs: false,
       canSeeSystemAction: false,
       canSeeNavPage: true
+    },
+    LOCKED: {
+      id: 'LOCKED',
+      titleKh: 'មិនទាន់ចូលប្រព័ន្ធ (Logged Out)',
+      titleEn: 'Logged Out',
+      canAdd: false,
+      canEdit: false,
+      canDelete: false,
+      canSettings: false,
+      canExport: false,
+      canImport: false,
+      canClearLogs: false,
+      canSeeSystemAction: false,
+      canSeeNavPage: false
     }
   },
 
   CURRENT_USER_KEY: 'STAFF_CONTROL_CURRENT_ROLE',
+  CURRENT_USERNAME_KEY: 'STAFF_CONTROL_CURRENT_USERNAME',
+
+  isLoggedIn() {
+    try {
+      const saved = sessionStorage.getItem(this.CURRENT_USER_KEY) || localStorage.getItem(this.CURRENT_USER_KEY);
+      return Boolean(saved && saved !== 'LOCKED');
+    } catch (e) {
+      return false;
+    }
+  },
+
+  getCurrentUsername() {
+    try {
+      if (!this.isLoggedIn()) return 'GUEST';
+      return sessionStorage.getItem(this.CURRENT_USERNAME_KEY) || localStorage.getItem(this.CURRENT_USERNAME_KEY) || 'admin';
+    } catch (e) {
+      return 'GUEST';
+    }
+  },
 
   getCurrentRole() {
     try {
-      // Prioritize sessionStorage so fresh link/tab access starts cleared as VIEWER
-      const saved = (sessionStorage.getItem(this.CURRENT_USER_KEY) || localStorage.getItem(this.CURRENT_USER_KEY) || 'VIEWER').toUpperCase();
+      if (!this.isLoggedIn()) {
+        return this.ROLES.LOCKED;
+      }
+      const saved = (sessionStorage.getItem(this.CURRENT_USER_KEY) || localStorage.getItem(this.CURRENT_USER_KEY) || 'LOCKED').toUpperCase();
+      if (saved === 'LOCKED') {
+        return this.ROLES.LOCKED;
+      }
       if (this.ROLES[saved]) {
         return this.ROLES[saved];
       }
       if (saved === 'STAFF') return this.ROLES.OFFICER;
-      return this.ROLES.VIEWER;
+      return this.ROLES.ADMIN;
     } catch (e) {
-      return this.ROLES.VIEWER;
+      return this.ROLES.LOCKED;
     }
   },
 
@@ -82,8 +120,8 @@ const UserControl = {
     return this.getCurrentRole().id === 'VIEWER';
   },
 
-  setCurrentRole(roleId) {
-    if (!roleId) return false;
+  setCurrentUser(username, roleId) {
+    if (!roleId || roleId === 'LOCKED') return false;
     const key = roleId.toUpperCase();
     let target = this.ROLES[key];
     if (!target && key === 'STAFF') target = this.ROLES.OFFICER;
@@ -91,9 +129,11 @@ const UserControl = {
 
     try {
       sessionStorage.setItem(this.CURRENT_USER_KEY, target.id);
+      sessionStorage.setItem(this.CURRENT_USERNAME_KEY, username || target.id.toLowerCase());
       localStorage.setItem(this.CURRENT_USER_KEY, target.id);
+      localStorage.setItem(this.CURRENT_USERNAME_KEY, username || target.id.toLowerCase());
       if (typeof auditLogger !== 'undefined') {
-        auditLogger.log('AUTH_SWITCH', 'SYS', `បានប្តូរសិទ្ធិប្រើប្រាស់ទៅជា ${target.titleKh}`);
+        auditLogger.log('AUTH_LOGIN', username || target.id, `បានចូលប្រព័ន្ធជា ${target.titleKh}`);
       }
       return true;
     } catch (e) {
@@ -101,10 +141,17 @@ const UserControl = {
     }
   },
 
+  setCurrentRole(roleId) {
+    return this.setCurrentUser(this.getCurrentUsername() || roleId, roleId);
+  },
+
   clearUser() {
     try {
       sessionStorage.clear();
-      localStorage.removeItem(this.CURRENT_USER_KEY);
+      sessionStorage.setItem(this.CURRENT_USER_KEY, 'LOCKED');
+      sessionStorage.setItem(this.CURRENT_USERNAME_KEY, '');
+      localStorage.setItem(this.CURRENT_USER_KEY, 'LOCKED');
+      localStorage.setItem(this.CURRENT_USERNAME_KEY, '');
       localStorage.removeItem('STAFF_CONTROL_REMEMBERED_USER');
       localStorage.removeItem('STAFF_CONTROL_FILTER_COLLAPSED');
       if (typeof auditLogger !== 'undefined') {

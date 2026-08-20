@@ -1,6 +1,6 @@
 /**
- * Staff System Control - Clean Single Select Filter Engine
- * Replaced multi-select tick box panels with clean, native <select> filter dropdowns
+ * Staff System Control - Multi-Dimension Filter Engine
+ * Supports Single-Select Dropdowns, Prakas No text filter, and From Date ➔ To Date ranges
  */
 
 class MultiFilterEngine {
@@ -14,8 +14,12 @@ class MultiFilterEngine {
       status: [],
       gender: [],
       prakasNo: '',
-      requestDate: '',
-      endDate: ''
+      // Request Date Range (From ➔ To)
+      reqDateFrom: '',
+      reqDateTo: '',
+      // End Date Range (From ➔ To)
+      endDateFrom: '',
+      endDateTo: ''
     };
 
     // Column-specific header filters
@@ -89,6 +93,15 @@ class MultiFilterEngine {
       this.selected[key] = [];
     }
 
+    this.notifyApp();
+  }
+
+  handleDateChange(field, value) {
+    this.selected[field] = value ? value.trim() : '';
+    this.notifyApp();
+  }
+
+  notifyApp() {
     if (typeof app !== 'undefined') {
       app.currentPage = 1;
       app.updateActiveFiltersCounter();
@@ -101,13 +114,61 @@ class MultiFilterEngine {
     this.selected[key] = [];
     const select = document.getElementById(`filter-select-${key}`);
     if (select) select.value = '';
-    
-    if (typeof app !== 'undefined') {
-      app.currentPage = 1;
-      app.updateActiveFiltersCounter();
-      app.renderStaffTable();
-      app.renderDocumentTimeline();
+    this.notifyApp();
+  }
+
+  /**
+   * Universal Date Parser (Supports YYYY-MM-DD, DD-MM-YYYY, YYYY/MM/DD, DD/MM/YYYY)
+   */
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const clean = String(dateStr).trim();
+    let y, m, d;
+    if (clean.includes('-')) {
+      const parts = clean.split('-');
+      if (parts[0].length === 4) {
+        y = parseInt(parts[0], 10);
+        m = parseInt(parts[1], 10);
+        d = parseInt(parts[2], 10);
+      } else if (parts[2].length === 4) {
+        d = parseInt(parts[0], 10);
+        m = parseInt(parts[1], 10);
+        y = parseInt(parts[2], 10);
+      }
+    } else if (clean.includes('/')) {
+      const parts = clean.split('/');
+      if (parts[0].length === 4) {
+        y = parseInt(parts[0], 10);
+        m = parseInt(parts[1], 10);
+        d = parseInt(parts[2], 10);
+      } else if (parts[2].length === 4) {
+        d = parseInt(parts[0], 10);
+        m = parseInt(parts[1], 10);
+        y = parseInt(parts[2], 10);
+      }
     }
+
+    if (y && m && d && !isNaN(y) && !isNaN(m) && !isNaN(d)) {
+      const padM = String(m).padStart(2, '0');
+      const padD = String(d).padStart(2, '0');
+      return `${y}-${padM}-${padD}`;
+    }
+    return null;
+  }
+
+  /**
+   * Check if a Record's date falls within [fromDate, toDate]
+   */
+  checkDateRange(recordDateStr, fromDate, toDate) {
+    if (!fromDate && !toDate) return true;
+    if (!recordDateStr) return false;
+
+    const iso = this.parseDate(recordDateStr);
+    if (!iso) return false;
+
+    if (fromDate && iso < fromDate) return false;
+    if (toDate && iso > toDate) return false;
+    return true;
   }
 
   /**
@@ -158,11 +219,15 @@ class MultiFilterEngine {
       if (!itemPrakas.includes(s.prakasNo.toLowerCase().trim())) return false;
     }
 
-    // 9. Request Date
-    if (s.requestDate && record.requestDate !== s.requestDate) return false;
+    // 9. Request Date Range (From Date ➔ To Date)
+    if (!this.checkDateRange(record.requestDate, s.reqDateFrom, s.reqDateTo)) {
+      return false;
+    }
 
-    // 10. End Date
-    if (s.endDate && record.endDate !== s.endDate) return false;
+    // 10. End Date Range (From Date ➔ To Date)
+    if (!this.checkDateRange(record.endDate, s.endDateFrom, s.endDateTo)) {
+      return false;
+    }
 
     return true;
   }
@@ -180,10 +245,27 @@ class MultiFilterEngine {
       status: [],
       gender: [],
       prakasNo: '',
-      requestDate: '',
-      endDate: ''
+      reqDateFrom: '',
+      reqDateTo: '',
+      endDateFrom: '',
+      endDateTo: ''
     };
     this.columnFilters = {};
+
+    // Reset Form Inputs in DOM
+    const prakasInput = document.getElementById('filter-prakas-input');
+    if (prakasInput) prakasInput.value = '';
+
+    const reqFrom = document.getElementById('filter-reqdate-from');
+    if (reqFrom) reqFrom.value = '';
+    const reqTo = document.getElementById('filter-reqdate-to');
+    if (reqTo) reqTo.value = '';
+
+    const endFrom = document.getElementById('filter-enddate-from');
+    if (endFrom) endFrom.value = '';
+    const endTo = document.getElementById('filter-enddate-to');
+    if (endTo) endTo.value = '';
+
     this.renderAllHubDroplists();
   }
 
@@ -200,8 +282,8 @@ class MultiFilterEngine {
     if (this.selected.status && this.selected.status.length > 0) count++;
     if (this.selected.gender && this.selected.gender.length > 0) count++;
     if (this.selected.prakasNo && this.selected.prakasNo.trim()) count++;
-    if (this.selected.requestDate) count++;
-    if (this.selected.endDate) count++;
+    if (this.selected.reqDateFrom || this.selected.reqDateTo) count++;
+    if (this.selected.endDateFrom || this.selected.endDateTo) count++;
     return count;
   }
 }

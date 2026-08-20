@@ -136,9 +136,11 @@ const StatusCalculator = {
       return `${year}-${month}-${day}`;
     }
 
-    if (typeof val === 'number') {
+    // Handle Excel Date Serial Numbers (numeric or numeric strings like 44652, 45760, 35097, 35226)
+    let numVal = typeof val === 'number' ? val : (typeof val === 'string' && /^\d{5}(\.\d+)?$/.test(val.trim()) ? parseFloat(val.trim()) : NaN);
+    if (!isNaN(numVal) && numVal > 10000 && numVal < 100000) {
       const excelEpoch = new Date(Date.UTC(1899, 11, 30));
-      const targetDate = new Date(excelEpoch.getTime() + val * 86400000);
+      const targetDate = new Date(excelEpoch.getTime() + numVal * 86400000);
       if (!isNaN(targetDate.getTime())) {
         const year = targetDate.getUTCFullYear();
         const month = String(targetDate.getUTCMonth() + 1).padStart(2, '0');
@@ -147,8 +149,22 @@ const StatusCalculator = {
       }
     }
 
-    const str = String(val).trim();
+    let str = String(val).trim();
     if (!str) return '';
+
+    // Handle DD-MMM-YYYY (e.g. 15-May-1988, 15-05-1988)
+    const monthNamesMap = {
+      jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+      jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12'
+    };
+    const dmmmyMatch = str.match(/^(\d{1,2})[-/. ]([A-Za-z]{3})[-/. ](\d{4})/);
+    if (dmmmyMatch) {
+      const day = dmmmyMatch[1].padStart(2, '0');
+      const mStr = dmmmyMatch[2].toLowerCase();
+      const month = monthNamesMap[mStr] || '01';
+      const year = dmmmyMatch[3];
+      return `${year}-${month}-${day}`;
+    }
 
     const isoMatch = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
     if (isoMatch) {
@@ -181,6 +197,7 @@ const StatusCalculator = {
    * Format ISO date string into DD-MM-YYYY display
    */
   formatDateDisplay(val) {
+    if (val === null || val === undefined || val === '') return '-';
     const iso = this.normalizeDate(val);
     if (!iso) return '-';
 
@@ -705,12 +722,16 @@ const StatusCalculator = {
    */
   format4DigitId(val) {
     if (val === null || val === undefined || val === '') return '';
-    const str = String(val).trim();
+    let str = String(val).trim();
+    if (str.endsWith('.0')) str = str.slice(0, -2);
     if (/^\d+$/.test(str)) {
-      return str.padStart(4, '0');
+      if (str.length >= 10) return str;
+      if (str.length <= 4) return str.padStart(4, '0');
+      return str;
     }
     const match = str.match(/^([A-Za-z\u1780-\u17FF\s\-_]+)(\d+)$/);
     if (match) {
+      if (match[2].length >= 10) return `${match[1]}${match[2]}`;
       return `${match[1]}${match[2].padStart(4, '0')}`;
     }
     return str;

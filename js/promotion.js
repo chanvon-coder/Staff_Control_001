@@ -40,23 +40,26 @@ class PromotionController {
   }
 
   /**
-   * Helper: Format Date object or ISO string to DD-MMM-YYYY (e.g. 20-Aug-2026)
+   * Helper: Format Date object or ISO string to DD-MM-YYYY (e.g. 20-08-2026)
    */
   formatDDMMMYYYY(dateInput) {
     if (!dateInput) return '-';
+    if (StatusCalculator && StatusCalculator.formatDateDisplay) {
+      const formatted = StatusCalculator.formatDateDisplay(dateInput);
+      if (formatted && formatted !== '-') return formatted;
+    }
     let d = null;
-    if (typeof dateInput === 'string') {
+    if (dateInput instanceof Date) {
+      d = dateInput;
+    } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
       const iso = StatusCalculator ? StatusCalculator.normalizeDate(dateInput) : dateInput;
       if (iso) d = new Date(iso);
-    } else if (dateInput instanceof Date) {
-      d = dateInput;
     }
 
     if (!d || isNaN(d.getTime())) return String(dateInput);
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const day = String(d.getDate()).padStart(2, '0');
-    const month = months[d.getMonth()];
+    const month = String(d.getMonth() + 1).padStart(2, '0');
     const year = d.getFullYear();
 
     return `${day}-${month}-${year}`;
@@ -74,25 +77,19 @@ class PromotionController {
    */
   parseDateObject(dateStr) {
     if (!dateStr) return null;
+
+    if (StatusCalculator) {
+      const iso = StatusCalculator.normalizeDate(dateStr);
+      if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+        const parts = iso.split('-');
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        if (!isNaN(d.getTime())) return d;
+      }
+    }
+
     const str = String(dateStr).trim();
-
-    // Check DD-MMM-YYYY (e.g. 20-Aug-2026)
-    const ddMmmMatch = str.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
-    if (ddMmmMatch) {
-      const day = parseInt(ddMmmMatch[1], 10);
-      const mStr = ddMmmMatch[2].toLowerCase();
-      const year = parseInt(ddMmmMatch[3], 10);
-      const monthMap = { jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5, jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11 };
-      const month = monthMap[mStr] !== undefined ? monthMap[mStr] : 0;
-      return new Date(year, month, day);
-    }
-
-    // Try StatusCalculator normalization
-    const iso = StatusCalculator ? StatusCalculator.normalizeDate(str) : str;
-    if (iso) {
-      const d = new Date(iso);
-      if (!isNaN(d.getTime())) return d;
-    }
+    const parsed = new Date(str);
+    if (!isNaN(parsed.getTime())) return parsed;
 
     return null;
   }
@@ -317,6 +314,12 @@ class PromotionController {
         : String(valB).localeCompare(String(valA), 'km');
     });
 
+    // Auto-assign sequential ល.រ (Row Number) 1, 2, 3, 4...
+    evaluated = evaluated.map((item, index) => ({
+      ...item,
+      no: index + 1
+    }));
+
     return evaluated;
   }
 
@@ -398,7 +401,7 @@ class PromotionController {
     const pageRecords = records.slice(startIdx, startIdx + this.pageSize);
 
     if (pageInfo) {
-      pageInfo.textContent = `ទំព័រ ${this.currentPage} នៃ ${totalPages} (បង្ហាញ ${startIdx + 1}-${startIdx + pageRecords.length} នៃ ${records.length})`;
+      pageInfo.textContent = `ទំព័រ ${this.currentPage} នៃ ${totalPages} | បុគ្គលិកសរុប៖ ${records.length} នាក់ (បង្ហាញ ${startIdx + 1}-${startIdx + pageRecords.length} នៃ ${records.length})`;
     }
 
     tbody.innerHTML = pageRecords.map((r, idx) => `
@@ -408,21 +411,20 @@ class PromotionController {
         <td style="font-weight: 800; color: var(--text-primary);">${r.fullName || '-'}</td>
         <td style="text-align: center;">${r.gender || '-'}</td>
         <td>${r.position || '-'}</td>
-        <td>${r.dob || '-'}</td>
-        <td>${r.serviceStartDate || '-'}</td>
-        <td><strong style="color: #0891b2;">${r.promotionDate || '-'}</strong></td>
+        <td>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.dob) : (r.dob || '-')}</td>
+        <td>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.serviceStartDate) : (r.serviceStartDate || '-')}</td>
+        <td><strong style="color: #0891b2;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.promotionDate) : (r.promotionDate || '-')}</strong></td>
         <td style="font-weight: 700;">${r.currentRank || '-'}</td>
         <td style="color: #4f46e5; font-weight: 800;">${r.requestedRank || '-'}</td>
-        <td>${r.promotedRank || '-'}</td>
+        <td style="color: #dc2626; font-weight: 800;">${r.promotedRank || '-'}</td>
         <td>${r.prakasNo || '-'}</td>
-        <td>${r.finalRank || '-'}</td>
         <td>${r.degree || '-'}</td>
         <td style="font-size: 0.76rem; color: var(--text-muted);">${r.otherRemark || '-'}</td>
         
         <!-- System Calculated Fields -->
         <td style="text-align: center; font-weight: 700;">${r.importYear || '-'}</td>
         <td style="text-align: center; font-weight: 700;">${r.importMonth || '-'}</td>
-        <td style="text-align: center; font-weight: 800; color: #2563eb; background: rgba(37, 99, 235, 0.05);">${r.calcDate || '-'}</td>
+        <td style="text-align: center; font-weight: 800; color: #2563eb; background: rgba(37, 99, 235, 0.05);">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || '-')}</td>
         <td style="font-weight: 800; color: var(--text-primary);">${r.actualDurationText}</td>
         <td style="text-align: center; font-weight: 700;">${r.actualYears}</td>
         <td style="text-align: center; font-weight: 700;">${r.actualMonths}</td>
@@ -431,7 +433,7 @@ class PromotionController {
           ${r.hasSuspension ? `⚠️ ${r.suspensionDurationText}` : 'គ្មាន'}
         </td>
         <td style="font-weight: 800; color: ${r.remainingDays > 0 ? '#d97706' : '#059669'};">${r.remainingDurationText}</td>
-        <td style="font-weight: 800; color: #0284c7; text-align: center;">${r.nextEligibleDateStr}</td>
+        <td style="font-weight: 800; color: #0284c7; text-align: center;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || '-')}</td>
         <td style="text-align: center;">
           <span class="status-badge ${r.statusCssClass}">
             ${r.statusLabel}
@@ -882,7 +884,9 @@ class PromotionController {
         for (let keyName of possibleKeys) {
           const matchKey = rowKeys.find(rk => rk.trim().toLowerCase() === keyName.trim().toLowerCase());
           if (matchKey && r[matchKey] !== undefined && r[matchKey] !== null && String(r[matchKey]).trim() !== '') {
-            return String(r[matchKey]).trim();
+            let res = String(r[matchKey]).trim();
+            if (res.endsWith('.0')) res = res.slice(0, -2);
+            return res;
           }
         }
         return '';
@@ -910,15 +914,26 @@ class PromotionController {
       };
     });
 
-    // Check for Duplicate Entries with existing records
-    const existingRecords = dataStore.getPromotionRecords() || [];
+    // Check Import Mode selection from radio buttons in Import Modal
+    const importMode = document.querySelector('input[name="promoImportMode"]:checked')?.value || 'append';
+
+    let existingRecords = dataStore.getPromotionRecords() || [];
+    const isOnlySampleData = existingRecords.length > 0 && existingRecords.every(r => r.isSample);
+
+    if (isOnlySampleData || importMode === 'overwrite') {
+      this.finalizeImport(mappedRows, 'OVERWRITE_ALL');
+      return;
+    }
+
+    // Check for Duplicate Entries with existing non-sample records
+    const nonSampleRecords = existingRecords.filter(r => !r.isSample);
     const duplicates = [];
 
     mappedRows.forEach(row => {
       const sId = row.staffId ? String(row.staffId).trim().toLowerCase() : '';
       const name = row.fullName ? String(row.fullName).trim().toLowerCase() : '';
 
-      const match = existingRecords.find(e => 
+      const match = nonSampleRecords.find(e => 
         (sId && String(e.staffId).trim().toLowerCase() === sId) ||
         (name && String(e.fullName).trim().toLowerCase() === name)
       );
@@ -980,14 +995,20 @@ class PromotionController {
    * Finalize Import Batch and Save Records
    */
   finalizeImport(rowsToImport, actionOption) {
-    if (rowsToImport.length === 0) {
+    if (!rowsToImport || rowsToImport.length === 0) {
       if (typeof app !== 'undefined') app.showToast('⚠️ គ្មានទិន្នន័យថ្មីត្រូវនាំចូលឡើយ!', 'warning');
       return;
     }
 
     const monthVal = document.getElementById('promo-meta-month')?.value || 'សីហា';
     const yearVal = document.getElementById('promo-meta-year')?.value || '2026';
-    const remarkVal = document.getElementById('promo-meta-remark')?.value || `ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែ${monthVal} ឆ្នាំ${yearVal}`;
+    
+    const selectEl = document.getElementById('promo-meta-remark-select');
+    const textEl = document.getElementById('promo-meta-remark-text');
+    let remarkVal = textEl?.value?.trim() || selectEl?.value;
+    if (!remarkVal || remarkVal === '__CUSTOM__') {
+      remarkVal = `ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែ${monthVal} ឆ្នាំ${yearVal}`;
+    }
 
     const batchId = 'BATCH_' + Date.now();
     const batchObj = {
@@ -1006,11 +1027,16 @@ class PromotionController {
       batchId: batchId
     }));
 
-    const existingRecords = dataStore.getPromotionRecords() || [];
-    let updatedRecords = [...existingRecords];
+    let existingRecords = dataStore.getPromotionRecords() || [];
+    // Clear sample records when real user data is imported
+    existingRecords = existingRecords.filter(r => !r.isSample);
 
-    if (actionOption === 'UPDATE_EXISTING') {
-      // Replace existing records matching staffId/fullName
+    let updatedRecords = [];
+
+    if (actionOption === 'OVERWRITE_ALL') {
+      updatedRecords = taggedRows;
+    } else if (actionOption === 'UPDATE_EXISTING') {
+      updatedRecords = [...existingRecords];
       taggedRows.forEach(newR => {
         const sId = newR.staffId ? String(newR.staffId).trim().toLowerCase() : '';
         const name = newR.fullName ? String(newR.fullName).trim().toLowerCase() : '';
@@ -1022,7 +1048,7 @@ class PromotionController {
         }
       });
     } else {
-      updatedRecords = [...updatedRecords, ...taggedRows];
+      updatedRecords = [...existingRecords, ...taggedRows];
     }
 
     dataStore.savePromotionRecords(updatedRecords);
@@ -1031,13 +1057,57 @@ class PromotionController {
     batches.unshift(batchObj);
     dataStore.savePromotionBatches(batches);
 
-    this.selectedBatchId = batchId;
+    // Reset filters to show all imported records immediately
+    this.selectedBatchId = 'all';
+    this.filters = {
+      searchQuery: '',
+      year: 'all',
+      month: 'all',
+      department: 'all',
+      office: 'all',
+      position: 'all',
+      promotionRank: 'all',
+      status: 'all',
+      staffDataMatch: 'all',
+      hasSuspension: 'all'
+    };
+    this.currentPage = 1;
     this.populateFilterDropdowns();
     this.render();
 
     if (typeof app !== 'undefined' && app.showToast) {
-      app.showToast(`✅ បាននាំចូលទិន្នន័យឡើងឋានន្តរស័ក្តិចំនួន ${rowsToImport.length} ជួរ ដោយជោគជ័យ!`, 'success');
+      app.showToast(`🎉 បាននាំចូលទិន្នន័យបុគ្គលិកសរុបចំនួន ${rowsToImport.length} នាក់ ដោយជោគជ័យ!`, 'success');
     }
+
+    this.openSuccessModal(
+      rowsToImport.length,
+      this.pendingFile ? this.pendingFile.name : 'Import_File.xlsx',
+      `ខែ${monthVal} ឆ្នាំ${yearVal}`,
+      remarkVal
+    );
+  }
+
+  openSuccessModal(count, fileName, period, remark) {
+    const modal = document.getElementById('promotion-import-success-modal');
+    if (!modal) return;
+
+    const countEl = document.getElementById('promo-success-count');
+    const fileEl = document.getElementById('promo-success-file');
+    const periodEl = document.getElementById('promo-success-period');
+    const remarkEl = document.getElementById('promo-success-remark');
+
+    if (countEl) countEl.textContent = `${count} នាក់`;
+    if (fileEl) fileEl.textContent = fileName || '-';
+    if (periodEl) periodEl.textContent = period || '-';
+    if (remarkEl) remarkEl.textContent = remark || '-';
+
+    modal.style.display = 'flex';
+    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  }
+
+  closeSuccessModal() {
+    const modal = document.getElementById('promotion-import-success-modal');
+    if (modal) modal.style.display = 'none';
   }
 
   deleteBatch(batchId) {
@@ -1077,18 +1147,24 @@ class PromotionController {
     const headers = [
       'ល.រ', 'អត្តលេខ', 'គោត្តនាម និងនាម', 'ភេទ', 'តួនាទី', 'ថ្ងៃខែឆ្នាំកំណើត',
       'ថ្ងៃខែឆ្នាំចូលបម្រើការងារ', 'ថ្ងៃខែឆ្នាំឡើងឋានន្តរស័ក្តិ', 'ឋានន្តរស័ក្តិ និងថ្នាក់បច្ចុប្បន្ន',
-      'ការស្នើសុំ', 'បានដំឡើង', 'ប្រកាសដំឡើង', 'ឋានន្តរស័ក្តិថ្នាក់ចុងក្រោយ', 'កម្រិតសញ្ញាបត្រ', 'ផ្សេងៗ',
+      'ការស្នើសុំ', 'បានដំឡើង', 'ប្រកាសដំឡើង', 'តាមកម្រិត', 'ផ្សេងៗ',
       'ឆ្នាំ', 'ខែ', 'ថ្ងៃខែឆ្នាំគិតគូរ', 'រយៈពេលចាប់ពីការឡើងឋានន្តរស័ក្តិ', 'ចំនួនឆ្នាំ', 'ចំនួនខែ',
       'រយៈពេលត្រូវការ', 'រយៈពេលព្យួរ/បាត់បង់សិទ្ធិ', 'រយៈពេលនៅសល់', 'ថ្ងៃខែឆ្នាំអាចស្នើសុំបាន', 'ស្ថានភាព', 'Reason / Remark'
     ];
 
     const rows = records.map((r, i) => [
-      i + 1, r.staffId || '', r.fullName || '', r.gender || '', r.position || '', r.dob || '',
-      r.serviceStartDate || '', r.promotionDate || '', r.currentRank || '', r.requestedRank || '',
-      r.promotedRank || '', r.prakasNo || '', r.finalRank || '', r.degree || '', r.otherRemark || '',
-      r.importYear || '', r.importMonth || '', r.calcDate || '', r.actualDurationText || '', r.actualYears || 0,
+      i + 1, r.staffId || '', r.fullName || '', r.gender || '', r.position || '',
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.dob) : (r.dob || ''),
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.serviceStartDate) : (r.serviceStartDate || ''),
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.promotionDate) : (r.promotionDate || ''),
+      r.currentRank || '', r.requestedRank || '',
+      r.promotedRank || '', r.prakasNo || '', r.degree || '', r.otherRemark || '',
+      r.importYear || '', r.importMonth || '',
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || ''),
+      r.actualDurationText || '', r.actualYears || 0,
       r.actualMonths || 0, `${r.requiredYears} ឆ្នាំ`, r.suspensionDurationText || 'គ្មាន', r.remainingDurationText || '',
-      r.nextEligibleDateStr || '', r.statusLabel || '', r.reason || ''
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || ''),
+      r.statusLabel || '', r.reason || ''
     ]);
 
     const wsData = [

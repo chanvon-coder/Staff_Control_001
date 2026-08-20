@@ -1797,9 +1797,19 @@ class StaffApp {
             auditLogger.log('IMPORT_EXCEL', 'MULTIPLE', `បាននាំចូល ${records.length} កំណត់ត្រាពីឯកសារ ${file.name}`);
           }
           
-          this.showToast(`បាននាំចូល ${records.length} កំណត់ត្រាដោយជោគជ័យ!`, 'success');
+          this.showToast(`🎉 បាននាំចូលទិន្នន័យបុគ្គលិកសរុបចំនួន ${records.length} នាក់ ដោយជោគជ័យ!`, 'success');
           this.refreshAll();
           fileInput.value = '';
+
+          // Trigger Success Popup Modal
+          if (typeof promotionController !== 'undefined' && promotionController.openSuccessModal) {
+            promotionController.openSuccessModal(
+              records.length,
+              file.name,
+              'ទិន្នន័យមូលដ្ឋានបុគ្គលិក (Staff Database)',
+              'បានបញ្ចូលទៅក្នុងប្រព័ន្ធរដ្ឋបាលបុគ្គលិករួចរាល់'
+            );
+          }
         }, (err) => {
           alert('កំហុសពេលនាំចូលឯកសារ៖ ' + err.message);
           fileInput.value = '';

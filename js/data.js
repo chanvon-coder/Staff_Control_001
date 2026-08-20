@@ -627,7 +627,8 @@ class DataStore {
         data = [
           {
             no: 1,
-            staffId: '0042',
+            isSample: true,
+            staffId: '2961000092',
             fullName: 'សុខ ចាន់ថន',
             gender: 'ប្រុស',
             position: 'ប្រធានការិយាល័យ',
@@ -649,7 +650,8 @@ class DataStore {
           },
           {
             no: 2,
-            staffId: '0108',
+            isSample: true,
+            staffId: '2961200061',
             fullName: 'គង់ ស្រីណុច',
             gender: 'ស្រី',
             position: 'អនុប្រធានការិយាល័យ',
@@ -671,7 +673,8 @@ class DataStore {
           },
           {
             no: 3,
-            staffId: '0215',
+            isSample: true,
+            staffId: '2962000119',
             fullName: 'ជា វុទ្ធី',
             gender: 'ប្រុស',
             position: 'មន្ត្រីស៊ើបអង្កេត',
@@ -693,7 +696,8 @@ class DataStore {
           },
           {
             no: 4,
-            staffId: '0340',
+            isSample: true,
+            staffId: '2961500340',
             fullName: 'លី ម៉េងហ៊ាង',
             gender: 'ប្រុស',
             position: 'ប្រធានផ្នែក',
@@ -715,7 +719,8 @@ class DataStore {
           },
           {
             no: 5,
-            staffId: '0412',
+            isSample: true,
+            staffId: '2961800412',
             fullName: 'អ៊ុំ វ៉ាន់នី',
             gender: 'ស្រី',
             position: 'មន្ត្រីរដ្ឋបាល',

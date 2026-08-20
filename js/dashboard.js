@@ -11,7 +11,7 @@ class DashboardController {
       staffType: 'progress',
       office: 'progress',
       position: 'progress',
-      reason: 'progress',
+      reason: '3d-pie',
       alerts: 'progress',
       statusGender: 'chart'
     };
@@ -613,52 +613,127 @@ class DashboardController {
     }
   }
 
-  /* ---------------- 5. REQUEST REASONS STATISTICS ---------------- */
+  /* ---------------- 5. REQUEST REASONS 3D PIE CHART & STATISTICS ---------------- */
+  setReasonViewMode(mode) {
+    this.viewModes.reason = mode;
+    const data = this.getFilteredData();
+    this.renderReasonStats(data);
+  }
+
   renderReasonStats(data) {
-    const container = document.getElementById('reason-stats-container');
-    const wrap = document.getElementById('reason-chart-canvas-wrap');
-    if (!container) return;
+    const wrapper3D = document.getElementById('reason-3dpie-wrapper');
+    const containerProgress = document.getElementById('reason-stats-container');
+    const wrapBar = document.getElementById('reason-chart-canvas-wrap');
+    if (!wrapper3D && !containerProgress) return;
 
-    const isProgress = this.viewModes.reason === 'progress';
-    container.style.display = isProgress ? 'flex' : 'none';
-    if (wrap) wrap.style.display = isProgress ? 'none' : 'block';
+    const currentMode = this.viewModes.reason || '3d-pie';
 
+    // Show/hide wrappers based on current mode
+    if (wrapper3D) wrapper3D.style.display = (currentMode === '3d-pie' || currentMode === 'chart') ? 'grid' : 'none';
+    if (containerProgress) containerProgress.style.display = (currentMode === 'progress') ? 'flex' : 'none';
+    if (wrapBar) wrapBar.style.display = (currentMode === 'bar') ? 'block' : 'none';
+
+    // Update pill buttons state
+    ['3dpie', 'progress', 'bar'].forEach(m => {
+      const btn = document.getElementById(`btn-reason-${m}`);
+      if (btn) {
+        const isActive = (m === '3dpie' && (currentMode === '3d-pie' || currentMode === 'chart')) || (m === currentMode);
+        btn.classList.toggle('active', isActive);
+        btn.style.background = isActive ? 'var(--primary)' : 'transparent';
+        btn.style.color = isActive ? '#fff' : 'var(--text-muted)';
+      }
+    });
+
+    // Aggregate counts
     const counts = {};
     data.forEach(item => {
-      const r = item.requestReason || 'មិនបានបញ្ជាក់ (Unassigned)';
+      const r = (item.requestReason && item.requestReason.trim()) ? item.requestReason.trim() : 'មិនបានបញ្ជាក់ (Unassigned)';
       counts[r] = (counts[r] || 0) + 1;
     });
 
     let entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
     const filter = this.cardFilters.reason;
     if (filter === 'top5') entries = entries.slice(0, 5);
+    else if (filter === 'top8') entries = entries.slice(0, 8);
     else if (filter === 'top10') entries = entries.slice(0, 10);
 
     const total = data.length || 1;
-    const colors = ['#4f46e5', '#059669', '#d97706', '#dc2626', '#0891b2', '#7c3aed'];
+    const totalRequestsCount = entries.reduce((sum, e) => sum + e[1], 0);
 
-    if (entries.length === 0) {
-      container.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">គ្មានទិន្នន័យមូលហេតុសំណើ</div>';
-    } else {
-      container.innerHTML = entries.map(([reason, count], idx) => {
-        const pct = Math.round((count / total) * 100);
-        const color = colors[idx % colors.length];
-        return `
-          <div class="stat-progress-item" onclick="dashboardController.handleFilterClick('reason', '${reason.replace(/'/g, "\\'")}')" title="ចុចដើម្បីច្រោះទិន្នន័យ៖ ${reason}">
-            <div class="stat-progress-header">
-              <div class="stat-progress-label">${reason}</div>
-              <div class="stat-progress-meta">${count} នាក់ (${pct}%)</div>
-            </div>
-            <div class="stat-progress-track">
-              <div class="stat-progress-fill" style="width: ${pct}%; background: ${color};"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
+    const totalCountBadge = document.getElementById('reason-3d-total-count');
+    if (totalCountBadge) {
+      totalCountBadge.textContent = totalRequestsCount;
     }
 
-    if (!isProgress) {
-      this.createOrUpdateChart('chart-reason', {
+    // High-contrast vibrant 3D gradient palette
+    const colors = [
+      '#4f46e5', // Indigo
+      '#059669', // Emerald
+      '#ea580c', // Orange
+      '#db2777', // Pink
+      '#0284c7', // Sky Blue
+      '#7c3aed', // Purple
+      '#ca8a04', // Amber
+      '#dc2626', // Red
+      '#14b8a6', // Teal
+      '#6366f1'  // Violet
+    ];
+
+    // 1. Render 3D Pie Chart View
+    if (currentMode === '3d-pie' || currentMode === 'chart') {
+      const legendList = document.getElementById('reason-3d-legend-list');
+      if (legendList) {
+        if (entries.length === 0) {
+          legendList.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">គ្មានទិន្នន័យមូលហេតុសំណើ</div>';
+        } else {
+          legendList.innerHTML = entries.map(([reason, count], idx) => {
+            const pct = Math.round((count / total) * 100);
+            const color = colors[idx % colors.length];
+            return `
+              <div class="reason-3d-legend-item" onclick="dashboardController.handleFilterClick('reason', '${reason.replace(/'/g, "\\'")}')" title="ចុចដើម្បីច្រោះទិន្នន័យ៖ ${reason}">
+                <div style="display: flex; align-items: center; gap: 0.45rem; flex: 1; min-width: 0;">
+                  <span class="legend-color-dot" style="width: 10px; height: 10px; border-radius: 50%; background: ${color}; flex-shrink: 0; box-shadow: 0 0 6px ${color}88;"></span>
+                  <span class="legend-label-text" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${reason}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;">
+                  <span class="legend-count-pill" style="background: rgba(0,0,0,0.05); padding: 1px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; color: var(--text-primary);">${count}</span>
+                  <span class="legend-pct-text" style="font-size: 0.72rem; font-weight: 800; color: ${color}; min-width: 32px; text-align: right;">${pct}%</span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      this.render3DCanvasPieChart('chart-reason-3d', entries, colors, total);
+    }
+
+    // 2. Render Progress Bars View
+    if (containerProgress) {
+      if (entries.length === 0) {
+        containerProgress.innerHTML = '<div style="text-align:center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">គ្មានទិន្នន័យមូលហេតុសំណើ</div>';
+      } else {
+        containerProgress.innerHTML = entries.map(([reason, count], idx) => {
+          const pct = Math.round((count / total) * 100);
+          const color = colors[idx % colors.length];
+          return `
+            <div class="stat-progress-item" onclick="dashboardController.handleFilterClick('reason', '${reason.replace(/'/g, "\\'")}')" title="ចុចដើម្បីច្រោះទិន្នន័យ៖ ${reason}">
+              <div class="stat-progress-header">
+                <div class="stat-progress-label">${reason}</div>
+                <div class="stat-progress-meta">${count} សំណើ (${pct}%)</div>
+              </div>
+              <div class="stat-progress-track">
+                <div class="stat-progress-fill" style="width: ${pct}%; background: ${color};"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // 3. Render 2D Bar Chart View
+    if (currentMode === 'bar') {
+      this.createOrUpdateChart('chart-reason-bar', {
         type: 'bar',
         data: {
           labels: entries.map(e => e[0]),
@@ -680,6 +755,146 @@ class DashboardController {
         }
       });
     }
+  }
+
+  /**
+   * Render High-Precision 3D Extruded Donut / Pie Chart on Canvas
+   */
+  render3DCanvasPieChart(canvasId, entries, colors, total) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    // Helper to shade colors for 3D depth walls
+    const shadeHex = (hex, percent) => {
+      let f = parseInt(hex.slice(1), 16),
+          t = percent < 0 ? 0 : 255,
+          p = percent < 0 ? percent * -1 : percent,
+          R = f >> 16,
+          G = (f >> 8) & 0x00ff,
+          B = f & 0x0000ff;
+      return "#" + (
+        0x1000000 +
+        (Math.round((t - R) * p) + R) * 0x10000 +
+        (Math.round((t - G) * p) + G) * 0x100 +
+        (Math.round((t - B) * p) + B)
+      ).toString(16).slice(1);
+    };
+
+    // Custom 3D Extrusion Plugin for Chart.js
+    const plugin3D = {
+      id: `custom3DDepth_${canvasId}`,
+      beforeDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data || meta.data.length === 0) return;
+
+        ctx.save();
+        const depth = 16; // 3D depth height in pixels
+
+        // Draw 3D depth layers from bottom to top
+        for (let d = depth; d >= 1; d--) {
+          meta.data.forEach((element, i) => {
+            if (element.hidden) return;
+            const { startAngle, endAngle, outerRadius, innerRadius, x, y } = element;
+            const baseColor = chart.data.datasets[0].backgroundColor[i] || '#4f46e5';
+            
+            ctx.fillStyle = shadeHex(baseColor, -0.42);
+            ctx.beginPath();
+            ctx.arc(x, y + d, outerRadius, startAngle, endAngle);
+            if (innerRadius > 0) {
+              ctx.arc(x, y + d, innerRadius, endAngle, startAngle, true);
+            } else {
+              ctx.lineTo(x, y + d);
+            }
+            ctx.closePath();
+            ctx.fill();
+          });
+        }
+
+        ctx.restore();
+      },
+      afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data) return;
+
+        ctx.save();
+        // Top bevel lighting & slice dividers
+        meta.data.forEach((element, i) => {
+          if (element.hidden) return;
+          const { startAngle, endAngle, outerRadius, innerRadius, x, y } = element;
+          
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(x, y, outerRadius, startAngle, endAngle);
+          if (innerRadius > 0) {
+            ctx.arc(x, y, innerRadius, endAngle, startAngle, true);
+          } else {
+            ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+          ctx.stroke();
+        });
+        ctx.restore();
+      }
+    };
+
+    const labels = entries.map(e => e[0]);
+    const dataValues = entries.map(e => e[1]);
+    const bgColors = entries.map((_, idx) => colors[idx % colors.length]);
+
+    this.createOrUpdateChart(canvasId, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: dataValues,
+          backgroundColor: bgColors,
+          borderWidth: 0,
+          hoverOffset: 12,
+          hoverBorderWidth: 2,
+          hoverBorderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '62%',
+        layout: {
+          padding: { top: 10, bottom: 25, left: 10, right: 10 }
+        },
+        plugins: {
+          legend: {
+            display: false // Custom rich interactive 3D legend
+          },
+          tooltip: {
+            backgroundColor: 'rgba(15, 23, 42, 0.92)',
+            titleFont: { family: 'Hanuman, Inter, sans-serif', size: 12, weight: 'bold' },
+            bodyFont: { family: 'Hanuman, Inter, sans-serif', size: 12 },
+            padding: 10,
+            cornerRadius: 8,
+            callbacks: {
+              label: function(context) {
+                const val = context.raw || 0;
+                const pct = Math.round((val / total) * 100);
+                return ` ${context.label}: ${val} សំណើ (${pct}%)`;
+              }
+            }
+          }
+        },
+        onClick: (event, elements) => {
+          if (elements && elements.length > 0) {
+            const index = elements[0].index;
+            const clickedReason = labels[index];
+            if (clickedReason) {
+              this.handleFilterClick('reason', clickedReason);
+            }
+          }
+        }
+      },
+      plugins: [plugin3D]
+    });
   }
 
   /* ---------------- 6. DATE ALERT OPTIONS STATISTICS ---------------- */

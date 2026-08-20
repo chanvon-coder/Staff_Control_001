@@ -199,7 +199,7 @@
                 <i data-lucide="layout-dashboard"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">ផ្ទាំងសង្ខេប (Dashboard)</div>
+                <div class="nav-item-title">ផ្ទាំងសង្ខេប</div>
                 <div class="nav-item-desc">ទិដ្ឋភាពទូទៅ និងក្រាហ្វិកវិភាគទិន្នន័យ</div>
               </div>
               <span class="nav-item-check">✓</span>
@@ -210,17 +210,51 @@
                 <i data-lucide="users"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">ទិន្នន័យបុគ្គលិក (Staff Data)</div>
+                <div class="nav-item-title">ទិន្នន័យបុគ្គលិក</div>
                 <div class="nav-item-desc">តារាងមេ ២២ ជួរឈរ & តម្រងពហុកម្រិត</div>
               </div>
               <span class="nav-item-check">✓</span>
+            </button>
             <button class="nav-droplist-item" data-tab="reports" onclick="app.switchTab('reports')">
               <div class="nav-item-icon-box" style="background: rgba(236, 72, 153, 0.12); color: #ec4899;">
                 <i data-lucide="file-spreadsheet"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">របាយការណ៍ផ្លូវការ (Reports)</div>
+                <div class="nav-item-title">របាយការណ៍ផ្លូវការ</div>
                 <div class="nav-item-desc">របាយការណ៍តាមមូលហេតុនៃសំណើ & បោះពុម្ព</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="case-summary" onclick="app.switchTab('case-summary')">
+              <div class="nav-item-icon-box" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4;">
+                <i data-lucide="calendar-range"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">របាយការណ៍សង្ខេប</div>
+                <div class="nav-item-desc">សង្ខេបរយៈពេលប្រើប្រាស់តាមករណី & វិភាគ</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="eligibility" onclick="app.switchTab('eligibility')">
+              <div class="nav-item-icon-box" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">ពិនិត្យសិទ្ធិស្នើសុំ</div>
+                <div class="nav-item-desc">ត្រួតពិនិត្យប្រវត្តិ និងសិទ្ធិស្នើសុំឡើងវិញ</div>
+              </div>
+              <span class="nav-item-check">✓</span>
+            </button>
+
+            <button class="nav-droplist-item" data-tab="promotion" onclick="app.switchTab('promotion')">
+              <div class="nav-item-icon-box" style="background: rgba(139, 92, 246, 0.12); color: #8b5cf6;">
+                <i data-lucide="award"></i>
+              </div>
+              <div class="nav-item-text">
+                <div class="nav-item-title">គ្រប់គ្រងឡើងឋានន្តរស័ក្តិ</div>
+                <div class="nav-item-desc">ពិនិត្យលក្ខខណ្ឌឡើងថ្នាក់, ព្យួរ & របាយការណ៍</div>
               </div>
               <span class="nav-item-check">✓</span>
             </button>
@@ -230,7 +264,7 @@
                 <i data-lucide="file-check"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">តាមដានឯកសារ (Documents)</div>
+                <div class="nav-item-title">តាមដានឯកសារ</div>
                 <div class="nav-item-desc">កាលវិភាគឯកសារ & ឯកសារយោង</div>
               </div>
               <span class="nav-item-check">✓</span>
@@ -252,7 +286,7 @@
                 <i data-lucide="history"></i>
               </div>
               <div class="nav-item-text">
-                <div class="nav-item-title">កំណត់ត្រា (Audit Log)</div>
+                <div class="nav-item-title">កំណត់ត្រា</div>
                 <div class="nav-item-desc">ប្រវត្តិកែប្រែ និងសកម្មភាពសុវត្ថិភាព</div>
               </div>
               <span class="nav-item-check">✓</span>
@@ -375,6 +409,36 @@
           <div class="right-nav-item-text">
             <span class="right-nav-kh">របាយការណ៍</span>
             <span class="right-nav-en">Reports</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="case-summary" onclick="app.switchTab('case-summary')">
+          <div class="right-nav-item-icon" style="color: #06b6d4; background: rgba(6, 182, 212, 0.12);">
+            <i data-lucide="calendar-range"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">របាយការណ៍សង្ខេប</span>
+            <span class="right-nav-en">Summary Report</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="eligibility" onclick="app.switchTab('eligibility')">
+          <div class="right-nav-item-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.12);">
+            <i data-lucide="shield-check"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">ពិនិត្យសិទ្ធិ</span>
+            <span class="right-nav-en">Eligibility</span>
+          </div>
+        </button>
+
+        <button class="right-nav-item" data-tab="promotion" onclick="app.switchTab('promotion')">
+          <div class="right-nav-item-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.12);">
+            <i data-lucide="award"></i>
+          </div>
+          <div class="right-nav-item-text">
+            <span class="right-nav-kh">ឡើងឋានន្តរស័ក្តិ</span>
+            <span class="right-nav-en">Promotion</span>
           </div>
         </button>
 
@@ -669,30 +733,66 @@
           </div>
         </div>
 
-        <!-- 5. ស្ថិតិបុគ្គលិកតាមមូលហេតុនៃសំណើ (Request Reasons) -->
+        <!-- 5. ស្ថិតិបុគ្គលិកតាមមូលហេតុនៃសំណើ (Request Reasons - 3D Pie Chart) -->
         <div class="chart-card chart-card-md" id="card-chart-reason">
           <div class="chart-header">
             <h2>
-              <i data-lucide="file-text"></i>
-              <span>ស្ថិតិបុគ្គលិកតាមមូលហេតុនៃសំណើ (មូលហេតុនៃសំណើ (Request Reasons))</span>
+              <i data-lucide="pie-chart" style="color: #ec4899;"></i>
+              <span>មូលហេតុនៃសំណើ (Request Reasons - 3D Pie)</span>
             </h2>
             <div class="chart-header-actions">
               <select class="chart-filter-select" id="filter-chart-reason" onchange="dashboardController.handleCardFilterChange('reason', this.value)">
                 <option value="all">🎯 គ្រប់មូលហេតុ (All)</option>
                 <option value="top5">🔝 Top 5 មូលហេតុ</option>
+                <option value="top8">🔝 Top 8 មូលហេតុ</option>
                 <option value="top10">🔝 Top 10 មូលហេតុ</option>
               </select>
-              <button type="button" class="btn-chart-view-toggle" onclick="dashboardController.toggleViewMode('reason')" title="ប្តូរទម្រង់បង្ហាញ">
-                <i data-lucide="sliders-horizontal"></i>
-                <span id="btn-text-mode-reason">ក្រាហ្វិក (Chart)</span>
-              </button>
+              <div class="chart-type-btn-group" style="display: inline-flex; background: var(--bg-card-subtle, rgba(0,0,0,0.03)); border-radius: 8px; padding: 2px; border: 1px solid var(--border-color);">
+                <button type="button" class="btn-chart-type-pill active" id="btn-reason-3dpie" onclick="dashboardController.setReasonViewMode('3d-pie')" title="ក្រាហ្វិក 3D Pie Chart" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; background: var(--primary); color: #fff;">
+                  🥧 3D Pie
+                </button>
+                <button type="button" class="btn-chart-type-pill" id="btn-reason-progress" onclick="dashboardController.setReasonViewMode('progress')" title="បញ្ជីរបារ (Progress Bars)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; background: transparent; color: var(--text-muted);">
+                  📋 របារ
+                </button>
+                <button type="button" class="btn-chart-type-pill" id="btn-reason-bar" onclick="dashboardController.setReasonViewMode('bar')" title="ក្រាហ្វិកសសរ (Bar Chart)" style="padding: 3px 8px; font-size: 0.72rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 700; background: transparent; color: var(--text-muted);">
+                  📊 សសរ
+                </button>
+              </div>
               <span class="realtime-badge">Real-time</span>
             </div>
           </div>
-          <div class="chart-body">
-            <div class="stat-progress-list" id="reason-stats-container"></div>
-            <div id="reason-chart-canvas-wrap" style="display: none; height: 100%; min-height: 240px;">
-              <canvas id="chart-reason"></canvas>
+          <div class="chart-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- 3D Pie Chart & Interactive Legend Stage -->
+            <div id="reason-3dpie-wrapper" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 0.75rem; align-items: center; min-height: 270px;">
+              <!-- 3D Canvas Stage -->
+              <div class="pie-3d-stage">
+                <canvas id="chart-reason-3d" style="filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.16));"></canvas>
+                <div id="reason-3d-center-badge" style="position: absolute; pointer-events: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateY(-8px);">
+                  <span style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">សរុបសំណើ</span>
+                  <span id="reason-3d-total-count" style="font-size: 1.35rem; font-weight: 900; color: var(--text-primary); line-height: 1.1;">0</span>
+                  <span style="font-size: 0.62rem; font-weight: 700; color: var(--primary);">សំណើ</span>
+                </div>
+              </div>
+              <!-- 3D Interactive Legend with Stats & Drilldown -->
+              <div class="reason-3d-legend" id="reason-3d-legend-list" style="display: flex; flex-direction: column; gap: 0.35rem; max-height: 260px; overflow-y: auto; padding-right: 2px;">
+                <!-- Dynamically populated 3D Legend items -->
+              </div>
+            </div>
+
+            <!-- Alternative Progress Bars Container -->
+            <div class="stat-progress-list" id="reason-stats-container" style="display: none;"></div>
+
+            <!-- Alternative 2D Bar Chart Canvas Wrap -->
+            <div id="reason-chart-canvas-wrap" style="display: none; height: 100%; min-height: 260px;">
+              <canvas id="chart-reason-bar"></canvas>
+            </div>
+
+            <!-- Link to Full Case Duration Summary Report -->
+            <div style="display: flex; justify-content: flex-end; padding-top: 0.35rem; border-top: 1px dashed var(--border-color);">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="app.switchTab('case-summary')" style="font-size: 0.74rem; font-weight: 700; color: #0891b2; display: inline-flex; align-items: center; gap: 0.35rem; padding: 3px 9px;">
+                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                <span>📊 មើលរបាយការណ៍សង្ខេបរយៈពេលករណីលម្អិត (Case Summary Report) ➔</span>
+              </button>
             </div>
           </div>
         </div>
@@ -800,7 +900,18 @@
         </div>
 
         <!-- Action Buttons -->
-        <div class="button-group">
+        <div class="button-group" style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+          <!-- Text Control: Wrap Text or Shrink to Fit -->
+          <div class="text-control-wrapper" style="display: inline-flex; align-items: center; gap: 0.35rem; background: var(--bg-card); border: 1px solid var(--border-color); padding: 3px 8px; border-radius: var(--radius-sm); box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <i data-lucide="wrap-text" style="width: 14px; height: 14px; color: var(--primary);"></i>
+            <span style="font-size: 0.76rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">អត្ថបទ៖</span>
+            <select id="table-text-control-select" onchange="app.setTextControlMode(this.value)" style="font-size: 0.76rem; font-weight: 700; border: none; background: transparent; color: var(--primary); cursor: pointer; outline: none;" title="គ្រប់គ្រងទម្រង់បង្ហាញអត្ថបទវែង (Wrap Text or Shrink to Fit)">
+              <option value="wrap">📝 រុំបន្ទាត់ (Wrap Text)</option>
+              <option value="shrink">🔍 បង្រួមអក្សរ (Shrink to Fit)</option>
+              <option value="truncate">✂️ កាត់ខ្លី (Truncate / 1 Line)</option>
+            </select>
+          </div>
+
           <button class="btn btn-secondary btn-sm" onclick="app.resetAllFilters()" title="សម្អាតតម្រងទាំងអស់ (Reset All Filters)">
             <i data-lucide="rotate-ccw"></i>
             <span>សម្អាត (Reset)</span>
@@ -1338,13 +1449,580 @@
       </div>
     </section>
 
+    <!-- ==================== TAB: CASE DURATION SUMMARY REPORT & ANALYTICS ==================== -->
+    <section class="tab-pane" id="tab-case-summary">
+      
+      <!-- Unified Header Toolbar -->
+      <div class="chart-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <div>
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 0.45rem; font-size: 1.15rem; font-weight: 800;">
+            <i data-lucide="calendar-range" style="color: #06b6d4;"></i>
+            <span>របាយការណ៍សង្ខេប (Summary Report)</span>
+          </h2>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+            សង្ខេបរយៈពេលដែលបុគ្គលិកបានប្រើប្រាស់ក្នុងករណីនីមួយៗ (ព្យួរការងារ, សិក្សាក្រៅប្រទេស, ឈប់បម្រើការងារ...) តាមប្រតិទិនពិតប្រាកដ (X ឆ្នាំ X ខែ X ថ្ងៃ)
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <span class="badge" id="case-sum-active-filter-badge" style="display: none; background: rgba(6, 182, 212, 0.15); color: #0891b2; font-weight: 700; padding: 4px 10px; border-radius: 9999px; font-size: 0.76rem;">
+            🎯 តម្រងសកម្ម: 0
+          </span>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="caseSummaryController.resetFilters()" title="សម្អាតតម្រងទាំងអស់">
+            <i data-lucide="rotate-ccw"></i>
+            <span>សម្អាត (Reset)</span>
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="caseSummaryController.exportExcel()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;">
+            <i data-lucide="download"></i>
+            <span>📊 Excel</span>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="caseSummaryController.printReport()" style="display: flex; align-items: center; gap: 0.35rem; font-weight: 700;">
+            <i data-lucide="printer"></i>
+            <span>បោះពុម្ព (Print)</span>
+          </button>
+        </div>
+      </div>
+
+
+
+      <!-- MULTI-DIMENSION REACTIVE FILTER BAR -->
+      <div class="doc-search-toolbar" style="margin-bottom: 1.25rem;">
+        <!-- Search & Primary Filters Row -->
+        <div class="doc-search-row">
+          <div class="doc-search-input-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="case-sum-search-input" placeholder="ស្វែងរកតាម អត្តលេខ, ឈ្មោះ, ករណី, អង្គភាព, ការិយាល័យ, ប្រកាសលេខ..." oninput="caseSummaryController.handleSearch(this.value)">
+          </div>
+
+          <select class="doc-filter-select" id="case-sum-filter-reason" onchange="caseSummaryController.handleFilterChange('caseReason', this.value)" style="font-weight: 700; color: #0891b2; background: rgba(6, 182, 212, 0.08);">
+            <option value="all">🎯 គ្រប់ករណីទាំងអស់ (All Cases)</option>
+          </select>
+
+          <select class="doc-filter-select" id="case-sum-filter-year" onchange="caseSummaryController.handleFilterChange('year', this.value)">
+            <option value="all">📅 គ្រប់ឆ្នាំ (All Years)</option>
+          </select>
+
+          <select class="doc-filter-select" id="case-sum-filter-dept" onchange="caseSummaryController.handleFilterChange('department', this.value)">
+            <option value="all">🏢 គ្រប់អង្គភាព (All Departments)</option>
+          </select>
+
+          <select class="doc-filter-select" id="case-sum-filter-office" onchange="caseSummaryController.handleFilterChange('office', this.value)">
+            <option value="all">📂 គ្រប់ការិយាល័យ (All Offices)</option>
+          </select>
+
+          <select class="doc-filter-select" id="case-sum-filter-gender" onchange="caseSummaryController.handleFilterChange('gender', this.value)" style="max-width: 140px;">
+            <option value="all">👥 ភេទ (All)</option>
+            <option value="ប្រុស">👨 ប្រុស (Male)</option>
+            <option value="ស្រី">👩 ស្រី (Female)</option>
+          </select>
+        </div>
+
+        <!-- Date Ranges & Quick Filter Chips Row -->
+        <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap; padding-top: 0.35rem; border-top: 1px dashed var(--border-color);">
+          <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary);">
+            <span>ថ្ងៃចាប់ផ្តើម៖</span>
+            <input type="date" class="form-control form-control-sm" id="case-sum-start-from" onchange="caseSummaryController.handleFilterChange('startDateFrom', this.value)" style="width: 130px; font-size: 0.76rem; padding: 2px 6px;">
+            <span>ដល់</span>
+            <input type="date" class="form-control form-control-sm" id="case-sum-start-to" onchange="caseSummaryController.handleFilterChange('startDateTo', this.value)" style="width: 130px; font-size: 0.76rem; padding: 2px 6px;">
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); margin-left: 0.5rem;">
+            <span>ថ្ងៃចុងក្រោយ៖</span>
+            <input type="date" class="form-control form-control-sm" id="case-sum-end-from" onchange="caseSummaryController.handleFilterChange('endDateFrom', this.value)" style="width: 130px; font-size: 0.76rem; padding: 2px 6px;">
+            <span>ដល់</span>
+            <input type="date" class="form-control form-control-sm" id="case-sum-end-to" onchange="caseSummaryController.handleFilterChange('endDateTo', this.value)" style="width: 130px; font-size: 0.76rem; padding: 2px 6px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 3: SUMMARY CARDS PER CASE TYPE -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+          <h3 style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="layers" style="color: var(--primary);"></i>
+            <span>ស្ថិតិសង្ខេបតាមប្រភេទករណីនីមួយៗ</span>
+          </h3>
+          <span style="font-size: 0.76rem; color: var(--text-muted);">ចុចលើកាតដើម្បីច្រោះតារាងមើលតែករណីនោះ</span>
+        </div>
+        <div class="case-summary-cards-grid" id="case-summary-cards-grid">
+          <!-- Dynamically populated case cards -->
+        </div>
+      </div>
+
+      <!-- VISUAL 3D PIE CHART FOR CASE DURATION SUMMARY -->
+      <div class="chart-card chart-card-md" style="margin-bottom: 1.5rem;" id="card-case-summary-chart">
+        <div class="chart-header">
+          <h2>
+            <i data-lucide="pie-chart" style="color: #06b6d4;"></i>
+            <span>ស្ថិតិប្រៀបធៀបករណី</span>
+          </h2>
+          <div class="chart-header-actions">
+            <span class="realtime-badge">Real-time</span>
+          </div>
+        </div>
+        <div class="chart-body" style="padding: 1.1rem 1.25rem;">
+          <div id="case-sum-3dpie-wrapper" style="display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 1.25rem; align-items: center; min-height: 290px;">
+            <!-- 3D Canvas Stage -->
+            <div class="pie-3d-stage" style="position: relative; height: 100%; min-height: 280px; display: flex; align-items: center; justify-content: center;">
+              <canvas id="chart-case-people-3d" style="filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.16));"></canvas>
+              <div id="case-sum-3d-center-badge" style="position: absolute; pointer-events: none; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; transform: translateY(-8px);">
+                <span style="font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">សរុបករណី</span>
+                <span id="case-sum-3d-total-count" style="font-size: 1.4rem; font-weight: 900; color: var(--text-primary); line-height: 1.1;">0</span>
+                <span style="font-size: 0.65rem; font-weight: 700; color: var(--primary);">ករណី</span>
+              </div>
+            </div>
+            <!-- 3D Interactive Legend with Stats & Drilldown -->
+            <div class="reason-3d-legend" id="case-sum-3d-legend-list" style="display: flex; flex-direction: column; gap: 0.45rem; max-height: 280px; overflow-y: auto; padding-right: 4px;">
+              <!-- Dynamically populated 3D Legend items -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2: SUMMARY REPORT TABLE -->
+      <div class="master-table-card" style="margin-bottom: 2rem;">
+        <div class="chart-header" style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="table" style="color: #06b6d4;"></i>
+            <span>តារាងសង្ខេបកំណត់ត្រារយៈពេលតាមករណី</span>
+          </h3>
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);" id="case-summary-table-info">
+            បង្ហាញ 0 នៃ 0 ករណី
+          </div>
+        </div>
+
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="staff-table" id="case-summary-staff-table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">ល.រ</th>
+                <th onclick="caseSummaryController.sortBy('khmerName')" style="cursor: pointer;">ឈ្មោះបុគ្គលិក ⬍</th>
+                <th onclick="caseSummaryController.sortBy('staffId')" style="cursor: pointer;">អត្តលេខ ⬍</th>
+                <th onclick="caseSummaryController.sortBy('caseReason')" style="cursor: pointer;">ករណី / មូលហេតុ ⬍</th>
+                <th onclick="caseSummaryController.sortBy('calcStartDate')" style="cursor: pointer;">ថ្ងៃចាប់ផ្តើម ⬍</th>
+                <th onclick="caseSummaryController.sortBy('calcEndDate')" style="cursor: pointer;">ថ្ងៃចុងក្រោយ ⬍</th>
+                <th onclick="caseSummaryController.sortBy('duration')" style="cursor: pointer; min-width: 170px;">⏱️ រយៈពេលប្រើប្រាស់ ⬍</th>
+                <th>អង្គភាព / ការិយាល័យ</th>
+                <th style="text-align: center;">ស្ថានភាព</th>
+                <th style="text-align: center; width: 90px;">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody id="case-summary-table-body">
+              <!-- Dynamically rendered rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer Pagination -->
+        <div class="table-footer-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem;">
+          <div style="font-size: 0.8rem; color: var(--text-secondary);">
+            ទំព័រ៖ <strong id="case-summary-page-num">1 / 1</strong>
+          </div>
+          <div class="pagination-controls" style="display: flex; gap: 0.45rem;">
+            <button class="btn btn-secondary btn-sm" onclick="caseSummaryController.currentPage = Math.max(1, caseSummaryController.currentPage - 1); caseSummaryController.render();">◀ មុន (Prev)</button>
+            <button class="btn btn-secondary btn-sm" onclick="caseSummaryController.currentPage++; caseSummaryController.render();">បន្ទាប់ (Next) ▶</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB: REQUEST ELIGIBILITY & HISTORY CHECK SYSTEM ==================== -->
+    <section class="tab-pane" id="tab-eligibility">
+      
+      <!-- Header Toolbar -->
+      <div class="chart-header" style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <div>
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 0.45rem; font-size: 1.18rem; font-weight: 800;">
+            <i data-lucide="shield-check" style="color: #10b981;"></i>
+            <span>ប្រព័ន្ធត្រួតពិនិត្យប្រវត្តិ និងសិទ្ធិស្នើសុំឡើងវិញ</span>
+          </h2>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+            ត្រួតពិនិត្យប្រវត្តិស្នើសុំ ចំនួនដង រយៈពេលប្រើប្រាស់ រយៈពេលនៅសល់ និងការវាយតម្លៃសិទ្ធិស្វ័យប្រវត្តតាមក្បួនច្បាប់ Admin
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="eligibilityController.init()" title="Refresh Dashboard">
+            <i data-lucide="rotate-ccw"></i>
+            <span>ធ្វើបច្ចុប្បន្នភាព (Refresh)</span>
+          </button>
+        </div>
+      </div>
+
+
+
+      <!-- SECTION 1: SEARCH & INSTANT LOOKUP STAGE -->
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+        <div style="font-size: 1rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.45rem;">
+          <i data-lucide="search" style="color: var(--primary);"></i>
+          <span>ស្វែងរក និងពិនិត្យសិទ្ធិបុគ្គលិក</span>
+        </div>
+
+        <div style="display: flex; gap: 0.65rem; align-items: center; flex-wrap: wrap;">
+          <div style="position: relative; flex: 1; min-width: 280px;">
+            <input type="text" id="eligibility-search-input" class="form-control" placeholder="🔍 ស្វែងរកតាម ឈ្មោះខ្មែរ, ឈ្មោះឡាតាំង, អត្តលេខ អពដ ឬ អត្តលេខ កសហវ..." style="font-size: 0.92rem; padding: 0.65rem 1rem 0.65rem 2.5rem; font-weight: 700;" oninput="eligibilityController.handleSearch(this.value)">
+            <i data-lucide="user-search" style="position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted);"></i>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="eligibilityController.handleSearch(document.getElementById('eligibility-search-input').value)" style="padding: 0.65rem 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="shield-check"></i>
+            <span>ពិនិត្យសិទ្ធិភ្លាមៗ</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="document.getElementById('eligibility-search-input').value = ''; eligibilityController.handleSearch('')" title="សម្អាត">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- RENDER TARGET FOR DETAILED SEARCH & MATRIX RESULT -->
+      <div id="eligibility-result-stage" style="margin-bottom: 1.75rem;">
+        <!-- Initial placeholder rendered dynamically -->
+      </div>
+
+      <!-- SECTION 3: ADMIN ELIGIBILITY RULES CONFIGURATION PANEL (Auto-hidden by default) -->
+      <div class="master-table-card" style="margin-bottom: 1.75rem;">
+        <div class="chart-header" style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none;" onclick="eligibilityController.toggleRulesPanel()">
+          <div>
+            <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+              <i data-lucide="sliders" style="color: #0ea5e9;"></i>
+              <span>កំណត់រយៈពេលអនុញ្ញាត និងច្បាប់ពិនិត្យសិទ្ធិ</span>
+            </h3>
+            <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+              Admin អាចកំណត់ Max Allowed Duration, Max Times, និង Waiting Period តាមប្រភេទសំណើនីមួយៗបានតាមតម្រូវការ
+            </div>
+          </div>
+
+          <div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-eligibility-rules" style="font-weight: 700; pointer-events: none; display: flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="chevron-down" id="icon-toggle-rules"></i>
+              <span id="text-toggle-rules">បង្ហាញការកំណត់</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="eligibility-rules-panel-body" style="display: none;">
+          <div class="table-container" style="overflow-x: auto;">
+            <table class="staff-table">
+              <thead>
+                <tr>
+                  <th>ប្រភេទសំណើ (Request Reason)</th>
+                  <th style="width: 170px;">រយៈពេលកំណត់អតិបរមា (ឆ្នាំ)</th>
+                  <th style="width: 150px;">ចំនួនដងអនុញ្ញាត (ដង)</th>
+                  <th style="width: 170px;">រយៈពេលរង់ចាំឡើងវិញ (ឆ្នាំ)</th>
+                  <th style="width: 110px; text-align: center;">ស្ថានភាពច្បាប់</th>
+                </tr>
+              </thead>
+              <tbody id="eligibility-admin-settings-table-body">
+                <!-- Dynamically rendered settings -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4: FULL AUDIT TABLE OF STAFF MEMBERS -->
+      <div class="master-table-card" style="margin-bottom: 2rem;">
+        <div class="chart-header" style="padding: 0.9rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+          <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="table" style="color: #10b981;"></i>
+            <span>បញ្ជីបុគ្គលិក និងស្ថានភាពសិទ្ធិស្នើសុំសរុប</span>
+          </h3>
+
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <button class="case-chip-btn" onclick="eligibilityController.filterAuditTable('all')">🎯 ទាំងអស់</button>
+            <button class="case-chip-btn" onclick="eligibilityController.filterAuditTable('INELIGIBLE_EXHAUSTED')" style="color: #dc2626;">🔴 អស់កំណត់</button>
+            <button class="case-chip-btn" onclick="eligibilityController.filterAuditTable('ELIGIBLE_PARTIAL')" style="color: #0284c7;">🟡 នៅសល់កូតា</button>
+            <button class="case-chip-btn" onclick="eligibilityController.filterAuditTable('ELIGIBLE_NEW')" style="color: #059669;">🟢 អាចស្នើបាន</button>
+          </div>
+        </div>
+
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th style="width: 50px; text-align: center;">ល.រ</th>
+                <th>ឈ្មោះបុគ្គលិក</th>
+                <th>អត្តលេខ</th>
+                <th>ករណីចម្បង</th>
+                <th>ធ្លាប់ស្នើសុំ</th>
+                <th>បានប្រើប្រាស់</th>
+                <th>រយៈពេលនៅសល់</th>
+                <th style="text-align: center;">ស្ថានភាពសិទ្ធិ</th>
+              </tr>
+            </thead>
+            <tbody id="eligibility-audit-table-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB: STAFF PROMOTION CONTROL & ELIGIBILITY SYSTEM ==================== -->
+    <section class="tab-pane" id="tab-promotion">
+      
+      <!-- Hidden File Input for Import -->
+      <input type="file" id="promotion-excel-file-input" style="display: none;" accept=".xlsx,.xls,.csv" onchange="promotionController.handleFileSelected(event)">
+
+      <!-- Header Toolbar -->
+      <div class="chart-header" style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <div>
+          <h2 style="margin: 0; display: flex; align-items: center; gap: 0.45rem; font-size: 1.18rem; font-weight: 800;">
+            <i data-lucide="award" style="color: #8b5cf6;"></i>
+            <span>ប្រព័ន្ធគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ</span>
+          </h2>
+          <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 2px;">
+            នាំចូលទិន្នន័យពី Excel, គណនារយៈពេលស្វ័យប្រវត្តិ, ដករយៈពេលព្យួរការងារ និងចេញរបាយការណ៍
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="promotionController.startImportFlow()" style="font-weight: 800; background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none; display: flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="file-spreadsheet"></i>
+            <span>📥 Import Excel</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.exportExcel()" style="font-weight: 700; display: flex; align-items: center; gap: 0.35rem;">
+            <i data-lucide="download"></i>
+            <span>📊 Excel</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.printReport('eligible')" style="font-weight: 700; color: #059669; border-color: rgba(5, 150, 105, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="បោះពុម្ពបញ្ជីអ្នកអាចស្នើសុំបាន">
+            <i data-lucide="printer"></i>
+            <span>🖨️ Report A (អាចស្នើបាន)</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.printReport('ineligible')" style="font-weight: 700; color: #dc2626; border-color: rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="បោះពុម្ពបញ្ជីអ្នកមិនទាន់អាចស្នើសុំបាន">
+            <i data-lucide="printer"></i>
+            <span>🖨️ Report B (មិនទាន់អាច)</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.resetFilters()" title="សម្អាតតម្រង">
+            <i data-lucide="rotate-ccw"></i>
+            <span>សម្អាត</span>
+          </button>
+        </div>
+      </div>
+
+
+
+      <!-- CALCULATION REFERENCE DATE CONTROL & FILTER TOOLBAR -->
+      <div class="doc-search-toolbar" style="margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+          <!-- Global Calculation Reference Date Input -->
+          <div style="display: flex; align-items: center; gap: 0.65rem; background: rgba(139, 92, 246, 0.08); border: 1.5px solid rgba(139, 92, 246, 0.3); border-radius: 10px; padding: 0.45rem 0.85rem;">
+            <i data-lucide="calendar" style="color: #8b5cf6; width: 18px; height: 18px;"></i>
+            <span style="font-weight: 800; font-size: 0.85rem; color: #6d28d9;">ថ្ងៃខែឆ្នាំគិតគូរ (Calculation Date) ៖</span>
+            <input type="date" id="promotion-calc-date-input" class="form-control form-control-sm" value="2026-08-20" style="width: 145px; font-weight: 800; font-size: 0.82rem;" onchange="promotionController.handleCalcDateChange(this.value)">
+          </div>
+
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);" id="promotion-records-count-badge">
+            0 សំណើស្មើសុំ
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="doc-search-row">
+          <div class="doc-search-input-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="promo-search-input" placeholder="ស្វែងរកតាម អត្តលេខ, ឈ្មោះ, តួនាទី, ឋានន្តរស័ក្តិ, អង្គភាព, ប្រកាសលេខ..." oninput="promotionController.handleSearch(this.value)">
+          </div>
+
+          <select class="doc-filter-select" id="promo-filter-status" onchange="promotionController.handleFilterChange('status', this.value)" style="font-weight: 800; color: #6d28d9; background: rgba(139, 92, 246, 0.08);">
+            <option value="all">🎯 គ្រប់ស្ថានភាពសិទ្ធិ (All Status)</option>
+            <option value="ELIGIBLE">🟢 អាចស្នើសុំបាន (Eligible)</option>
+            <option value="NEAR_ELIGIBLE">🟡 ជិតដល់កំណត់ (Near Eligible)</option>
+            <option value="INELIGIBLE">🔴 មិនទាន់អាចស្នើសុំបាន (Ineligible)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-year" onchange="promotionController.handleFilterChange('year', this.value)">
+            <option value="all">📅 គ្រប់ឆ្នាំ (All Years)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-month" onchange="promotionController.handleFilterChange('month', this.value)">
+            <option value="all">🗓️ គ្រប់ខែ (All Months)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-dept" onchange="promotionController.handleFilterChange('department', this.value)">
+            <option value="all">🏢 គ្រប់អង្គភាព (All Depts)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-position" onchange="promotionController.handleFilterChange('position', this.value)">
+            <option value="all">💼 គ្រប់តួនាទី (All Positions)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-rank" onchange="promotionController.handleFilterChange('promotionRank', this.value)">
+            <option value="all">🎖️ គ្រប់ឋានន្តរស័ក្តិ (All Ranks)</option>
+          </select>
+
+          <select class="doc-filter-select" id="promo-filter-match" onchange="promotionController.handleFilterChange('staffDataMatch', this.value)">
+            <option value="all">👥 Staff Data: ទាំងអស់</option>
+            <option value="matched">🟢 មានក្នុង Staff Data</option>
+            <option value="unmatched">⚪ មិនមានក្នុង Staff Data</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- MASTER 27-COLUMN PROMOTION TABLE CARD -->
+      <div class="master-table-card" style="margin-bottom: 1.75rem;">
+        <div class="chart-header" style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="table" style="color: #8b5cf6;"></i>
+            <span>តារាងគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ</span>
+          </h3>
+          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);" id="promotion-page-info">
+            ទំព័រ ១ នៃ ១
+          </div>
+        </div>
+
+        <div class="table-container" style="overflow-x: auto; max-height: 560px;">
+          <table class="staff-table" style="font-size: 0.82rem;">
+            <thead style="position: sticky; top: 0; z-index: 10; background: var(--bg-card-subtle);">
+              <tr>
+                <th style="width: 45px; text-align: center;">ល.រ</th>
+                <th onclick="promotionController.sortBy('staffId')" style="cursor: pointer;">អត្តលេខ ⬍</th>
+                <th onclick="promotionController.sortBy('fullName')" style="cursor: pointer;">គោត្តនាម និងនាម ⬍</th>
+                <th style="text-align: center;">ភេទ</th>
+                <th onclick="promotionController.sortBy('position')" style="cursor: pointer;">តួនាទី ⬍</th>
+                <th>ថ្ងៃខែឆ្នាំកំណើត</th>
+                <th>ថ្ងៃចូលធ្វើការ</th>
+                <th onclick="promotionController.sortBy('promotionDate')" style="cursor: pointer; color: #0891b2;">ថ្ងៃឡើងថ្នាក់ ⬍</th>
+                <th>ឋានន្តរស័ក្តិបច្ចុប្បន្ន</th>
+                <th style="color: #4f46e5;">ការស្នើសុំ</th>
+                <th>បានដំឡើង</th>
+                <th>ប្រកាសដំឡើង</th>
+                <th>ថ្នាក់ចុងក្រោយ</th>
+                <th>សញ្ញាបត្រ</th>
+                <th>ផ្សេងៗ</th>
+
+                <!-- Calculated Columns 16-27 -->
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ឆ្នាំ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ខែ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #2563eb;">ថ្ងៃគិតគូរ</th>
+                <th style="background: rgba(139, 92, 246, 0.08);">រយៈពេលបានប្រើ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ឆ្នាំ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ខែ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ត្រូវការ</th>
+                <th style="background: rgba(220, 38, 38, 0.08); color: #dc2626;">រយៈពេលព្យួរ</th>
+                <th style="background: rgba(139, 92, 246, 0.08);">នៅសល់</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #0284c7;">ថ្ងៃអាចស្នើបាន</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ស្ថានភាព</th>
+                <th style="background: rgba(139, 92, 246, 0.08); min-width: 200px;">Reason / Remark</th>
+              </tr>
+            </thead>
+            <tbody id="promotion-table-body">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div class="table-footer-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem;">
+          <div style="font-size: 0.78rem; color: var(--text-secondary);">
+            💡 ចុចលើក្បាលជួរឈរដើម្បីតម្រៀបឡើង/ចុះ (Ascending/Descending)
+          </div>
+          <div class="pagination-controls" style="display: flex; gap: 0.45rem;">
+            <button class="btn btn-secondary btn-sm" onclick="promotionController.currentPage = Math.max(1, promotionController.currentPage - 1); promotionController.render();">◀ មុន (Prev)</button>
+            <button class="btn btn-secondary btn-sm" onclick="promotionController.currentPage++; promotionController.render();">បន្ទាប់ (Next) ▶</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: IMPORT HISTORY BATCH LOG -->
+      <div class="master-table-card" style="margin-bottom: 2rem;">
+        <div class="chart-header" style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
+            <i data-lucide="history" style="color: #06b6d4;"></i>
+            <span>ប្រវត្តិនាំចូលទិន្នន័យ (Import History & Batch Log)</span>
+          </h3>
+        </div>
+
+        <div class="table-container" style="overflow-x: auto;">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th>ថ្ងៃខែឆ្នាំនាំចូល</th>
+                <th>ខែ</th>
+                <th>ឆ្នាំ</th>
+                <th>ឈ្មោះឯកសារ (File Name)</th>
+                <th style="text-align: center;">ចំនួនជួរ (Rows)</th>
+                <th>នាំចូលដោយ</th>
+                <th>កំណត់សម្គាល់ (Remark)</th>
+                <th style="text-align: center; width: 90px;">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody id="promotion-import-history-tbody">
+              <!-- Dynamically populated batch log -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
     <!-- ==================== TAB 3: DOCUMENT CONTROL ==================== -->
     <section class="tab-pane" id="tab-documents">
-      <div class="chart-header" style="margin-bottom: 1.25rem;">
-        <h2>
-          <i data-lucide="folder-kanban"></i>
-          <span>ផ្ទាំងតាមដានឯកសារ និងលិខិតបទដ្ឋានបុគ្គលិក (Staff Document & Request Tracking)</span>
+      <div class="chart-header" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 0.45rem; font-size: 1.12rem; font-weight: 800;">
+          <i data-lucide="folder-kanban" style="color: var(--primary);"></i>
+          <span>ផ្ទាំងតាមដានឯកសារ និងលិខិតបទដ្ឋានបុគ្គលិក</span>
         </h2>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <span class="badge" id="doc-records-count-badge" style="background: rgba(37, 99, 235, 0.1); color: var(--primary); font-weight: 700; padding: 4px 10px; border-radius: 9999px; font-size: 0.76rem;">
+            0 សំណើ (Records)
+          </span>
+          <span class="badge" id="doc-multi-count-badge" style="background: #fef3c7; color: #92400e; font-weight: 700; padding: 4px 10px; border-radius: 9999px; font-size: 0.76rem; border: 1px solid #fde68a;">
+            👥 ស្នើសុំ ≥2 លើក: 0 នាក់
+          </span>
+        </div>
+      </div>
+
+      <!-- Dedicated Document Search & Multi-Filter Toolbar -->
+      <div class="doc-search-toolbar">
+        <div class="doc-search-row">
+          <div class="doc-search-input-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="doc-search-input" placeholder="ស្វែងរកតាម អត្តលេខ អពដ, អត្តលេខ កសហវ (MEF), ឈ្មោះ, អង្គភាព, ការិយាល័យ, តួនាទី, មូលហេតុ, ប្រកាសលេខ, ឯកសារយោង... (Search GDT/MEF ID, Name, Dept...)" oninput="app.handleDocSearch(this.value)">
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="app.resetDocFilters()" title="សម្អាតតម្រង និងការស្វែងរកទាំងអស់">
+            <i data-lucide="rotate-ccw"></i>
+            <span>សម្អាត (Reset)</span>
+          </button>
+        </div>
+
+        <div class="doc-filter-row">
+          <!-- Reason Droplist Filter -->
+          <select class="doc-filter-select" id="doc-filter-reason" onchange="app.handleDocFilterChange('reason', this.value)">
+            <option value="">🎯 គ្រប់មូលហេតុ (All Reasons)</option>
+          </select>
+
+          <!-- Department Droplist Filter -->
+          <select class="doc-filter-select" id="doc-filter-dept" onchange="app.handleDocFilterChange('department', this.value)">
+            <option value="">🏢 គ្រប់អង្គភាព (All Departments)</option>
+          </select>
+
+          <!-- Status Droplist Filter -->
+          <select class="doc-filter-select" id="doc-filter-status" onchange="app.handleDocFilterChange('status', this.value)">
+            <option value="">🚦 គ្រប់ស្ថានភាព (All Statuses)</option>
+            <option value="active">🟢 កំពុងដំណើរការ (Active)</option>
+            <option value="pending">⏳ រង់ចាំដំណើរការ (Pending)</option>
+            <option value="completed">✅ បានបញ្ចប់ (Completed)</option>
+            <option value="expired">⚠️ ផុតសុពលភាព (Expired)</option>
+            <option value="closed">🔒 បានបិទប្រព័ន្ធ (Closed)</option>
+            <option value="missing">📋 ខ្វះព័ត៌មាន (Missing Info)</option>
+          </select>
+
+          <!-- Request Count Filter Dropdown (>2, >3, >4, >5...) -->
+          <select class="doc-filter-select" id="doc-filter-reqcount" onchange="app.handleDocFilterChange('reqCount', this.value)" style="font-weight: 700; color: #1d4ed8; background: #eff6ff; border-color: #93c5fd;" title="ត្រងតាមចំនួនដងនៃការស្នើសុំរបស់បុគ្គលិក">
+            <option value="">🎯 គ្រប់ចំនួនដង (All Counts)</option>
+            <option value="1">1️⃣ ស្នើសុំតែ ១ លើក (Single Request: 1 time)</option>
+            <option value="2+">👥 ស្នើសុំ ≥ ២ លើក (≥ 2 Times)</option>
+            <option value="3+">🔥 ស្នើសុំ ≥ ៣ លើក (≥ 3 Times)</option>
+            <option value="4+">🚀 ស្នើសុំ ≥ ៤ លើក (≥ 4 Times)</option>
+            <option value="5+">⚡ ស្នើសុំ ≥ ៥ លើក (≥ 5 Times)</option>
+          </select>
+        </div>
       </div>
 
       <div class="doc-timeline-grid" id="doc-timeline-container">
@@ -2549,6 +3227,19 @@
                 <select class="form-control" id="uf-requestReason">
                   <option value="">-- ជ្រើសរើសមូលហេតុ --</option>
                 </select>
+                <!-- Suspension Duration Live Box in UserForm -->
+                <div id="uf-suspension-duration-box" style="display: none; margin-top: 0.45rem; background: rgba(249, 115, 22, 0.08); border: 1.5px solid #fdba74; border-radius: 8px; padding: 0.45rem 0.85rem; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+                  <div style="display: flex; align-items: center; gap: 0.45rem;">
+                    <i data-lucide="timer" style="color: #ea580c; width: 16px; height: 16px;"></i>
+                    <span style="font-weight: 700; font-size: 0.78rem; color: #c2410c;">រយៈពេលព្យួរការងារ (Suspension Duration):</span>
+                  </div>
+                  <span id="uf-suspension-duration-text" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.8rem;">
+                    -
+                  </span>
+                </div>
+                <!-- Real-time Eligibility Gatekeeper Box in UserForm -->
+                <div id="uf-eligibility-alert-box" style="display: none; margin-top: 0.45rem; border-radius: 8px; border: 1.5px solid; padding: 0.55rem 0.85rem;">
+                </div>
               </div>
 
               <!-- Prakas No -->
@@ -2571,8 +3262,13 @@
 
               <!-- System Closing Date -->
               <div class="form-group" style="grid-column: span 2;">
-                <label id="lbl-uf-systemClosingDate"><span class="field-no">១៩.</span> ថ្ងៃខែបិទប្រព័ន្ធ (Closing Date)</label>
-                <input type="date" class="form-control" id="uf-systemClosingDate">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem; gap: 0.5rem; flex-wrap: wrap;">
+                  <label id="lbl-uf-systemClosingDate" style="margin: 0; font-weight: 700;">ថ្ងៃខែបិទប្រព័ន្ធ <small style="color: var(--text-muted); font-size: 0.72rem;">(System Closing Date)</small></label>
+                  <button type="button" class="btn btn-secondary btn-sm" id="btn-set-closing-today" onclick="userformController.setClosingDateToday()" style="padding: 2px 8px; font-size: 0.7rem; font-weight: 600; cursor: pointer; border-radius: 4px;" title="កំណត់យកថ្ងៃនេះជាថ្ងៃបិទប្រព័ន្ធ (Set Closing Date to Today)">
+                    📅 ថ្ងៃនេះ (Today)
+                  </button>
+                </div>
+                <input type="date" class="form-control" id="uf-systemClosingDate" style="font-weight: 600;">
               </div>
 
               <!-- Status Dropdown Selector (Active / Closed / Pending / Auto) -->
@@ -3675,6 +4371,325 @@ function doGet(e) {
     </div>
   </div>
 
+  <!-- ==================== CASE SUMMARY EXPORT EXCEL CONFIRMATION MODAL ==================== -->
+  <div class="modal-backdrop" id="case-summary-excel-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 480px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(16, 185, 129, 0.05);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: #10b981; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="file-spreadsheet"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">បញ្ជាក់ការទាញយករបាយការណ៍សង្ខេប (Excel Export)</h3>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">សូមពិនិត្យព័ត៌មានមុនពេល Export</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="caseSummaryController.closeExcelConfirmModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 0.85rem; color: var(--text-primary); line-height: 1.5;">
+          តើលោកអ្នកពិតជាចង់ទាញយក <strong>របាយការណ៍សង្ខេបរយៈពេលដែលបុគ្គលិកប្រើប្រាស់តាមករណី</strong> ជាឯកសារ Excel (.xlsx) មែនដែរឬទេ?
+        </div>
+
+        <div style="background: var(--bg-card-subtle, rgba(0,0,0,0.02)); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem 1rem; display: flex; flex-direction: column; gap: 0.45rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">ករណី / មូលហេតុ៖</span>
+            <strong id="case-sum-excel-confirm-reason" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">អង្គភាព / ការិយាល័យ៖</span>
+            <strong id="case-sum-excel-confirm-dept" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem;">
+            <span style="color: var(--text-muted);">ប្រចាំឆ្នាំ ៖</span>
+            <strong id="case-sum-excel-confirm-year" style="color: var(--text-primary);">-</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; border-top: 1px dashed var(--border-color); padding-top: 0.45rem; margin-top: 0.2rem;">
+            <span style="color: var(--text-muted);">ចំនួនករណីសរុប (Total Cases)៖</span>
+            <strong id="case-sum-excel-confirm-count" style="color: #10b981;">0 ករណី</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; gap: 0.65rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="caseSummaryController.closeExcelConfirmModal()" style="font-weight: 700; padding: 0.5rem 1rem;">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-success btn-sm" onclick="caseSummaryController.executeExportExcel()" style="font-weight: 700; padding: 0.5rem 1.25rem; display: flex; align-items: center; gap: 0.4rem;">
+          <i data-lucide="download"></i>
+          <span>📊 យល់ព្រម & ទាញយក Excel</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROMOTION IMPORT STEP 1: SLEEK IMPORT MODAL (IMAGE 2 MATCH) ==================== -->
+  <div class="modal-backdrop" id="promotion-import-warning-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
+    <div class="userform-dialog" style="max-width: 880px; width: 92%; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h2 style="font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 0.55rem; color: var(--text-primary); margin: 0;">
+          <i data-lucide="upload-cloud" style="color: #8b5cf6;"></i>
+          <span>នាំចូលទិន្នន័យពី Excel / CSV (Import Promotion Requests)</span>
+        </h2>
+        <button type="button" class="modal-close-btn" onclick="promotionController.closeImportWarningModal()" title="Close" style="border: none; background: transparent; cursor: pointer; font-size: 1.1rem; color: var(--text-muted);">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+        <!-- 1. TEMPLATE DOWNLOAD BANNER (GREEN BOX AS IN IMAGE 2) -->
+        <div class="import-template-box" style="background: #ecfdf5; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 1.1rem 1.35rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div class="import-template-info" style="display: flex; align-items: center; gap: 0.85rem;">
+            <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i data-lucide="file-spreadsheet" style="width: 22px; height: 22px;"></i>
+            </div>
+            <div>
+              <div style="font-weight: 800; color: #065f46; font-size: 0.95rem; margin-bottom: 0.15rem;">
+                ទាញយកទម្រង់គំរូ Excel ផ្លូវការ (Download Official Import Template)
+              </div>
+              <div style="font-size: 0.78rem; color: #047857; font-weight: 500;">
+                ទម្រង់គំរូមាន ១៥ ជួរឈរពេញលេញសម្រាប់បំពេញទិន្នន័យស្នើសុំឡើងឋានន្តរស័ក្តិ។
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-success" type="button" onclick="promotionController.downloadExcelTemplate()" style="background: #059669; border: none; font-weight: 800; padding: 0.6rem 1.25rem; border-radius: 9999px; display: flex; align-items: center; gap: 0.4rem; color: white; cursor: pointer; transition: all 0.2s ease;">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+            <span>ទាញយកទម្រង់គំរូ (.xlsx)</span>
+          </button>
+        </div>
+
+        <!-- 2. DRAG & DROP UPLOAD ZONE (BLUE DASHED BOX AS IN IMAGE 2) -->
+        <div class="import-dropzone" id="promotion-import-dropzone" onclick="promotionController.confirmImportWarning()" style="background: rgba(238, 242, 255, 0.5); border: 2px dashed #818cf8; border-radius: 14px; padding: 2.25rem 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease;" ondragover="event.preventDefault(); this.style.borderColor='#4f46e5'; this.style.background='rgba(238, 242, 255, 0.9)';" ondragleave="this.style.borderColor='#818cf8'; this.style.background='rgba(238, 242, 255, 0.5)';" ondrop="event.preventDefault(); this.style.borderColor='#818cf8'; this.style.background='rgba(238, 242, 255, 0.5)'; promotionController.handleFileDropped(event);">
+          <div style="width: 58px; height: 58px; border-radius: 50%; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.85rem auto;">
+            <i data-lucide="cloud-upload" style="width: 30px; height: 30px;"></i>
+          </div>
+          <div style="font-weight: 800; font-size: 1.02rem; color: #1e1b4b; margin-bottom: 0.35rem;">
+            ចុចទីនេះ ឬទម្លាក់ឯកសារ Excel / CSV ដើម្បីនាំចូល
+          </div>
+          <div style="font-size: 0.8rem; color: #6366f1; font-weight: 500;">
+            គាំទ្រឯកសារ .xlsx, .xls, ឬ .csv ដែលស្របតាមទម្រង់ ១៥ ជួរឈរ
+          </div>
+        </div>
+
+        <!-- 3. IMPORT MODE SELECTION (MODE STRIP AS IN IMAGE 2) -->
+        <div class="import-mode-group" style="background: var(--bg-card-subtle); border: 1px solid var(--border-color); border-radius: 10px; padding: 0.85rem 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+          <div style="font-weight: 800; font-size: 0.86rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
+            <span>របៀបនាំចូល (Import Mode)៖</span>
+          </div>
+          <div style="display: flex; gap: 1.5rem; align-items: center;">
+            <label class="import-mode-label" style="font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+              <input type="radio" name="promoImportMode" value="append" checked style="accent-color: #8b5cf6;">
+              <span>➕ បន្ថែមលើទិន្នន័យដែលមានស្រាប់ (Append)</span>
+            </label>
+            <label class="import-mode-label" style="font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+              <input type="radio" name="promoImportMode" value="overwrite" style="accent-color: #8b5cf6;">
+              <span>🔄 ជំនួសទិន្នន័យចាស់ទាំងអស់ (Overwrite All)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.closeImportWarningModal()" style="font-weight: 700; padding: 0.6rem 1.2rem; border-radius: 8px;">
+          <span>✕ បោះបង់ (Cancel)</span>
+        </button>
+
+        <button type="button" class="btn btn-primary btn-sm" onclick="promotionController.confirmImportWarning()" style="font-weight: 800; padding: 0.65rem 1.5rem; background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none; border-radius: 10px; display: flex; align-items: center; gap: 0.45rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+          <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+          <span>📤 បញ្ចូលទិន្នន័យទៅក្នុងប្រព័ន្ធ (Confirm Import)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROMOTION IMPORT STEP 3: META FORM MODAL ==================== -->
+  <div class="modal-backdrop" id="promotion-import-meta-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 480px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(139, 92, 246, 0.06);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(139, 92, 246, 0.12); color: #8b5cf6; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="file-text"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">ព័ត៌មាននៃការនាំចូល (Import Information)</h3>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">កំណត់ ខែ, ឆ្នាំ និង កំណត់សម្គាល់សម្រាប់ Batch នេះ</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="promotionController.closeImportMetaModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 0.8rem; background: var(--bg-card-subtle); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+          <span>📄 ឯកសារ៖ <strong id="promo-meta-filename">-</strong></span>
+          <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800;" id="promo-meta-count">0 ជួរ</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; display: block;">ខែ (Month) <span style="color: #ef4444;">*</span></label>
+            <select class="form-control" id="promo-meta-month" style="font-weight: 700;">
+              <option value="មករា">មករា (January)</option>
+              <option value="កុម្ភៈ">កុម្ភៈ (February)</option>
+              <option value="មីនា">មីនា (March)</option>
+              <option value="មេសា">មេសា (April)</option>
+              <option value="ឧសភា">ឧសភា (May)</option>
+              <option value="មិថុនា">មិថុនា (June)</option>
+              <option value="កក្កដា">កក្កដា (July)</option>
+              <option value="សីហា" selected>សីហា (August)</option>
+              <option value="កញ្ញា">កញ្ញា (September)</option>
+              <option value="តុលា">តុលា (October)</option>
+              <option value="វិច្ឆិកា">វិច្ឆិកា (November)</option>
+              <option value="ធ្នូ">ធ្នូ (December)</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; display: block;">ឆ្នាំ (Year) <span style="color: #ef4444;">*</span></label>
+            <input type="number" class="form-control" id="promo-meta-year" value="2026" min="2010" max="2050" style="font-weight: 800;">
+          </div>
+        </div>
+
+        <!-- Droplist Selector & Write-in for Remark -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label style="font-size: 0.8rem; font-weight: 700; margin: 0; color: var(--text-primary);">
+              កំណត់សម្គាល់ (Remark / ផ្សេងៗ)
+            </label>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.openManageRemarksModal()" style="font-size: 0.72rem; padding: 2px 8px; font-weight: 700; color: #8b5cf6; border-color: rgba(139, 92, 246, 0.3); display: flex; align-items: center; gap: 0.25rem;" title="បន្ថែម ឬ កែសម្រួលបញ្ជីជម្រើស Droplist">
+              <i data-lucide="plus-circle" style="width: 12px; height: 12px;"></i>
+              <span>⚙️ បន្ថែម/កែសម្រួលជម្រើស (Manage Options)</span>
+            </button>
+          </div>
+
+          <!-- Select Droplist -->
+          <select class="form-control" id="promo-meta-remark-select" style="font-weight: 700; margin-bottom: 0.5rem;" onchange="promotionController.handleRemarkSelectChange(this.value)">
+            <!-- Dynamically populated options -->
+          </select>
+
+          <!-- Custom Write-in / Editable Input Text -->
+          <div id="promo-meta-remark-custom-wrap">
+            <input type="text" class="form-control" id="promo-meta-remark-text" placeholder="បញ្ចូលកំណត់សម្គាល់ ឬអត្ថបទកែប្រែ..." style="font-weight: 600;">
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center; gap: 0.65rem;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.closeImportMetaModal()" style="font-weight: 700; padding: 0.5rem 1rem;">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="promotionController.submitImportMeta()" style="font-weight: 800; padding: 0.5rem 1.25rem; background: linear-gradient(135deg, #8b5cf6, #6d28d9); border: none;">
+          <span>📥 នាំចូលទិន្នន័យ (Import Data)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROMOTION REMARKS MANAGEMENT MODAL ==================== -->
+  <div class="modal-backdrop" id="promotion-remarks-manage-modal" style="display: none; z-index: 100150; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 540px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(139, 92, 246, 0.06);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(139, 92, 246, 0.12); color: #8b5cf6; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="list-plus"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">គ្រប់គ្រងជម្រើសកំណត់សម្គាល់ (Manage Remark Droplist)</h3>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">បន្ថែម, កែប្រែ ឬលុបជម្រើសកំណត់សម្គាល់ក្នុង Droplist</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="promotionController.closeManageRemarksModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Add New Option Form -->
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="promo-add-new-remark-input" class="form-control" placeholder="បញ្ចូលជម្រើសកំណត់សម្គាល់ថ្មី..." style="font-weight: 600;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="promotionController.addNewRemarkOption()" style="font-weight: 800; background: #8b5cf6; border: none; white-space: nowrap; padding: 0.6rem 1rem;">
+            ➕ បន្ថែម (Add)
+          </button>
+        </div>
+
+        <!-- Table of Existing Droplist Options -->
+        <div class="table-container" style="max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 10px;">
+          <table class="staff-table" style="font-size: 0.82rem;">
+            <thead>
+              <tr style="background: var(--bg-card-subtle);">
+                <th style="width: 45px; text-align: center;">ល.រ</th>
+                <th>ជម្រើសកំណត់សម្គាល់ (Remark Title)</th>
+                <th style="text-align: center; width: 140px;">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody id="promo-remarks-manage-tbody">
+              <!-- Dynamically populated options list -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.closeManageRemarksModal()" style="font-weight: 700; padding: 0.5rem 1rem;">
+          <span>បិទ (Close)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PROMOTION IMPORT STEP 4: DUPLICATE DETECTION MODAL ==================== -->
+  <div class="modal-backdrop" id="promotion-duplicate-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
+    <div class="modal-card" style="max-width: 520px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); background: rgba(239, 68, 68, 0.05);">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(239, 68, 68, 0.12); color: #ef4444; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="copy-check"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);">⚠️ រកឃើញទិន្នន័យស្ទួន (Duplicate Warning)</h3>
+            <span style="font-size: 0.74rem; color: var(--text-muted);">ប្រព័ន្ធបានស្វែងរកឃើញទិន្នន័យស្ទួនក្នុងប្រព័ន្ធ</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="promotionController.closeDuplicateModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted);">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <div style="font-size: 0.88rem; color: #dc2626; font-weight: 800; background: rgba(239, 68, 68, 0.08); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.2);">
+          ⚠️ រកឃើញទិន្នន័យស្ទួនចំនួន <span id="promo-dup-count" style="font-size: 1.1rem; text-decoration: underline;">0 នាក់</span> ជាមួយទិន្នន័យដែលមានស្រាប់ក្នុងប្រព័ន្ធ!
+        </div>
+
+        <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5;">
+          សូមជ្រើសរើសជម្រើសខាងក្រោមដើម្បីបន្ត៖
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 0.55rem;">
+          <button type="button" class="btn btn-secondary" onclick="promotionController.resolveDuplicates('SKIP')" style="justify-content: flex-start; text-align: left; padding: 0.65rem 1rem; font-size: 0.82rem; font-weight: 700;">
+            ⏭️ <strong>Skip Duplicate</strong> — រំលងទិន្នន័យស្ទួន (នាំចូលតែអ្នកថ្មី)
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="promotionController.resolveDuplicates('UPDATE_EXISTING')" style="justify-content: flex-start; text-align: left; padding: 0.65rem 1rem; font-size: 0.82rem; font-weight: 700;">
+            🔄 <strong>Update Existing</strong> — ធ្វើបច្ចុប្បន្នភាពកំណត់ត្រាចាស់
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="promotionController.resolveDuplicates('IMPORT_ALL')" style="justify-content: flex-start; text-align: left; padding: 0.65rem 1rem; font-size: 0.82rem; font-weight: 700;">
+            📥 <strong>Import All</strong> — នាំចូលទាំងអស់ (រួមទាំងទិន្នន័យស្ទួន)
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; align-items: center;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.resolveDuplicates('CANCEL')" style="font-weight: 700; padding: 0.5rem 1rem;">
+          <span>បោះបង់ (Cancel)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ==================== REPORT ADMIN PERMISSION VERIFICATION MODAL ==================== -->
   <div class="modal-backdrop" id="report-admin-permission-modal" style="display: none; z-index: 100100; align-items: center; justify-content: center;">
     <div class="modal-card" style="max-width: 440px; width: 92%; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45); overflow: hidden;">
@@ -3745,6 +4760,9 @@ function doGet(e) {
   <script src="js/userform.js"></script>
   <script src="js/multi-filter.js"></script>
   <script src="js/reports.js"></script>
+  <script src="js/case-summary.js"></script>
+  <script src="js/eligibility.js"></script>
+  <script src="js/promotion.js"></script>
   <script src="js/persistent-filters.js"></script>
   <script src="js/app.js"></script>
 </body>

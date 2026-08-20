@@ -619,6 +619,147 @@ class DataStore {
     const maxNo = list.reduce((max, item) => Math.max(max, parseInt(item.no, 10) || 0), 0);
     return maxNo + 1;
   }
+
+  getPromotionRecords() {
+    try {
+      let data = JSON.parse(localStorage.getItem('STAFF_PROMOTION_RECORDS'));
+      if (!Array.isArray(data) || data.length === 0) {
+        data = [
+          {
+            no: 1,
+            staffId: '0042',
+            fullName: 'សុខ ចាន់ថន',
+            gender: 'ប្រុស',
+            position: 'ប្រធានការិយាល័យ',
+            department: 'អគ្គនាយកដ្ឋានគយ និងរដ្ឋាករកម្ពុជា',
+            office: 'ការិយាល័យរដ្ឋបាល',
+            dob: '15-May-1988',
+            serviceStartDate: '01-Jan-2012',
+            promotionDate: '20-Aug-2024',
+            currentRank: 'វរមន្ត្រី ថ្នាក់លេខ ២',
+            requestedRank: 'វរមន្ត្រី ថ្នាក់លេខ ១',
+            promotedRank: 'វរមន្ត្រី ថ្នាក់លេខ ១',
+            prakasNo: '១២៣៤ ប្រក.ហរ',
+            finalRank: 'វរមន្ត្រី ថ្នាក់លេខ ១',
+            degree: 'បរិញ្ញាបត្ររង',
+            otherRemark: 'ស្នើសុំឡើងថ្នាក់ប្រចាំឆ្នាំ២០២៦',
+            importYear: '2026',
+            importMonth: 'សីហា',
+            batchRemark: 'ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែសីហា ឆ្នាំ២០២៦'
+          },
+          {
+            no: 2,
+            staffId: '0108',
+            fullName: 'គង់ ស្រីណុច',
+            gender: 'ស្រី',
+            position: 'អនុប្រធានការិយាល័យ',
+            department: 'នាយកដ្ឋានបុគ្គលិក និងរដ្ឋបាល',
+            office: 'ការិយាល័យគ្រប់គ្រងទិន្នន័យ',
+            dob: '22-Oct-1991',
+            serviceStartDate: '15-Mar-2015',
+            promotionDate: '10-Jan-2023',
+            currentRank: 'អនុមន្ត្រី ថ្នាក់លេខ ៣',
+            requestedRank: 'អនុមន្ត្រី ថ្នាក់លេខ ២',
+            promotedRank: 'អនុមន្ត្រី ថ្នាក់លេខ ២',
+            prakasNo: '៥៦៧៨ ប្រក.ហរ',
+            finalRank: 'អនុមន្ត្រី ថ្នាក់លេខ ២',
+            degree: 'បរិញ្ញាបត្រ',
+            otherRemark: 'ស្នើសុំឡើងថ្នាក់',
+            importYear: '2026',
+            importMonth: 'សីហា',
+            batchRemark: 'ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែសីហា ឆ្នាំ២០២៦'
+          },
+          {
+            no: 3,
+            staffId: '0215',
+            fullName: 'ជា វុទ្ធី',
+            gender: 'ប្រុស',
+            position: 'មន្ត្រីស៊ើបអង្កេត',
+            department: 'នាយកដ្ឋានបង្ការ និងបង្ក្រាបបទល្មើស',
+            office: 'ការិយាល័យស៊ើបអង្កេត',
+            dob: '05-Jul-1993',
+            serviceStartDate: '10-Jun-2018',
+            promotionDate: '20-Aug-2025',
+            currentRank: 'មន្ត្រី ថ្នាក់លេខ ៤',
+            requestedRank: 'មន្ត្រី ថ្នាក់លេខ ៣',
+            promotedRank: '',
+            prakasNo: '៩០១២ ប្រក.ហរ',
+            finalRank: 'មន្ត្រី ថ្នាក់លេខ ៤',
+            degree: 'បរិញ្ញាបត្រជាន់ខ្ពស់',
+            otherRemark: 'ទិន្នន័យគំរូសម្រាប់រៀបចំ',
+            importYear: '2026',
+            importMonth: 'សីហា',
+            batchRemark: 'ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែសីហា ឆ្នាំ២០២៦'
+          },
+          {
+            no: 4,
+            staffId: '0340',
+            fullName: 'លី ម៉េងហ៊ាង',
+            gender: 'ប្រុស',
+            position: 'ប្រធានផ្នែក',
+            department: 'នាយកដ្ឋានច្បាប់ និងវិវាទ',
+            office: 'ការិយាល័យច្បាប់',
+            dob: '18-Feb-1986',
+            serviceStartDate: '01-Nov-2010',
+            promotionDate: '15-Aug-2022',
+            currentRank: 'វរមន្ត្រី ថ្នាក់លេខ ៣',
+            requestedRank: 'វរមន្ត្រី ថ្នាក់លេខ ២',
+            promotedRank: 'វរមន្ត្រី ថ្នាក់លេខ ២',
+            prakasNo: '៤៣២១ ប្រក.ហរ',
+            finalRank: 'វរមន្ត្រី ថ្នាក់លេខ ២',
+            degree: 'បរិញ្ញាបត្រ',
+            otherRemark: 'តាមអតីតភាពការងារ',
+            importYear: '2026',
+            importMonth: 'សីហា',
+            batchRemark: 'ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែសីហា ឆ្នាំ២០២៦'
+          },
+          {
+            no: 5,
+            staffId: '0412',
+            fullName: 'អ៊ុំ វ៉ាន់នី',
+            gender: 'ស្រី',
+            position: 'មន្ត្រីរដ្ឋបាល',
+            department: 'អគ្គនាយកដ្ឋានគយ និងរដ្ឋាករកម្ពុជា',
+            office: 'ការិយាល័យរដ្ឋបាល',
+            dob: '30-Sep-1994',
+            serviceStartDate: '01-May-2019',
+            promotionDate: '01-Jan-2024',
+            currentRank: 'អនុមន្ត្រី ថ្នាក់លេខ ៤',
+            requestedRank: 'អនុមន្ត្រី ថ្នាក់លេខ ៣',
+            promotedRank: 'អនុមន្ត្រី ថ្នាក់លេខ ៣',
+            prakasNo: '៨៧៦៥ ប្រក.ហរ',
+            finalRank: 'អនុមន្ត្រី ថ្នាក់លេខ ៣',
+            degree: 'បរិញ្ញាបត្រ',
+            otherRemark: 'តាមកម្រិតសញ្ញាបត្រ',
+            importYear: '2026',
+            importMonth: 'សីហា',
+            batchRemark: 'ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែសីហា ឆ្នាំ២០២៦'
+          }
+        ];
+        this.savePromotionRecords(data);
+      }
+      return data;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  savePromotionRecords(records) {
+    localStorage.setItem('STAFF_PROMOTION_RECORDS', JSON.stringify(records));
+  }
+
+  getPromotionBatches() {
+    try {
+      const batches = JSON.parse(localStorage.getItem('STAFF_PROMOTION_BATCHES'));
+      return Array.isArray(batches) ? batches : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  savePromotionBatches(batches) {
+    localStorage.setItem('STAFF_PROMOTION_BATCHES', JSON.stringify(batches));
+  }
 }
 
 const dataStore = new DataStore();

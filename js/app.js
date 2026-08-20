@@ -19,6 +19,13 @@ class StaffApp {
     this.filterEndDate = '';
     this.filterStatus = '';
     this.filterAlertOnly = false;
+    this.docSearchQuery = '';
+    this.docFilterReason = '';
+    this.docFilterDept = '';
+    this.docFilterStatus = '';
+    this.docFilterReqCount = '';
+    this.docMultiOnly = false;
+    this.textControlMode = localStorage.getItem('STAFF_TABLE_TEXT_CONTROL') || 'wrap';
     this.currentPage = 1;
     this.pageSize = 15;
     this.sortField = 'no';
@@ -42,6 +49,7 @@ class StaffApp {
     this.initTheme();
     this.initTabs();
     this.initFilters();
+    this.initTextControlMode();
     if (typeof persistentFilters !== 'undefined') {
       persistentFilters.init();
     }
@@ -450,11 +458,15 @@ class StaffApp {
 
     // Tab details mapping
     const tabMeta = {
-      dashboard: { label: 'ផ្ទាំងសង្ខេប (Dashboard)', sub: 'ទិដ្ឋភាពរួម & ស្ថិតិទិន្នន័យ', icon: 'layout-dashboard', color: '#4f46e5' },
-      database: { label: 'ទិន្នន័យបុគ្គលិក (Staff Data)', sub: 'តារាងមេ ២២ ជួរឈរ & តម្រង', icon: 'users', color: '#10b981' },
-      documents: { label: 'តាមដានឯកសារ (Documents)', sub: 'កាលវិភាគឯកសារ & ឯកសារយោង', icon: 'file-check', color: '#f59e0b' },
-      settings: { label: 'ការកំណត់ (Settings)', sub: 'Cloud Sync, Droplist & បញ្ជីយោង', icon: 'sliders', color: '#0ea5e9' },
-      logs: { label: 'កំណត់ត្រា (Audit Log)', sub: 'ប្រវត្តិកែប្រែ និងសកម្មភាពសុវត្ថិភាព', icon: 'history', color: '#a855f7' }
+      dashboard: { label: 'ផ្ទាំងសង្ខេប', sub: 'ទិដ្ឋភាពរួម & ស្ថិតិទិន្នន័យ', icon: 'layout-dashboard', color: '#4f46e5' },
+      database: { label: 'ទិន្នន័យបុគ្គលិក', sub: 'តារាងមេ ២២ ជួរឈរ & តម្រង', icon: 'users', color: '#10b981' },
+      reports: { label: 'របាយការណ៍ផ្លូវការ', sub: 'របាយការណ៍តាមមូលហេតុ & បោះពុម្ព', icon: 'file-spreadsheet', color: '#ec4899' },
+      'case-summary': { label: 'របាយការណ៍សង្ខេប', sub: 'សង្ខេបរយៈពេលប្រើប្រាស់ & វិភាគ', icon: 'calendar-range', color: '#06b6d4' },
+      eligibility: { label: 'ពិនិត្យសិទ្ធិស្នើសុំ', sub: 'ត្រួតពិនិត្យប្រវត្តិ & សិទ្ធិស្នើសុំឡើងវិញ', icon: 'shield-check', color: '#10b981' },
+      promotion: { label: 'គ្រប់គ្រងឡើងឋានន្តរស័ក្តិ', sub: 'ពិនិត្យលក្ខខណ្ឌឡើងថ្នាក់, ព្យួរ & របាយការណ៍', icon: 'award', color: '#8b5cf6' },
+      documents: { label: 'តាមដានឯកសារ', sub: 'កាលវិភាគឯកសារ & ឯកសារយោង', icon: 'file-check', color: '#f59e0b' },
+      settings: { label: 'ការកំណត់', sub: 'Cloud Sync, Droplist & បញ្ជីយោង', icon: 'sliders', color: '#0ea5e9' },
+      logs: { label: 'កំណត់ត្រា', sub: 'ប្រវត្តិកែប្រែ និងសកម្មភាពសុវត្ថិភាព', icon: 'history', color: '#a855f7' }
     };
 
     const cur = tabMeta[tabId] || tabMeta.dashboard;
@@ -505,6 +517,18 @@ class StaffApp {
     } else if (tabId === 'reports') {
       if (typeof reportsController !== 'undefined' && reportsController.init) {
         reportsController.init();
+      }
+    } else if (tabId === 'case-summary') {
+      if (typeof caseSummaryController !== 'undefined' && caseSummaryController.init) {
+        caseSummaryController.init();
+      }
+    } else if (tabId === 'eligibility') {
+      if (typeof eligibilityController !== 'undefined' && eligibilityController.init) {
+        eligibilityController.init();
+      }
+    } else if (tabId === 'promotion') {
+      if (typeof promotionController !== 'undefined' && promotionController.init) {
+        promotionController.init();
       }
     } else if (tabId === 'documents') {
       this.renderDocumentTimeline();
@@ -827,6 +851,10 @@ class StaffApp {
       reportsController.clearAllSelectionsAndFilters();
     }
 
+    if (typeof caseSummaryController !== 'undefined' && typeof caseSummaryController.resetFilters === 'function') {
+      caseSummaryController.resetFilters();
+    }
+
     const el = (id) => document.getElementById(id);
     if (el('table-search-input')) el('table-search-input').value = '';
     if (el('filter-prakas-input')) el('filter-prakas-input').value = '';
@@ -983,10 +1011,54 @@ class StaffApp {
     populateSelect('filter-reason-select', settings.requestReasons, 'គ្រប់មូលហេតុ (All Reasons)');
   }
 
+  /* ---------------- Text Control Mode (Wrap Text / Shrink to Fit / Truncate) ---------------- */
+  setTextControlMode(mode) {
+    this.textControlMode = mode || 'wrap';
+    localStorage.setItem('STAFF_TABLE_TEXT_CONTROL', this.textControlMode);
+
+    const select = document.getElementById('table-text-control-select');
+    if (select && select.value !== this.textControlMode) {
+      select.value = this.textControlMode;
+    }
+
+    const table = document.getElementById('master-staff-table');
+    if (table) {
+      table.classList.remove('text-mode-wrap', 'text-mode-shrink', 'text-mode-truncate');
+      table.classList.add(`text-mode-${this.textControlMode}`);
+    }
+
+    this.renderStaffTable();
+
+    const modeLabels = {
+      wrap: '📝 បានជ្រើសរើស «រុំបន្ទាត់អត្ថបទ (Wrap Text)»',
+      shrink: '🔍 បានជ្រើសរើស «បង្រួមទំហំអក្សរ (Shrink to Fit)»',
+      truncate: '✂️ បានជ្រើសរើស «កាត់ខ្លី (Truncate / Single Line)»'
+    };
+    this.showToast(modeLabels[this.textControlMode] || 'បានផ្លាស់ប្តូរទម្រង់អត្ថបទ', 'info');
+  }
+
+  initTextControlMode() {
+    const saved = localStorage.getItem('STAFF_TABLE_TEXT_CONTROL') || 'wrap';
+    this.textControlMode = saved;
+    const select = document.getElementById('table-text-control-select');
+    if (select) select.value = saved;
+    const table = document.getElementById('master-staff-table');
+    if (table) {
+      table.classList.remove('text-mode-wrap', 'text-mode-shrink', 'text-mode-truncate');
+      table.classList.add(`text-mode-${saved}`);
+    }
+  }
+
   /* ---------------- Master 22-Column Table Rendering ---------------- */
   renderStaffTable() {
     const tbody = document.getElementById('staff-table-body');
     if (!tbody) return;
+
+    const table = document.getElementById('master-staff-table');
+    if (table && !table.classList.contains(`text-mode-${this.textControlMode}`)) {
+      table.classList.remove('text-mode-wrap', 'text-mode-shrink', 'text-mode-truncate');
+      table.classList.add(`text-mode-${this.textControlMode || 'wrap'}`);
+    }
 
     // Security Check: If logged out, lock and do not display sensitive staff records
     if (typeof UserControl !== 'undefined' && !UserControl.isLoggedIn()) {
@@ -1100,10 +1172,10 @@ class StaffApp {
             </td>
             <td style="text-align: ${fields[14]?.align || 'center'};">${item.annualPeriod || '-'}</td>
             <td style="text-align: ${fields[15]?.align || 'left'}; font-weight: 500;">${item.requestReason || '-'}</td>
-            <td style="text-align: ${fields[16]?.align || 'left'};">${item.prakasNo ? `<span style="font-weight: 600;">${item.prakasNo}</span>` : '-'}</td>
-            <td style="text-align: ${fields[17]?.align || 'left'}; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${item.description || ''}">${item.description || '-'}</td>
+            <td class="col-longtext ${(item.prakasNo && item.prakasNo.length > 70) ? 'col-longtext-extra' : ''}" style="text-align: ${fields[16]?.align || 'left'};" title="${item.prakasNo || ''}">${item.prakasNo ? `<span style="font-weight: 600;">${item.prakasNo}</span>` : '-'}</td>
+            <td class="col-longtext ${(item.description && item.description.length > 70) ? 'col-longtext-extra' : ''}" style="text-align: ${fields[17]?.align || 'left'};" title="${item.description || ''}">${item.description || '-'}</td>
             <td style="text-align: ${fields[18]?.align || 'left'};">${item.systemClosingDate ? `<span style="color: #dc2626; font-weight: 600;">${StatusCalculator.formatDateDisplay(item.systemClosingDate)}</span>` : '-'}</td>
-            <td style="text-align: ${fields[19]?.align || 'left'};">
+            <td class="col-longtext ${(item.refDocument && item.refDocument.length > 70) ? 'col-longtext-extra' : ''}" style="text-align: ${fields[19]?.align || 'left'};" title="${item.refDocument || ''}">
               <div>${item.refDocument || '-'}</div>
               ${attCount > 0 ? `
                 <button class="table-attachment-pill" onclick="userformController.openEdit(${item.no})" title="ចុចដើម្បីមើល ${attCount} ឯកសារភ្ជាប់">
@@ -1113,7 +1185,7 @@ class StaffApp {
               ` : ''}
             </td>
             <td style="text-align: ${fields[20]?.align || 'left'};">${StatusCalculator.formatDateDisplay(item.receivedDate)}</td>
-            <td style="text-align: ${fields[21]?.align || 'left'}; max-width: 160px; overflow: hidden; text-overflow: ellipsis;">${item.remark || '-'}</td>
+            <td class="col-longtext ${(item.remark && item.remark.length > 70) ? 'col-longtext-extra' : ''}" style="text-align: ${fields[21]?.align || 'left'};" title="${item.remark || ''}">${item.remark || '-'}</td>
             <td style="text-align: center;">
               ${role.id === 'VIEWER' ? `
                 <span class="status-badge ${status.cssClass}">${status.labelKh}</span>
@@ -1247,18 +1319,267 @@ class StaffApp {
     userformController.handleDelete();
   }
 
-  /* ---------------- Document Control Timeline ---------------- */
+  /* ---------------- Document Control Timeline & Request History ---------------- */
+  populateDocFilterDropdowns() {
+    const reasonSelect = document.getElementById('doc-filter-reason');
+    const deptSelect = document.getElementById('doc-filter-dept');
+    const allData = dataStore.getStaffData();
+
+    if (reasonSelect) {
+      const currentVal = reasonSelect.value;
+      const settingsReasons = (typeof SettingsManager !== 'undefined' && SettingsManager.getList) ? SettingsManager.getList('requestReasons') : [];
+      const dataReasons = allData.map(r => (r.requestReason || '').trim()).filter(Boolean);
+      const combinedReasons = Array.from(new Set([...settingsReasons, ...dataReasons])).filter(Boolean).sort();
+
+      let html = '<option value="">🎯 គ្រប់មូលហេតុ (All Reasons)</option>';
+      combinedReasons.forEach(r => {
+        html += `<option value="${r}">${r}</option>`;
+      });
+      reasonSelect.innerHTML = html;
+      if (currentVal) reasonSelect.value = currentVal;
+    }
+
+    if (deptSelect) {
+      const currentVal = deptSelect.value;
+      const settingsDepts = (typeof SettingsManager !== 'undefined' && SettingsManager.getList) ? SettingsManager.getList('departments') : [];
+      const dataDepts = allData.map(r => (r.department || '').trim()).filter(Boolean);
+      const combinedDepts = Array.from(new Set([...settingsDepts, ...dataDepts])).filter(Boolean).sort();
+
+      let html = '<option value="">🏢 គ្រប់អង្គភាព (All Departments)</option>';
+      combinedDepts.forEach(d => {
+        html += `<option value="${d}">${d}</option>`;
+      });
+      deptSelect.innerHTML = html;
+      if (currentVal) deptSelect.value = currentVal;
+    }
+  }
+
+  handleDocSearch(query) {
+    this.docSearchQuery = (query || '').toLowerCase().trim();
+    this.renderDocumentTimeline();
+  }
+
+  handleDocFilterChange(type, value) {
+    if (type === 'reason') this.docFilterReason = value || '';
+    if (type === 'department') this.docFilterDept = value || '';
+    if (type === 'status') this.docFilterStatus = value || '';
+    if (type === 'reqCount') this.docFilterReqCount = value || '';
+    this.renderDocumentTimeline();
+  }
+
+  toggleDocMultiRequestOnly() {
+    this.docFilterReqCount = (this.docFilterReqCount === '2+') ? '' : '2+';
+    const reqCountSelect = document.getElementById('doc-filter-reqcount');
+    if (reqCountSelect) {
+      reqCountSelect.value = this.docFilterReqCount;
+    }
+    this.renderDocumentTimeline();
+  }
+
+  filterDocByStaff(staffIdOrName) {
+    if (!staffIdOrName) return;
+    this.docSearchQuery = staffIdOrName.toLowerCase().trim();
+    const searchInput = document.getElementById('doc-search-input');
+    if (searchInput) {
+      searchInput.value = staffIdOrName;
+      searchInput.focus();
+    }
+    this.renderDocumentTimeline();
+    this.showToast(`🔍 កំពុងបង្ហាញប្រវត្តិសំណើទាំងអស់របស់ "${staffIdOrName}"`, 'info');
+  }
+
+  resetDocFilters() {
+    this.docSearchQuery = '';
+    this.docFilterReason = '';
+    this.docFilterDept = '';
+    this.docFilterStatus = '';
+    this.docFilterReqCount = '';
+    this.docMultiOnly = false;
+
+    const searchInput = document.getElementById('doc-search-input');
+    if (searchInput) searchInput.value = '';
+
+    const reasonSelect = document.getElementById('doc-filter-reason');
+    if (reasonSelect) reasonSelect.value = '';
+
+    const deptSelect = document.getElementById('doc-filter-dept');
+    if (deptSelect) deptSelect.value = '';
+
+    const statusSelect = document.getElementById('doc-filter-status');
+    if (statusSelect) statusSelect.value = '';
+
+    const reqCountSelect = document.getElementById('doc-filter-reqcount');
+    if (reqCountSelect) reqCountSelect.value = '';
+
+    this.renderDocumentTimeline();
+    this.showToast('បានសម្អាតតម្រងស្វែងរកឯកសាររួចរាល់', 'info');
+  }
+
+  /**
+   * Get all records belonging to the EXACT SAME staff member
+   */
+  getStaffHistoryRecords(targetRecord, allRecords) {
+    if (!targetRecord || !allRecords || allRecords.length === 0) return [targetRecord];
+
+    const targetStaffId = (targetRecord.staffId || '').trim();
+    const targetSecId = (targetRecord.secondaryId || '').trim();
+    const targetKhmer = (targetRecord.khmerName || '').trim().toLowerCase();
+    const targetLatin = (targetRecord.latinName || '').trim().toLowerCase();
+    const targetDob = (targetRecord.dob || '').trim();
+
+    return allRecords.filter(r => {
+      if (!r) return false;
+
+      // 1. Same exact record number
+      if (r.no === targetRecord.no) return true;
+
+      const rStaffId = (r.staffId || '').trim();
+      const rSecId = (r.secondaryId || '').trim();
+      const rKhmer = (r.khmerName || '').trim().toLowerCase();
+      const rLatin = (r.latinName || '').trim().toLowerCase();
+      const rDob = (r.dob || '').trim();
+
+      // 2. Primary Match: If both have non-empty Staff ID, match ONLY if Staff ID is identical
+      if (targetStaffId && rStaffId) {
+        return targetStaffId.toLowerCase() === rStaffId.toLowerCase();
+      }
+
+      // 3. Secondary ID Match: If both have non-empty Secondary ID, match ONLY if Secondary ID is identical
+      if (targetSecId && rSecId) {
+        return targetSecId.toLowerCase() === rSecId.toLowerCase();
+      }
+
+      // 4. Name Match: If one lacks staffId, match ONLY if Khmer Name is identical AND (Latin Name matches OR DOB matches)
+      if (targetKhmer && rKhmer && targetKhmer === rKhmer) {
+        if (targetDob && rDob && targetDob === rDob) return true;
+        if (targetLatin && rLatin && targetLatin === rLatin) return true;
+        if (!targetLatin && !rLatin && !targetDob && !rDob) return true;
+      }
+
+      return false;
+    });
+  }
+
   renderDocumentTimeline() {
     const container = document.getElementById('doc-timeline-container');
     if (!container) return;
 
-    const filtered = this.getFilteredRecords();
+    this.populateDocFilterDropdowns();
+
+    const allRecords = dataStore.getStaffData();
+
+    // Calculate count of unique staff by request frequencies
+    const processedKeys = new Set();
+    let count1Only = 0;
+    let count2Plus = 0;
+    let count3Plus = 0;
+    let count4Plus = 0;
+
+    allRecords.forEach(r => {
+      const key = (r.staffId && r.staffId.trim()) 
+        ? `id:${r.staffId.trim().toLowerCase()}` 
+        : (r.khmerName ? `name:${r.khmerName.trim().toLowerCase()}` : `no:${r.no}`);
+      if (processedKeys.has(key)) return;
+      processedKeys.add(key);
+
+      const history = this.getStaffHistoryRecords(r, allRecords);
+      if (history.length === 1) count1Only++;
+      if (history.length >= 2) count2Plus++;
+      if (history.length >= 3) count3Plus++;
+      if (history.length >= 4) count4Plus++;
+    });
+
+    // 2. Filter records for display
+    const q = this.docSearchQuery;
+    const filterReason = this.docFilterReason;
+    const filterDept = this.docFilterDept;
+    const filterStatus = this.docFilterStatus;
+    const filterReqCount = this.docFilterReqCount;
+
+    const filtered = allRecords.filter(item => {
+      const history = this.getStaffHistoryRecords(item, allRecords);
+      const reqCount = history.length;
+
+      // Filter by Request Frequency (>2, >3, >4, >5 or 1)
+      if (filterReqCount) {
+        if (filterReqCount === '1' && reqCount !== 1) return false;
+        if (filterReqCount === '2+' && reqCount < 2) return false;
+        if (filterReqCount === '3+' && reqCount < 3) return false;
+        if (filterReqCount === '4+' && reqCount < 4) return false;
+        if (filterReqCount === '5+' && reqCount < 5) return false;
+      }
+
+      if (filterReason && item.requestReason !== filterReason) {
+        return false;
+      }
+
+      if (filterDept && item.department !== filterDept) {
+        return false;
+      }
+
+      if (filterStatus) {
+        const calc = StatusCalculator.calculateStatus(item);
+        if (calc.key !== filterStatus) {
+          return false;
+        }
+      }
+
+      if (q) {
+        const allPastReasons = history.map(h => h.requestReason || '').join(' ');
+        const allPastPrakas = history.map(h => h.prakasNo || '').join(' ');
+        const searchCorpus = [
+          item.staffId, item.secondaryId, item.khmerName, item.latinName,
+          item.department, item.office, item.position, item.requestReason,
+          item.prakasNo, item.refDocument, item.remark, item.annualPeriod,
+          item.description, allPastReasons, allPastPrakas
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        if (!searchCorpus.includes(q)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Update Counter Badges
+    const recordsBadge = document.getElementById('doc-records-count-badge');
+    const multiBadge = document.getElementById('doc-multi-count-badge');
+    if (recordsBadge) {
+      recordsBadge.textContent = `${filtered.length} សំណើ (នៃ ${allRecords.length})`;
+    }
+    if (multiBadge) {
+      if (filterReqCount === '1') {
+        multiBadge.textContent = `1️⃣ ស្នើសុំតែ ១ លើក: ${count1Only} នាក់`;
+        multiBadge.style.background = '#f1f5f9';
+        multiBadge.style.color = '#475569';
+      } else if (filterReqCount === '3+') {
+        multiBadge.textContent = `🔥 ស្នើសុំ ≥ ៣ លើក: ${count3Plus} នាក់`;
+        multiBadge.style.background = '#ffedd5';
+        multiBadge.style.color = '#c2410c';
+      } else if (filterReqCount === '4+' || filterReqCount === '5+') {
+        multiBadge.textContent = `🚀 ស្នើសុំ ≥ ៤ លើក: ${count4Plus} នាក់`;
+        multiBadge.style.background = '#fee2e2';
+        multiBadge.style.color = '#b91c1c';
+      } else {
+        multiBadge.textContent = `👥 ស្នើសុំ ≥ ២ លើក: ${count2Plus} នាក់`;
+        multiBadge.style.background = '#fef3c7';
+        multiBadge.style.color = '#92400e';
+      }
+    }
+
     if (filtered.length === 0) {
       container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: var(--text-muted);">
-          🔍 រកមិនឃើញឯកសារ ឬសំណើដែលត្រូវនឹងលក្ខខណ្ឌស្វែងរកទេ
+        <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: var(--bg-card); border-radius: var(--radius-lg); border: 1.5px dashed var(--border-color); color: var(--text-muted);">
+          <i data-lucide="search-x" style="width: 42px; height: 42px; color: var(--text-muted); margin-bottom: 0.75rem;"></i>
+          <h4 style="color: var(--text-primary); margin-bottom: 0.35rem; font-weight: 700;">រកមិនឃើញឯកសារ ឬសំណើដែលត្រូវនឹងលក្ខខណ្ឌស្វែងរកទេ</h4>
+          <p style="font-size: 0.82rem; margin-bottom: 1rem;">សូមសាកល្បងផ្លាស់ប្តូរពាក្យស្វែងរក ឬចុចប៊ូតុងខាងក្រោមដើម្បីសម្អាតតម្រង។</p>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="app.resetDocFilters()">
+            <i data-lucide="rotate-ccw"></i> <span>សម្អាតតម្រងទាំងអស់ (Reset)</span>
+          </button>
         </div>
       `;
+      this.refreshIcons();
       return;
     }
 
@@ -1267,21 +1588,95 @@ class StaffApp {
       const missingList = StatusCalculator.getMissingFieldsList(item);
       const atts = item.attachments || [];
 
+      // Get complete chronological history of this specific staff member
+      const history = this.getStaffHistoryRecords(item, allRecords);
+      const sortedHistory = [...history].sort((a, b) => {
+        const da = new Date(StatusCalculator.normalizeDate(a.requestDate || a.startDate) || 0).getTime();
+        const db = new Date(StatusCalculator.normalizeDate(b.requestDate || b.startDate) || 0).getTime();
+        return da - db;
+      });
+
+      const totalRequests = sortedHistory.length;
+
+      // Check if this card represents a Suspension case
+      const isSuspension = (item.requestReason || '').trim().includes('ព្យួរការងារ');
+      const suspensionDuration = isSuspension ? StatusCalculator.calculateSuspensionDuration(item) : '';
+
       return `
         <div class="doc-card">
           <div class="doc-card-header">
             <div class="doc-staff-info">
-              <h4>${item.khmerName} (${item.latinName})</h4>
-              <p>${item.staffId} • ${item.department} - ${item.position}</p>
+              <h4>${item.khmerName} (${item.latinName || '-'})</h4>
+              <p style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.2rem; font-size: 0.78rem;">
+                <span style="font-weight: 700; color: var(--text-primary);">អពដ: <code>${item.staffId || '-'}</code></span>
+                ${item.secondaryId ? `<span class="doc-mef-badge" style="background: rgba(14, 165, 233, 0.1); color: #0284c7; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.72rem; border: 1px solid rgba(14, 165, 233, 0.25);" title="អត្តលេខ កសហវ (MEF ID)">កសហវ: ${item.secondaryId}</span>` : ''}
+                <span style="color: var(--text-muted);">•</span>
+                <span>${item.department || '-'}</span>
+                <span style="color: var(--text-muted);">-</span>
+                <span>${item.position || '-'}</span>
+              </p>
             </div>
-            <span class="status-badge ${status.cssClass}">
-              <span class="status-dot"></span>
-              ${status.labelKh}
-            </span>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem;">
+              <span class="status-badge ${status.cssClass}">
+                <span class="status-dot"></span>
+                ${status.labelKh}
+              </span>
+              <span class="doc-req-count-pill ${totalRequests > 1 ? 'pill-multi-request' : 'pill-single-request'}" onclick="app.filterDocByStaff('${item.staffId || item.khmerName}')" title="ចុចដើម្បីមើលប្រវត្តិសំណើទាំងអស់របស់បុគ្គលិកនេះ (${totalRequests} លើក)">
+                <i data-lucide="layers" style="width: 12px; height: 12px;"></i>
+                <span>ធ្លាប់ស្នើសុំ៖ <strong>${totalRequests} លើក</strong> ${totalRequests > 1 ? '🔥' : ''}</span>
+              </span>
+            </div>
           </div>
 
-          <div style="font-size: 0.8rem;">
-            <strong>មូលហេតុសំណើ៖</strong> ${item.requestReason || '<em style="color: var(--text-muted);">មិនបានបញ្ជាក់</em>'}
+          <!-- Current Reason of this Card & Suspension Duration -->
+          <div style="font-size: 0.82rem; line-height: 1.4; display: flex; flex-direction: column; gap: 0.35rem;">
+            <div>
+              <strong style="color: var(--primary);">មូលហេតុសំណើ៖</strong>
+              <span style="font-weight: 700; color: var(--text-primary);">${item.requestReason || '<em style="color: var(--text-muted); font-weight: normal;">មិនបានបញ្ជាក់</em>'}</span>
+            </div>
+            ${suspensionDuration ? `
+              <div class="doc-suspension-box" style="background: rgba(249, 115, 22, 0.08); border: 1.5px solid #fdba74; border-radius: 8px; padding: 0.45rem 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <i data-lucide="timer" style="color: #ea580c; width: 16px; height: 16px;"></i>
+                  <span style="font-weight: 700; font-size: 0.76rem; color: #c2410c;">រយៈពេលព្យួរការងារ៖</span>
+                </div>
+                <span class="suspension-duration-badge" style="background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.78rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04);">
+                  ⏱️ ${suspensionDuration}
+                </span>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Request History Listing & Reasons (How many times & reasons) -->
+          <div class="doc-req-history-card-section">
+            <div class="doc-req-history-badge-row">
+              <span style="font-weight: 700; font-size: 0.74rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.35rem;">
+                <i data-lucide="history" style="width: 13px; height: 13px; color: #f59e0b;"></i>
+                <span>ប្រវត្តិនៃសំណើ (History): <strong>${totalRequests} លើក</strong></span>
+              </span>
+              ${totalRequests > 1 ? `
+                <a href="javascript:void(0)" onclick="app.filterDocByStaff('${item.staffId || item.khmerName}')" style="font-size: 0.7rem; color: var(--primary); font-weight: 600; text-decoration: underline;">
+                  បង្ហាញទាំងអស់ (${totalRequests}) ➔
+                </a>
+              ` : ''}
+            </div>
+
+            <div class="doc-req-reasons-tags">
+              ${sortedHistory.map((h, idx) => {
+                const isCurrent = (h.no === item.no);
+                const yearLabel = h.annualPeriod || (h.requestDate ? h.requestDate.slice(0, 4) : (h.startDate ? h.startDate.slice(0, 4) : ''));
+                const hIsSuspension = (h.requestReason || '').trim().includes('ព្យួរការងារ');
+                const hDuration = hIsSuspension ? StatusCalculator.calculateSuspensionDuration(h) : '';
+                return `
+                  <span class="doc-reason-tag ${isCurrent ? 'active-curr-tag' : ''}" title="លើកទី ${idx + 1}: ${h.requestReason || 'គ្មានមូលហេតុ'} (${h.requestDate || h.startDate || 'គ្មានកាលបរិច្ឆេទ'})${hDuration ? ' - រយៈពេល: ' + hDuration : ''}">
+                    <span>${idx + 1}. ${h.requestReason || 'មិនបានបញ្ជាក់'}</span>
+                    ${yearLabel ? `<small style="opacity: 0.75; font-size: 0.65rem;">(${yearLabel})</small>` : ''}
+                    ${hDuration ? `<small style="color: #ea580c; font-weight: 700; font-size: 0.65rem;">[⏱️ ${hDuration}]</small>` : ''}
+                    ${isCurrent ? '📍' : ''}
+                  </span>
+                `;
+              }).join('')}
+            </div>
           </div>
 
           <div class="doc-timeline-dates">
@@ -1325,7 +1720,12 @@ class StaffApp {
             </div>
           ` : ''}
 
-          <div style="margin-top: auto; display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <div style="margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; padding-top: 0.5rem;">
+            ${totalRequests > 1 ? `
+              <button class="btn btn-secondary btn-sm" onclick="app.filterDocByStaff('${item.staffId || item.khmerName}')" style="font-size: 0.72rem;" title="បង្ហាញប្រវត្តិសំណើទាំងអស់ (${totalRequests} លើក)">
+                <i data-lucide="filter"></i> <span>ប្រវត្តិ (${totalRequests})</span>
+              </button>
+            ` : '<span></span>'}
             <button class="btn btn-secondary btn-sm" onclick="userformController.openEdit(${item.no})">
               <i data-lucide="edit"></i> <span>គ្រប់គ្រងឯកសារ & ព័ត៌មាន</span>
             </button>

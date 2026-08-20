@@ -383,6 +383,14 @@ class UserFormController {
       startDateInput.addEventListener('input', handleStartDateChange);
       startDateInput.addEventListener('change', handleStartDateChange);
     }
+
+    // Suspension Duration Live Calculation Listeners
+    const reasonInput = document.getElementById('uf-requestReason');
+    const endDateInput = document.getElementById('uf-endDate');
+    if (reasonInput) reasonInput.addEventListener('change', () => this.updateSuspensionDuration());
+    if (reqDateInput) reqDateInput.addEventListener('change', () => this.updateSuspensionDuration());
+    if (startDateInput) startDateInput.addEventListener('change', () => this.updateSuspensionDuration());
+    if (endDateInput) endDateInput.addEventListener('change', () => this.updateSuspensionDuration());
   }
 
   syncStartDateWithRequestDate() {
@@ -392,6 +400,7 @@ class UserFormController {
       startDateInput.value = reqDateInput.value;
       this.isStartDateManuallyEdited = false;
       this.updateStartDateIndicator(true);
+      this.updateSuspensionDuration();
       if (typeof app !== 'undefined') {
         app.showToast('បានកំណត់ថ្ងៃចាប់ផ្តើមស្មើថ្ងៃស្នើសុំ (Synced Start Date with Request Date)', 'info');
       }
@@ -415,7 +424,7 @@ class UserFormController {
   }
 
   /**
-   * Update calculated age, duration, and status badges in real-time
+   * Update calculated age, duration, status, and suspension duration badges in real-time
    */
   updateCalculatedBadges() {
     const dobVal = document.getElementById('uf-dob')?.value;
@@ -435,6 +444,96 @@ class UserFormController {
       const calc = StatusCalculator.calculateStatus(fakeRec);
       statusBadge.textContent = `${calc.labelKh} (${calc.labelEn})`;
       statusBadge.className = `status-badge ${calc.cssClass}`;
+    }
+
+    this.updateSuspensionDuration();
+    this.checkFormEligibility();
+  }
+
+  /**
+   * Real-time Eligibility Gatekeeper in UserForm Modal
+   */
+  checkFormEligibility() {
+    const alertBox = document.getElementById('uf-eligibility-alert-box');
+    if (!alertBox) return;
+
+    const staffId = (document.getElementById('uf-staffId')?.value || '').trim();
+    const khmerName = (document.getElementById('uf-khmerName')?.value || '').trim();
+    const reason = (document.getElementById('uf-requestReason')?.value || '').trim();
+
+    const staffKey = staffId || khmerName;
+    if (!staffKey || !reason) {
+      alertBox.style.display = 'none';
+      return;
+    }
+
+    if (typeof eligibilityController === 'undefined') return;
+
+    const verdict = eligibilityController.checkEligibility(staffKey, reason);
+
+    if (!verdict.hasHistory && verdict.verdict === 'ELIGIBLE_NEW') {
+      alertBox.style.display = 'none';
+      return;
+    }
+
+    alertBox.style.display = 'block';
+    alertBox.style.background = verdict.bgColor;
+    alertBox.style.borderColor = verdict.color;
+    alertBox.style.color = verdict.color;
+
+    alertBox.innerHTML = `
+      <div style="font-size: 0.85rem; font-weight: 800; display: flex; align-items: center; gap: 0.35rem;">
+        <span>${verdict.verdictLabel}</span>
+      </div>
+      <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-primary); margin-top: 3px; line-height: 1.35;">
+        ${verdict.message}
+      </div>
+    `;
+  }
+
+  /**
+   * Live calculation for Suspension Duration in UserForm
+   */
+  updateSuspensionDuration() {
+    const box = document.getElementById('uf-suspension-duration-box');
+    const textEl = document.getElementById('uf-suspension-duration-text');
+    if (!box || !textEl) return;
+
+    const reasonEl = document.getElementById('uf-requestReason');
+    const reason = reasonEl ? (reasonEl.value || '').trim() : '';
+
+    if (!reason.includes('ព្យួរការងារ')) {
+      box.style.display = 'none';
+      return;
+    }
+
+    const reqDateEl = document.getElementById('uf-requestDate');
+    const startDateEl = document.getElementById('uf-startDate');
+    const endDateEl = document.getElementById('uf-endDate');
+
+    const startDate = (reqDateEl && reqDateEl.value) ? reqDateEl.value : (startDateEl ? startDateEl.value : '');
+    const endDate = endDateEl ? endDateEl.value : '';
+
+    if (!startDate || !endDate) {
+      box.style.display = 'none';
+      return;
+    }
+
+    const duration = StatusCalculator.calculateExactDurationYMD(startDate, endDate);
+    if (duration) {
+      box.style.display = 'flex';
+      textEl.textContent = `⏱️ ${duration}`;
+      if (duration === 'កាលបរិច្ឆេទមិនត្រឹមត្រូវ') {
+        textEl.style.color = '#dc2626';
+        textEl.style.background = '#fef2f2';
+        textEl.style.borderColor = '#fca5a5';
+      } else {
+        textEl.style.color = '#c2410c';
+        textEl.style.background = '#fff7ed';
+        textEl.style.borderColor = '#fed7aa';
+      }
+    } else {
+      box.style.display = 'none';
     }
   }
 
@@ -510,10 +609,10 @@ class UserFormController {
           <i data-lucide="lock" style="width: 22px; height: 22px; color: #dc2626; flex-shrink: 0;"></i>
           <div style="flex: 1;">
             <div style="font-weight: 700; font-size: 0.88rem; color: #991b1b; margin-bottom: 0.15rem;">
-              🔒 ប្រព័ន្ធបានបិទ (System Closed - View Only Mode)
+              🔒 ប្រព័ន្ធបានបិទ (System Closed)
             </div>
             <div style="font-size: 0.76rem; color: #b91c1c; line-height: 1.35;">
-              កំណត់ត្រានេះត្រូវបានចាក់សោរមិនអនុញ្ញាតឱ្យកែប្រែឡើយ (Read-Only)។ ដើម្បីកែប្រែព័ត៌មានឡើងវិញ សូមប្តូរស្ថានភាពពី «បានបិទប្រព័ន្ធ» ទៅជា «កំពុងដំណើរការ» ឬ «ស្វ័យប្រវត្ត»។
+              ព័ត៌មានទូទៅត្រូវបានចាក់សោរ ប៉ុន្តែលោកអ្នកនៅតែអាច <strong>កែប្រែ «ថ្ងៃខែបិទប្រព័ន្ធ (Closing Date)»</strong> និងប្តូរស្ថានភាពបានគ្រប់ពេល រួចចុច <strong>កែប្រែ (Update)</strong> ដើម្បីរក្សាទុក។
             </div>
           </div>
         `;
@@ -522,14 +621,14 @@ class UserFormController {
       }
     }
 
-    // List of input IDs to lock/unlock
+    // List of input IDs to lock/unlock (System closing date is excluded so it stays editable!)
     const inputIds = [
       'uf-staffId', 'uf-secondaryId', 'uf-latinName', 'uf-khmerName',
       'uf-dob', 'uf-serviceStartDate', 'uf-gender',
       'uf-department', 'uf-office', 'uf-position', 'uf-staffType',
       'uf-requestDate', 'uf-startDate', 'uf-endDate', 'uf-annualPeriod',
       'uf-requestReason', 'uf-prakasNo', 'uf-refDocument', 'uf-receivedDate',
-      'uf-systemClosingDate', 'uf-description', 'uf-remark', 'uf-remark-select'
+      'uf-description', 'uf-remark', 'uf-remark-select'
     ];
 
     inputIds.forEach(id => {
@@ -543,6 +642,22 @@ class UserFormController {
         }
       }
     });
+
+    // ថ្ងៃខែបិទប្រព័ន្ធ (System Closing Date) MUST remain editable for Admin / Officer even if closed!
+    const closingDateEl = document.getElementById('uf-systemClosingDate');
+    const setClosingTodayBtn = document.getElementById('btn-set-closing-today');
+    if (closingDateEl) {
+      if (isViewer) {
+        closingDateEl.disabled = true;
+        closingDateEl.classList.add('input-locked-readonly');
+      } else {
+        closingDateEl.disabled = false;
+        closingDateEl.classList.remove('input-locked-readonly');
+      }
+    }
+    if (setClosingTodayBtn) {
+      setClosingTodayBtn.style.display = isViewer ? 'none' : 'inline-flex';
+    }
 
     if (statusSelect && isViewer) {
       statusSelect.disabled = true;
@@ -646,8 +761,8 @@ class UserFormController {
       folderBar.style.display = isLocked ? 'none' : 'flex';
     }
 
-    // For Viewer or Closed Status: strictly view-only, hide left actions (Search, Clear, New), attachment options & mutation buttons
-    if (isViewer || isClosed) {
+    // For Viewer: strictly view-only, hide left actions (Search, Clear, New), attachment options & mutation buttons
+    if (isViewer) {
       if (leftFooterActions) leftFooterActions.style.display = 'none';
       if (newBtn) newBtn.style.display = 'none';
       if (searchBtn) searchBtn.style.display = 'none';
@@ -656,7 +771,7 @@ class UserFormController {
       if (updateBtn) updateBtn.style.display = 'none';
       if (deleteBtn) deleteBtn.style.display = 'none';
     } else {
-      // Unlocked Admin / Officer mode
+      // Unlocked Admin / Officer mode (Even if record is closed, allow Update/Save and Search/Clear/New!)
       if (leftFooterActions) leftFooterActions.style.display = 'flex';
       if (newBtn) newBtn.style.display = 'inline-flex';
       if (searchBtn) searchBtn.style.display = 'inline-flex';
@@ -1575,6 +1690,20 @@ class UserFormController {
     if (statusEl) {
       statusEl.textContent = `${calc.labelKh} (${calc.labelEn})`;
       statusEl.className = `status-badge ${calc.cssClass}`;
+    }
+  }
+
+  setClosingDateToday() {
+    const role = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole) ? UserControl.getCurrentRole() : { id: 'ADMIN', canEdit: true };
+    if (role.id === 'VIEWER') return;
+    const closingInput = document.getElementById('uf-systemClosingDate');
+    if (closingInput) {
+      closingInput.value = new Date().toISOString().slice(0, 10);
+      const statusDropdown = document.getElementById('uf-customStatus');
+      if (statusDropdown && statusDropdown.value !== 'closed') {
+        statusDropdown.value = 'closed';
+      }
+      this.updateFormLockState();
     }
   }
 

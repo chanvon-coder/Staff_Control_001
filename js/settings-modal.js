@@ -261,15 +261,16 @@ class SettingsModalController {
         loginLogoBox.innerHTML = `<img src="${branding.loginLogoImage}" alt="Login Logo" style="width: 50px; height: 50px; object-fit: contain; border-radius: 10px;">`;
       } else {
         const iconName = branding.loginLogoIcon || 'shield';
-        if (iconName === 'shield') {
-          loginLogoBox.innerHTML = `
-            <svg viewBox="0 0 24 24" style="width: 40px; height: 40px; fill: currentColor; stroke: none;">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-          `;
-        } else {
-          loginLogoBox.innerHTML = `<i data-lucide="${iconName}" style="width: 38px; height: 38px; color: #2563eb;"></i>`;
-        }
+        const LOGIN_ICON_SVGS = {
+          shield: `<svg viewBox="0 0 24 24" style="width: 40px; height: 40px; fill: currentColor; stroke: none;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+          landmark: `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><line x1="3" y1="22" x2="21" y2="22"/><line x1="6" y1="18" x2="6" y2="11"/><line x1="10" y1="18" x2="10" y2="11"/><line x1="14" y1="18" x2="14" y2="11"/><line x1="18" y1="18" x2="18" y2="11"/><polygon points="12 2 20 7 4 7 12 2"/></svg>`,
+          lock: `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+          key: `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`,
+          'user-check': `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>`,
+          building: `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="18" x2="15" y2="18"/></svg>`,
+          award: `<svg viewBox="0 0 24 24" style="width: 38px; height: 38px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>`
+        };
+        loginLogoBox.innerHTML = LOGIN_ICON_SVGS[iconName] || LOGIN_ICON_SVGS.shield;
       }
     }
 

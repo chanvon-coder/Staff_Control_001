@@ -283,6 +283,79 @@ const StatusCalculator = {
   },
 
   /**
+   * Calculate exact duration between two dates in Years, Months, and Days
+   * Calculates true calendar year/month/day differences (not dividing by 365)
+   */
+  calculateExactDurationYMD(startDateVal, endDateVal) {
+    if (!startDateVal || !endDateVal) return '';
+
+    const isoStart = this.normalizeDate(startDateVal);
+    const isoEnd = this.normalizeDate(endDateVal);
+    if (!isoStart || !isoEnd) return '';
+
+    const d1 = new Date(isoStart);
+    const d2 = new Date(isoEnd);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return '';
+
+    d1.setHours(0, 0, 0, 0);
+    d2.setHours(0, 0, 0, 0);
+
+    if (d2 < d1) {
+      return 'កាលបរិច្ឆេទមិនត្រឹមត្រូវ';
+    }
+
+    let y1 = d1.getFullYear();
+    let m1 = d1.getMonth(); // 0-indexed
+    let day1 = d1.getDate();
+
+    let y2 = d2.getFullYear();
+    let m2 = d2.getMonth();
+    let day2 = d2.getDate();
+
+    let years = y2 - y1;
+    let months = m2 - m1;
+    let days = day2 - day1;
+
+    if (days < 0) {
+      months -= 1;
+      // Get the number of days in the month prior to d2
+      const prevMonthLastDay = new Date(y2, m2, 0).getDate();
+      days += prevMonthLastDay;
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    const parts = [];
+    if (years > 0) parts.push(`${years} ឆ្នាំ`);
+    if (months > 0) parts.push(`${months} ខែ`);
+    if (days > 0 || parts.length === 0) parts.push(`${days} ថ្ងៃ`);
+
+    return parts.join(' ');
+  },
+
+  /**
+   * Calculate suspension duration for a record
+   * Returns empty string if requestReason is not "ព្យួរការងារ"
+   */
+  calculateSuspensionDuration(record) {
+    if (!record) return '';
+    const reason = (record.requestReason || '').trim();
+    if (!reason.includes('ព្យួរការងារ')) {
+      return '';
+    }
+
+    const startDate = record.requestDate || record.startDate;
+    const endDate = record.endDate;
+
+    if (!startDate || !endDate) return '';
+
+    return this.calculateExactDurationYMD(startDate, endDate);
+  },
+
+  /**
    * Calculate Date Alert metadata for Countdown, Badges & Progress Bars
    */
   getDateControlMeta(dateStr, baseRuleDays = 30) {

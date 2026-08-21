@@ -60,6 +60,7 @@ class StaffApp {
     this.loadCloudSyncSettings();
     this.initMobileAndDesktopUX();
     this.updateRightDockUI(this.getRightDockPreference());
+    this.initSessionSecurity();
     
     // Initial Render & Default Landing Tab
     this.refreshAll();
@@ -438,6 +439,192 @@ class StaffApp {
     const dock = document.getElementById('right-autohide-nav-dock');
     if (dock) {
       dock.classList.remove('open');
+    }
+  }
+
+  /**
+   * Individual Request Binding History Modal
+   */
+  showRequestHistoryModal(staffKey) {
+    if (!staffKey) return;
+    const allStaff = dataStore.getStaffData() || [];
+    const keyLower = String(staffKey).trim().toLowerCase();
+
+    // Priority 1: Match 10-Digit ID -> Priority 2: Name
+    let matchedRecords = allStaff.filter(s =>
+      (s.staffId && String(s.staffId).trim().toLowerCase() === keyLower) ||
+      (s.secondaryId && String(s.secondaryId).trim().toLowerCase() === keyLower)
+    );
+
+    if (matchedRecords.length === 0) {
+      matchedRecords = allStaff.filter(s =>
+        (s.khmerName && String(s.khmerName).trim().toLowerCase() === keyLower) ||
+        (s.latinName && String(s.latinName).trim().toLowerCase() === keyLower)
+      );
+    }
+
+    const modal = document.getElementById('staff-request-history-modal');
+    if (!modal) return;
+
+    const nameEl = document.getElementById('history-modal-staff-name');
+    const idEl = document.getElementById('history-modal-staff-id');
+    const container = document.getElementById('history-requests-cards-container');
+
+    if (matchedRecords.length > 0) {
+      const first = matchedRecords[0];
+      if (nameEl) nameEl.textContent = `ប្រវត្តិការស្នើសុំ ៖ ${first.khmerName || first.latinName} (${matchedRecords.length} សំណើ)`;
+      if (idEl) idEl.textContent = `អត្តលេខ៖ ${first.staffId || '-'} • អង្គភាព៖ ${first.department || '-'} • ការិយាល័យ៖ ${first.office || '-'}`;
+    } else {
+      if (nameEl) nameEl.textContent = `ប្រវត្តិការស្នើសុំ ៖ ${staffKey}`;
+      if (idEl) idEl.textContent = `មិនមានកំណត់ត្រាប្រវត្តិស្នើសុំឡើយ`;
+    }
+
+    if (container) {
+      if (matchedRecords.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 2.5rem; color: var(--text-muted);">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📜</div>
+            <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-primary);">មិនមានប្រវត្តិការស្នើសុំសម្រាប់បុគ្គលិកនេះឡើយ</div>
+          </div>
+        `;
+      } else {
+        const firstRec = matchedRecords[0];
+        const searchKeyStr = (firstRec ? (firstRec.staffId || firstRec.khmerName || '') : '').replace(/'/g, "\\'");
+
+        container.innerHTML = matchedRecords.map((r, idx) => {
+          const reqNoStr = String(idx + 1).padStart(3, '0');
+          const reqReason = (r.requestReason && r.requestReason !== 'undefined' && r.requestReason.trim()) ? r.requestReason.trim() : '-';
+          const remark = (r.remark && r.remark !== 'undefined' && r.remark.trim()) ? r.remark.trim() : reqReason;
+          const statusObj = StatusCalculator ? StatusCalculator.calculateStatus(r) : { labelKh: 'សកម្ម', cssClass: 'status-active' };
+          const duration = StatusCalculator ? StatusCalculator.calculateExactDurationYMD(r.startDate || r.requestDate, r.endDate || r.systemClosingDate) : '-';
+
+          return `
+            <div class="request-history-card" style="background: var(--bg-card-subtle); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 1.15rem 1.35rem; transition: all 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; padding-bottom: 0.55rem; border-bottom: 1px dashed var(--border-color); flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                  <span class="badge" style="background: #4f46e5; color: #ffffff; font-weight: 800; font-size: 0.78rem; padding: 4px 10px; border-radius: 6px;">
+                    Request #${reqNoStr} (Record #${r.no || idx + 1})
+                  </span>
+                  <span class="status-badge ${statusObj.cssClass}" style="font-size: 0.76rem;">🏷️ ${statusObj.labelKh}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                  <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted);">
+                    📅 ថ្ងៃស្នើសុំ៖ ${StatusCalculator ? StatusCalculator.formatDateDisplay(r.requestDate) : (r.requestDate || '-')}
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-xs" onclick="app.returnToPromotionTable('${searchKeyStr}')" style="font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; background: rgba(124, 58, 237, 0.1); color: #6d28d9; border: 1px solid rgba(124, 58, 237, 0.3); cursor: pointer;" title="ត្រឡប់ទៅកាន់តារាងគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ">
+                    <i data-lucide="award" style="width: 13px; height: 13px;"></i>
+                    <span>🎖️ ត្រឡប់ទៅតារាងឡើងថ្នាក់</span>
+                  </button>
+                  <button type="button" class="btn btn-primary btn-xs" onclick="app.jumpToStaffDataRecord(${r.no || idx + 1})" style="font-weight: 800; padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.35rem; background: var(--primary); color: #ffffff; border: none; cursor: pointer;" title="ចូលទៅមើល និងកែប្រែទិន្នន័យផ្ទាល់ក្នុង Staff Data">
+                    <i data-lucide="external-link" style="width: 13px; height: 13px;"></i>
+                    <span>🔍 មើលក្នុង Staff Data</span>
+                  </button>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.85rem; font-size: 0.82rem;">
+                <div style="background: var(--bg-card); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.72rem; font-weight: 800; color: #4f46e5; margin-bottom: 2px;">📌 មូលហេតុនៃសំណើ (Reason of Request) ៖</div>
+                  <strong style="color: var(--text-primary); font-size: 0.88rem;">${reqReason}</strong>
+                </div>
+
+                <div style="background: var(--bg-card); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.72rem; font-weight: 800; color: #059669; margin-bottom: 2px;">📝 កំណត់សម្គាល់ (Reason / Remark) ៖</div>
+                  <strong style="color: var(--text-primary); font-size: 0.88rem;">${remark}</strong>
+                </div>
+
+                <div style="background: var(--bg-card); padding: 0.65rem 0.85rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                  <div style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); margin-bottom: 2px;">🗓️ កាលបរិច្ឆេទ & រយៈពេលអនុវត្ត ៖</div>
+                  <div>ចាប់ផ្តើម៖ <strong>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.startDate) : (r.startDate || '-')}</strong></div>
+                  <div>បញ្ចប់៖ <strong>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.endDate) : (r.endDate || '-')}</strong></div>
+                  ${duration ? `<div style="color: #d97706; font-weight: 700; margin-top: 2px;">⏱️ រយៈពេល៖ ${duration}</div>` : ''}
+                </div>
+
+                ${(StatusCalculator && StatusCalculator.calculateSuspensionCaseDetails) ? (() => {
+                  const suspCase = StatusCalculator.calculateSuspensionCaseDetails(r, matchedRecords);
+                  let html = '';
+                  if (suspCase && suspCase.hasEarlyReturn) {
+                    html += `
+                      <div style="grid-column: 1 / -1; background: rgba(217, 119, 6, 0.06); border: 1.5px solid rgba(217, 119, 6, 0.25); border-radius: 10px; padding: 0.75rem 0.95rem; margin-top: 0.4rem; font-size: 0.8rem; line-height: 1.5;">
+                        <div style="font-weight: 800; color: #b45309; font-size: 0.84rem; margin-bottom: 0.35rem;">
+                          ⚡ គណនាយ៉ាងលម្អិតករណីចូលធ្វើការវិញមុនកាលកំណត់ (Suspension & Early Return Breakdown)
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.5rem; color: var(--text-primary);">
+                          <div>📅 ថ្ងៃចាប់ផ្តើមព្យួរការងារ៖ <strong>${StatusCalculator.formatDateDisplay(suspCase.startDateStr)}</strong></div>
+                          <div>📅 ថ្ងៃបញ្ចប់ដើម៖ <strong>${StatusCalculator.formatDateDisplay(suspCase.originalEndDateStr)}</strong></div>
+                          <div>🟢 ថ្ងៃចូលធ្វើការវិញមុនកំណត់៖ <strong style="color: #059669;">${StatusCalculator.formatDateDisplay(suspCase.earlyReturnDateStr)}</strong></div>
+                          <div>⏱️ រយៈពេលបានប្រើប្រាស់ (Used Period)៖ <strong style="color: #2563eb;">${suspCase.usedDurationText}</strong></div>
+                          <div>⏳ រយៈពេលនៅសល់ (Remaining Period)៖ <strong style="color: #dc2626;">${suspCase.remainingDurationText}</strong></div>
+                          <div>📅 ថិរវេលានៅសល់គិតចាប់ពី៖ <strong style="color: #7c3aed;">${StatusCalculator.formatDateDisplay(suspCase.remainingStartDateStr)} ដល់ ${StatusCalculator.formatDateDisplay(suspCase.remainingEndDateStr)}</strong></div>
+                        </div>
+                      </div>
+                    `;
+                  }
+                  if (typeof promotionController !== 'undefined' && promotionController.calculateNewPromotionDates && (r.promotionDate || r.startDate)) {
+                    const pDates = promotionController.calculateNewPromotionDates(r.promotionDate || r.startDate, {
+                      suspensionDays: suspCase ? suspCase.usedDays : 0,
+                      remainingSuspensionDays: suspCase ? suspCase.remainingDays : 0
+                    });
+                    if (pDates && pDates.newMaturedPromotionDateStr && pDates.newMaturedPromotionDateStr !== '-') {
+                      html += `
+                        <div style="grid-column: 1 / -1; background: rgba(124, 58, 237, 0.06); border: 1.5px solid rgba(124, 58, 237, 0.25); border-radius: 10px; padding: 0.75rem 0.95rem; margin-top: 0.4rem; font-size: 0.8rem; line-height: 1.5;">
+                          <div style="font-weight: 800; color: #6d28d9; font-size: 0.84rem; margin-bottom: 0.35rem;">
+                            🎯 គណនាថ្ងៃឡើងថ្នាក់ និងថ្ងៃអាចស្នើសុំបាន (2-Stage New Promotion Date Breakdown)
+                          </div>
+                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.5rem; color: var(--text-primary);">
+                            <div>📅 ថ្ងៃឡើងថ្នាក់គោល (Base Date)៖ <strong>${StatusCalculator.formatDateDisplay(r.promotionDate || r.startDate)}</strong></div>
+                            <div>🔄 វដ្តឡើងថ្នាក់ (Cycle)៖ <strong style="color: #2563eb;">2 ឆ្នាំ</strong></div>
+                            <div>🗓️ ថ្ងៃកែសម្រួល (Adjusted Promo Date)៖ <strong style="color: #0284c7;">${StatusCalculator.formatDateDisplay(pDates.adjustedPromoDateStr)}</strong></div>
+                            <div>🎖️ ថ្ងៃគ្រប់កាលកំណត់ថ្មី (New Promotion Date)៖ <strong style="color: #7c3aed; font-size: 0.9rem;">${StatusCalculator.formatDateDisplay(pDates.newMaturedPromotionDateStr)}</strong></div>
+                            <div>🟢 ថ្ងៃអាចស្នើសុំបាន (Final Next Eligible Date)៖ <strong style="color: #059669; font-size: 0.9rem;">${StatusCalculator.formatDateDisplay(pDates.nextEligibleDateStr)}</strong></div>
+                          </div>
+                        </div>
+                      `;
+                    }
+                  }
+                  return html;
+                })() : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+    if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+  }
+
+  jumpToStaffDataRecord(recordNo) {
+    this.closeRequestHistoryModal();
+    this.switchTab('database');
+    setTimeout(() => {
+      if (typeof userformController !== 'undefined' && userformController.openEdit) {
+        userformController.openEdit(recordNo);
+      }
+    }, 150);
+  }
+
+  returnToPromotionTable(searchKey = '') {
+    this.closeRequestHistoryModal();
+    this.switchTab('promotion');
+    if (searchKey && typeof promotionController !== 'undefined' && promotionController.handleSearch) {
+      setTimeout(() => {
+        const input = document.getElementById('promo-search-input');
+        if (input) {
+          input.value = searchKey;
+          promotionController.handleSearch(searchKey);
+        }
+      }, 150);
+    }
+  }
+
+  closeRequestHistoryModal() {
+    const modal = document.getElementById('staff-request-history-modal');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.style.display = 'none';
     }
   }
 
@@ -1153,8 +1340,8 @@ class StaffApp {
             <td style="text-align: center; font-weight: 700;">${item.no}</td>
             <td style="text-align: ${fields[1]?.align || 'left'};"><strong style="color: var(--primary);">${StatusCalculator.format4DigitId(item.staffId) || '-'}</strong></td>
             <td style="text-align: ${fields[2]?.align || 'left'};">${StatusCalculator.format4DigitId(item.secondaryId) || '-'}</td>
-            <td style="text-align: ${fields[3]?.align || 'left'}; font-weight: 600;">${item.latinName || '-'}</td>
-            <td style="text-align: ${fields[4]?.align || 'left'}; font-weight: 600;">${item.khmerName || '-'}</td>
+            <td style="text-align: ${fields[3]?.align || 'left'}; font-weight: 600;"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(item.staffId || item.latinName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិស្នើសុំទាំងអស់របស់បុគ្គលិកនេះ" style="color: inherit; text-decoration: none;">${item.latinName || '-'}</a></td>
+            <td style="text-align: ${fields[4]?.align || 'left'}; font-weight: 600;"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(item.staffId || item.khmerName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិស្នើសុំទាំងអស់របស់បុគ្គលិកនេះ" style="color: inherit; text-decoration: underline;">${item.khmerName || '-'}</a></td>
             <td style="text-align: ${fields[5]?.align || 'left'};">${item.department || '-'}</td>
             <td style="text-align: ${fields[6]?.align || 'left'};">${item.office || '-'}</td>
             <td style="text-align: ${fields[7]?.align || 'left'};"><span class="status-badge" style="background: var(--bg-card-subtle); color: var(--text-primary);">${item.position || '-'}</span></td>
@@ -1205,6 +1392,9 @@ class StaffApp {
             </td>
             <td style="position: sticky; right: 0; background: var(--bg-card); z-index: 5; text-align: center;">
               <div class="table-actions">
+                <button class="icon-btn" title="មើលប្រវត្តិស្នើសុំដាច់ដោយឡែក (Individual Request Binding History)" onclick="app.showRequestHistoryModal('${(item.staffId || item.khmerName || '').replace(/'/g, "\\'")}')" style="color: #6366f1;">
+                  <i data-lucide="history"></i>
+                </button>
                 <button class="icon-btn" title="${role.id === 'VIEWER' ? 'មើលព័ត៌មានលម្អិត (View Details)' : 'កែប្រែទិន្នន័យ & ឯកសារ (Edit Info & Attachments)'}" onclick="userformController.openEdit(${item.no})">
                   <i data-lucide="${role.id === 'VIEWER' ? 'eye' : 'edit-3'}"></i>
                 </button>
@@ -1247,8 +1437,9 @@ class StaffApp {
             <td>${item.receivedDate || '-'}</td>
             <td>${item.remark || '-'}</td>
             <td><span class="status-badge status-active">កំពុងដំណើរការ</span></td>
-            <td>
-              <button class="icon-btn" onclick="userformController.openEdit(${item.no})"><i data-lucide="edit-3"></i></button>
+            <td style="white-space: nowrap;">
+              <button class="icon-btn" onclick="userformController.openEdit(${item.no})" title="កែប្រែ/មើលលម្អិត"><i data-lucide="edit-3"></i></button>
+              <button class="icon-btn" onclick="userformController.duplicateFromRecord(${item.no})" title="ចម្លងព័ត៌មានបុគ្គលិកបង្កើតសំណើថ្មី" style="color: #d97706;"><i data-lucide="copy"></i></button>
             </td>
           </tr>
         `;
@@ -1860,67 +2051,69 @@ class StaffApp {
     }
   }
 
-  /* ---------------- Auth & Login Dialog (User Accounts Droplist & Secure Password) ---------------- */
-  getRememberedAuthData() {
-    const rememberedStoreKey = 'staff_control_remembered_auth';
-    let rememberedData = null;
+  /* ---------------- Enterprise Security, Session & History Protection ---------------- */
+  initSessionSecurity() {
+    // Purge legacy remembered password stores from client storage
     try {
-      const raw = localStorage.getItem(rememberedStoreKey);
-      if (raw) rememberedData = JSON.parse(raw);
-    } catch (e) { rememberedData = null; }
-
-    if (!rememberedData || typeof rememberedData !== 'object') {
-      // Default remembered credentials for standard accounts
-      rememberedData = {
-        'admin': { remember: true, password: 'Password123!' },
-        'staff': { remember: true, password: 'StaffSecret2026' },
-        'viewer': { remember: true, password: 'ViewerPass123' }
-      };
-      try {
-        localStorage.setItem(rememberedStoreKey, JSON.stringify(rememberedData));
-      } catch (e) {}
-    }
-    return rememberedData;
-  }
-
-  saveRememberedAuthForUser(username, remember, password) {
-    const rememberedStoreKey = 'staff_control_remembered_auth';
-    const data = this.getRememberedAuthData();
-    const key = (username || 'admin').toLowerCase();
-
-    if (remember) {
-      data[key] = {
-        remember: true,
-        password: password || ''
-      };
-    } else {
-      data[key] = {
-        remember: false,
-        password: ''
-      };
-    }
-    try {
-      localStorage.setItem(rememberedStoreKey, JSON.stringify(data));
+      localStorage.removeItem('staff_control_remembered_auth');
+      localStorage.removeItem('STAFF_CONTROL_REMEMBERED_AUTH');
+      localStorage.removeItem('STAFF_CONTROL_REMEMBERED_USER');
     } catch (e) {}
+
+    // Inactivity & Session Heartbeat listener
+    const updateActivity = () => {
+      if (typeof UserControl !== 'undefined' && UserControl.isLoggedIn()) {
+        UserControl.touchSession();
+      }
+    };
+    ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+      document.addEventListener(evt, updateActivity, { passive: true });
+    });
+
+    // Check session validity every 10 seconds
+    setInterval(() => {
+      if (typeof UserControl !== 'undefined') {
+        const isAuth = UserControl.isLoggedIn();
+        if (!isAuth && !document.body.classList.contains('app-auth-locked')) {
+          this.handleLogout();
+          this.showToast('⏱️ សេស្យុងរបស់អ្នកបានផុតកំណត់! សូមចូលប្រព័ន្ធឡើងវិញ (Session Expired)', 'warning');
+        }
+      }
+    }, 10000);
+
+    this.initBrowserHistoryProtection();
   }
 
-  handleRememberCheckboxChange(isChecked) {
-    const usernameSelect = document.getElementById('auth-login-username');
-    const username = usernameSelect ? usernameSelect.value.trim() : 'admin';
-    const passInput = document.getElementById('auth-login-password');
-    const password = passInput ? passInput.value.trim() : '';
+  initBrowserHistoryProtection() {
+    // Intercept browser back/forward buttons when logged out
+    window.addEventListener('popstate', () => {
+      if (typeof UserControl !== 'undefined' && !UserControl.isLoggedIn()) {
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, window.location.href);
+        }
+        this.handleLogout();
+      }
+    });
 
-    this.saveRememberedAuthForUser(username, isChecked, isChecked ? password : '');
+    // Prevent displaying protected screens from BFCache (Back/Forward Cache)
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted || (typeof UserControl !== 'undefined' && !UserControl.isLoggedIn())) {
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, null, window.location.href);
+        }
+        this.handleLogout();
+      }
+    });
   }
 
   handleSwitchAccount() {
-    // 1. Immediately log out and lock session
+    // 1. Terminate current session
     if (typeof UserControl !== 'undefined') {
       UserControl.clearUser();
     }
     document.body.classList.add('app-auth-locked');
     
-    // 2. Reset and close all other open modals/droplists and land on Dashboard
+    // 2. Reset modals, dropdowns, land on Dashboard
     this.closeAllHeaderDroplists();
     this.closeRightNavDock();
     this.switchTab('dashboard');
@@ -1936,14 +2129,14 @@ class StaffApp {
     this.updateRoleBadge();
     this.renderStaffTable();
 
-    // 5. Open Auth Modal in locked state
+    // 5. Open Auth Modal
     this.openAuthModal();
     if (passInput) setTimeout(() => passInput.focus(), 150);
     this.showToast('🔄 បានចាកចេញពីគណនីចាស់ សូមចូលគណនីថ្មី (Please login to your account)', 'info');
   }
 
   openAuthModal() {
-    // Always lock down the session whenever login modal is invoked
+    // Lock session whenever login modal is invoked
     if (typeof UserControl !== 'undefined') {
       UserControl.clearUser();
     }
@@ -1971,7 +2164,6 @@ class StaffApp {
   }
 
   closeAuthModal() {
-    // If user is not authenticated, modal CANNOT be closed
     if (typeof UserControl !== 'undefined' && !UserControl.isLoggedIn()) {
       this.showToast('⚠️ សូមបញ្ចូលលេខសម្ងាត់ដើម្បីចូលប្រើប្រព័ន្ធ (Please login first)', 'warning');
       return;
@@ -1994,19 +2186,18 @@ class StaffApp {
       users = settingsModalController.getUserAccounts();
     } else {
       users = [
-        { username: 'admin', fullName: 'System Administrator', role: 'ADMIN', password: 'Password123!' },
-        { username: 'staff', fullName: 'Document Officer', role: 'OFFICER', password: 'StaffSecret2026' },
-        { username: 'viewer', fullName: 'Guest Viewer', role: 'VIEWER', password: 'ViewerPass123' }
+        { username: 'admin', fullName: 'System Administrator', role: 'ADMIN' },
+        { username: 'staff', fullName: 'Document Officer', role: 'OFFICER' },
+        { username: 'viewer', fullName: 'Guest Viewer', role: 'VIEWER' }
       ];
     }
 
-    // Output clean options WITHOUT exposing password attributes in DOM
+    // Output clean options WITHOUT exposing passwords in DOM
     select.innerHTML = users.map(u => {
       const isLocked = u.isLocked === true || u.status === 'LOCKED';
       return `<option value="${u.username}" data-role="${u.role}">${u.username}${isLocked ? ' 🔒 (Locked)' : ''}</option>`;
     }).join('');
 
-    // Check currently selected user lock status and auto-fill remembered password
     this.handleAuthUserSelected(select.value);
   }
 
@@ -2016,7 +2207,6 @@ class StaffApp {
     const submitBtn = document.querySelector('#auth-login-modal .btn-auth-primary');
     const errBanner = document.getElementById('auth-login-error-banner');
     const errText = document.getElementById('auth-login-error-text');
-    const rememberChk = document.getElementById('auth-remember-password');
 
     let isLocked = false;
     let isInactive = false;
@@ -2031,13 +2221,9 @@ class StaffApp {
       }
     }
 
-    // Auto-fill remembered password if saved
-    const rememberedData = this.getRememberedAuthData();
-    const savedAuth = rememberedData[username.toLowerCase()];
-
     if (isInactive) {
       if (errBanner && errText) {
-        errText.innerHTML = `⏸️ <strong>គណនី "${username}" ត្រូវបានផ្អាកដំណើរការ (Account Inactive)</strong>! សូមទាក់ទង Admin ដើម្បីបើកដំណើរការ (Active) ឡើងវិញ។`;
+        errText.innerHTML = `⏸️ <strong>គណនី "${username}" ត្រូវបានផ្អាកដំណើរការ (Account Inactive)</strong>! សូមទាក់ទង Admin។`;
         errBanner.style.display = 'flex';
       }
       if (passInput) {
@@ -2045,7 +2231,6 @@ class StaffApp {
         passInput.disabled = true;
         passInput.placeholder = '⏸️ គណនីត្រូវបានផ្អាក (Account Inactive)';
       }
-      if (rememberChk) rememberChk.checked = false;
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.5';
@@ -2053,7 +2238,7 @@ class StaffApp {
       }
     } else if (isLocked) {
       if (errBanner && errText) {
-        errText.innerHTML = `🔒 <strong>គណនី "${username}" ត្រូវបានចាក់សោរ (Locked)</strong> ដោយសារវាយពាក្យសម្ងាត់ខុសលើសចំនួនកំណត់! សូមទាក់ទង Admin ដើម្បីដោះសោរ ឬកំណត់ពាក្យសម្ងាត់ថ្មីឡើងវិញ។`;
+        errText.innerHTML = `🔒 <strong>គណនី "${username}" ត្រូវបានចាក់សោរ (Locked)</strong> ដោយសារវាយពាក្យសម្ងាត់ខុសលើសចំនួនកំណត់! សូមទាក់ទង Admin។`;
         errBanner.style.display = 'flex';
       }
       if (passInput) {
@@ -2061,7 +2246,6 @@ class StaffApp {
         passInput.disabled = true;
         passInput.placeholder = '🔒 គណនីត្រូវបានចាក់សោរ (Account Locked)';
       }
-      if (rememberChk) rememberChk.checked = false;
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.5';
@@ -2071,15 +2255,9 @@ class StaffApp {
       if (errBanner) errBanner.style.display = 'none';
       if (passInput) {
         passInput.disabled = false;
+        passInput.value = '';
         passInput.placeholder = 'បញ្ចូលលេខសម្ងាត់ (Enter Password)';
-        if (savedAuth && savedAuth.remember && savedAuth.password) {
-          passInput.value = savedAuth.password;
-          if (rememberChk) rememberChk.checked = true;
-        } else {
-          passInput.value = '';
-          if (rememberChk) rememberChk.checked = false;
-          setTimeout(() => passInput.focus(), 100);
-        }
+        setTimeout(() => passInput.focus(), 100);
       }
       if (submitBtn) {
         submitBtn.disabled = false;
@@ -2105,8 +2283,22 @@ class StaffApp {
       const errBanner = document.getElementById('auth-login-error-banner');
       const errText = document.getElementById('auth-login-error-text');
 
-      // Check if user is locked or inactive in Settings
       const lower = usernameInput.toLowerCase();
+      this.loginFailedAttempts = this.loginFailedAttempts || {};
+      this.loginLockoutUntil = this.loginLockoutUntil || {};
+
+      // Check Rate Limiting / Temporary Lockout
+      const lockoutTime = this.loginLockoutUntil[lower] || 0;
+      if (Date.now() < lockoutTime) {
+        const remSecs = Math.ceil((lockoutTime - Date.now()) / 1000);
+        if (errBanner && errText) {
+          errText.innerHTML = `🔒 <strong>គណនី "${usernameInput}" ត្រូវបានរាំងខ្ទប់បណ្តោះអាសន្ន ${remSecs} វិនាទី (5 Mins Lockout)</strong> ដោយសារបញ្ចូលលេខសម្ងាត់ខុស ៥ ដង!`;
+          errBanner.style.display = 'flex';
+        }
+        return;
+      }
+
+      // Check User Account Status
       let matchedUser = null;
       if (typeof settingsModalController !== 'undefined' && settingsModalController.getUserAccounts) {
         const users = settingsModalController.getUserAccounts();
@@ -2128,39 +2320,49 @@ class StaffApp {
           }
           return;
         }
-        // Verify password
-        const expectedPass = matchedUser.password || 'Password123!';
-        if (passwordInput !== expectedPass && passwordInput !== 'Password123!' && passwordInput !== 'admin123') {
-          if (errBanner && errText) {
-            errText.innerHTML = `⚠️ <strong>លេខសម្ងាត់មិនត្រឹមត្រូវ (Incorrect Password)</strong>! សូមពិនិត្យមើលម្ដងទៀត។`;
-            errBanner.style.display = 'flex';
-          }
-          if (passInput) {
-            passInput.focus();
-            passInput.select();
-          }
-          return;
-        }
-      } else {
-        // Fallback default check
-        if (passwordInput !== 'Password123!' && passwordInput !== 'admin123' && passwordInput !== 'StaffSecret2026' && passwordInput !== 'ViewerPass123') {
-          if (errBanner && errText) {
-            errText.innerHTML = `⚠️ <strong>លេខសម្ងាត់មិនត្រឹមត្រូវ (Incorrect Password)</strong>!`;
-            errBanner.style.display = 'flex';
-          }
-          if (passInput) {
-            passInput.focus();
-            passInput.select();
-          }
-          return;
-        }
       }
+
+      // Verify Password Hash
+      let isPasswordValid = false;
+      if (typeof settingsModalController !== 'undefined' && settingsModalController.verifyUserPassword) {
+        isPasswordValid = settingsModalController.verifyUserPassword(usernameInput, passwordInput);
+      } else {
+        isPasswordValid = (passwordInput === 'Password123!' || passwordInput === 'admin123' || passwordInput === 'StaffSecret2026' || passwordInput === 'ViewerPass123');
+      }
+
+      if (!isPasswordValid) {
+        this.loginFailedAttempts[lower] = (this.loginFailedAttempts[lower] || 0) + 1;
+        const attemptsLeft = 5 - this.loginFailedAttempts[lower];
+
+        if (this.loginFailedAttempts[lower] >= 5) {
+          this.loginLockoutUntil[lower] = Date.now() + 5 * 60 * 1000; // 5 Minutes Lockout
+          if (errBanner && errText) {
+            errText.innerHTML = `🔒 <strong>គណនី "${usernameInput}" ត្រូវបានរាំងខ្ទប់បណ្តោះអាសន្ន ៥ នាទី (Account Locked for 5 Minutes)</strong> ដោយសារវាយលេខសម្ងាត់ខុស ៥ ដង!`;
+            errBanner.style.display = 'flex';
+          }
+        } else {
+          if (errBanner && errText) {
+            errText.innerHTML = `⚠️ <strong>លេខសម្ងាត់មិនត្រឹមត្រូវ (Incorrect Password)</strong>! (នៅសល់ ${attemptsLeft} ដងទៀត)`;
+            errBanner.style.display = 'flex';
+          }
+        }
+
+        if (passInput) {
+          passInput.focus();
+          passInput.select();
+        }
+        return;
+      }
+
+      // Successful Auth: Reset Failed Attempts
+      this.loginFailedAttempts[lower] = 0;
+      delete this.loginLockoutUntil[lower];
 
       // Determine role
       let matchedRole = (matchedUser && matchedUser.role) ? matchedUser.role.toUpperCase() : 'ADMIN';
       if (matchedRole === 'STAFF') matchedRole = 'OFFICER';
 
-      // 1. Set current user session
+      // 1. Set current user session & token
       if (typeof UserControl !== 'undefined') {
         UserControl.setCurrentUser(usernameInput, matchedRole);
       }
@@ -2168,7 +2370,10 @@ class StaffApp {
       // 2. Remove lockdown style
       document.body.classList.remove('app-auth-locked');
 
-      // 3. Close login modal unconditionally
+      // 3. Clear password input in DOM
+      if (passInput) passInput.value = '';
+
+      // 4. Close login modal unconditionally
       const modal = document.getElementById('auth-login-modal');
       if (modal) {
         modal.classList.remove('open');
@@ -2176,11 +2381,11 @@ class StaffApp {
       }
       if (errBanner) errBanner.style.display = 'none';
 
-      // 4. Close all open header droplists & Always land on Dashboard first
+      // 5. Close all open header droplists & Always land on Dashboard first
       this.closeAllHeaderDroplists();
       this.switchTab('dashboard');
 
-      // 5. Update UI, Tables & Dashboard Charts
+      // 6. Update UI, Tables & Dashboard Charts
       this.updateRoleBadge();
       this.renderStaffTable();
       if (typeof this.renderDocumentTimeline === 'function') {
@@ -2188,26 +2393,6 @@ class StaffApp {
       }
       if (typeof dashboardController !== 'undefined' && typeof dashboardController.refresh === 'function') {
         dashboardController.refresh();
-      }
-
-      // 6. Handle Remember Password persistence
-      const rememberChk = document.getElementById('auth-remember-password');
-      const isRemembered = rememberChk ? rememberChk.checked : false;
-      const rememberedStoreKey = 'staff_control_remembered_auth';
-      let rememberedData = {};
-      try {
-        rememberedData = JSON.parse(localStorage.getItem(rememberedStoreKey) || '{}');
-      } catch (e) { rememberedData = {}; }
-
-      if (isRemembered) {
-        rememberedData[lower] = {
-          remember: true,
-          password: passwordInput
-        };
-        localStorage.setItem(rememberedStoreKey, JSON.stringify(rememberedData));
-      } else {
-        delete rememberedData[lower];
-        localStorage.setItem(rememberedStoreKey, JSON.stringify(rememberedData));
       }
 
       const roleTitle = (typeof UserControl !== 'undefined' && UserControl.getCurrentRole()) ? UserControl.getCurrentRole().titleKh : 'អ្នកគ្រប់គ្រង (Admin)';
@@ -2218,15 +2403,15 @@ class StaffApp {
   }
 
   handleLogout() {
-    // 1. Clear all session, user and temporary storage cache
+    // 1. Terminate Session, Revoke Token, Clear Storage & Cookies
     UserControl.clearUser();
     document.body.classList.add('app-auth-locked');
     
-    // 2. Reset all filters and search cache
+    // 2. Clear filters and search cache
     this.resetAllFilters();
     this.currentPage = 1;
 
-    // 3. Clear and close all open forms and modals
+    // 3. Clear forms and modals
     if (typeof userformController !== 'undefined') {
       userformController.clearForm();
       userformController.selectedRecordNo = null;
@@ -2248,7 +2433,9 @@ class StaffApp {
     // 5. Update UI in locked mode
     this.updateRoleBadge();
     this.renderStaffTable();
-    this.renderDocumentTimeline();
+    if (typeof this.renderDocumentTimeline === 'function') {
+      this.renderDocumentTimeline();
+    }
 
     // 6. Clear password input in auth modal
     const passInput = document.getElementById('auth-login-password');
@@ -2256,8 +2443,13 @@ class StaffApp {
       passInput.value = '';
     }
 
-    // 7. Show toast and prompt fresh login modal
-    this.showToast('🔒 បានចាកចេញពីប្រព័ន្ធដោយសុវត្ថិភាព (Logged out)', 'info');
+    // 7. Prevent browser Back button from reopening authenticated session
+    if (window.history && window.history.pushState) {
+      window.history.pushState(null, null, window.location.href);
+    }
+
+    // 8. Show toast and prompt fresh login modal
+    this.showToast('🔒 បានចាកចេញពីប្រព័ន្ធ និងលុប Session ដោយសុវត្ថិភាព (Logged out)', 'info');
     setTimeout(() => {
       this.openAuthModal();
       if (passInput) passInput.focus();

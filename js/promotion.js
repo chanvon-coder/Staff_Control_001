@@ -112,33 +112,291 @@ class PromotionController {
   }
 
   /**
-   * Core Calculation Engine: Compute promotion duration, suspension deductions, remaining quota, next eligible date, and status.
+   * Calculate Next Salary Increment Date (+2 Years preserving exact Day & Month in DD-MM-YYYY)
+   * Rule: Day and Month stay identical, Year = Year + 2.
+   * Example: 14-03-2025 -> 14-03-2027
    */
-  evaluateRecord(record, calculationDateStr) {
-    const calcDateObj = this.parseDateObject(calculationDateStr) || new Date();
-    const promoDateObj = this.parseDateObject(record.promotionDate || record.serviceStartDate);
+  calculateExactNext2YearsDate(dateInput) {
+    if (!dateInput) return null;
+    let d = null;
+    if (dateInput instanceof Date) {
+      d = dateInput;
+    } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+      const iso = StatusCalculator ? StatusCalculator.normalizeDate(dateInput) : dateInput;
+      if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+        const parts = iso.split('-');
+        d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else if (iso) {
+        d = new Date(iso);
+      }
+    }
 
-    const rules = this.getPromotionSettings();
-    const requiredDays = ((rules.requiredYears || 2) * 365.25) + ((rules.requiredMonths || 0) * 30.4375);
+    if (!d || isNaN(d.getTime())) return null;
 
-    // 1. Match with Master Staff Data
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const nextYear = d.getFullYear() + 2;
+
+    return `${day}-${month}-${nextYear}`;
+  }
+
+  /**
+   * Calculate Next Eligible Date preserving exact Day & Month from ថ្ងៃគិតគូរ (calcDate)
+   * Rule: Day & Month stay 100% identical to ថ្ងៃគិតគូរ, Year = Target Calculated Year.
+   * Example: 13-04-2028 -> 13-04-2029 (Never 12-04-2029)
+   */
+  calculateExactNextEligibleDate(calcDateStr, additionalYears = 0) {
+    if (!calcDateStr) return '-';
+    let d = null;
+    if (typeof calcDateStr === 'string' || typeof calcDateStr === 'number') {
+      const iso = StatusCalculator ? StatusCalculator.normalizeDate(calcDateStr) : calcDateStr;
+      if (iso && /^\d{4}-\d{2}-\d{2}$/.test(iso)) {
+        const parts = iso.split('-');
+        d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else if (iso) {
+        d = new Date(iso);
+      }
+    } else if (calcDateStr instanceof Date) {
+      d = calcDateStr;
+    }
+
+    if (!d || isNaN(d.getTime())) return String(calcDateStr);
+
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const targetYear = d.getFullYear() + (additionalYears || 0);
+
+    return `${day}-${month}-${targetYear}`;
+  }
+
+  /**
+   * Complete 2-Stage New Promotion Date & Next Eligible Date Engine
+   * Implements exact rules specified by User:
+   * Stage 1: Base Promotion Date + 2-Year Promotion Cycle (preserving exact Day & Month)
+   * Stage 2: Adjust Base Date by Used Suspension, then start new 2-Year Cycle, and add Remaining Extension Period to derive New Promotion Maturity Date.
+   * Stage 3: Derive Final Next Eligible Date (preserving Day & Month).
+   */
+  calculateNewPromotionDates(basePromoDateStr, suspensionInfo, rules) {
+    if (!basePromoDateStr || basePromoDateStr === '-') {
+      return {
+        adjustedPromoDateStr: '-',
+        newMaturedPromotionDateStr: '-',
+        nextEligibleDateStr: '-'
+      };
+    }
+
+    const promoCycleYears = (rules && rules.requiredYears) ? rules.requiredYears : 2;
+
+    // Extract suspension details if present
+    const hasSuspension = suspensionInfo && suspensionInfo.hasSuspension;
+    const usedSuspensionDays = (suspensionInfo && suspensionInfo.suspensionDays) ? suspensionInfo.suspensionDays : 0;
+    const remainingSuspensionDays = (suspensionInfo && suspensionInfo.remainingSuspensionDays) ? suspensionInfo.remainingSuspensionDays : 0;
+
+    // Convert days to integer years (preserving calendar date exactness)
+    const usedYears = Math.round(usedSuspensionDays / 365.25);
+    const remainingExtensionYears = Math.round(remainingSuspensionDays / 365.25);
+
+    if (hasSuspension && (usedYears > 0 || remainingExtensionYears > 0)) {
+      // ---------------- CATEGORY B: SUSPENSION / EXTENSION / EARLY RETURN ----------------
+      // 1. Stage 1 — Adjusted Base Promotion Date (13-04-2024 + 1 ឆ្នាំ = 13-04-2025)
+      const adjustedPromoDateStr = this.calculateExactNextEligibleDate(basePromoDateStr, usedYears);
+
+      // 2. Stage 2 — Start new 2-Year Promotion Cycle from Adjusted Base Date (13-04-2025 + 2 ឆ្នាំ = 13-04-2027)
+      const next2YearCycleDateStr = this.calculateExactNextEligibleDate(adjustedPromoDateStr, promoCycleYears);
+
+      // 3. Stage 3 — Add Remaining Extension Period to derive Final Next Eligible Date (13-04-2027 + 1 ឆ្នាំ = 13-04-2028)
+      const nextEligibleDateStr = this.calculateExactNextEligibleDate(next2YearCycleDateStr, remainingExtensionYears);
+
+      return {
+        adjustedPromoDateStr,
+        newMaturedPromotionDateStr: next2YearCycleDateStr,
+        nextEligibleDateStr
+      };
+    } else {
+      // ---------------- CATEGORY A: STANDARD NORMAL PROMOTION (NO SUSPENSION) ----------------
+      // 1. 2-Year Full Maturity Date (13-04-2024 + 2 ឆ្នាំ = 13-04-2026)
+      const maturedDateStr = this.calculateExactNextEligibleDate(basePromoDateStr, promoCycleYears);
+
+      // 2. Next Eligible Request Date at following year (13-04-2026 + 1 ឆ្នាំ = 13-04-2027)
+      const nextEligibleDateStr = this.calculateExactNextEligibleDate(maturedDateStr, 1);
+
+      return {
+        adjustedPromoDateStr: basePromoDateStr,
+        newMaturedPromotionDateStr: maturedDateStr,
+        nextEligibleDateStr
+      };
+    }
+  }
+
+  /**
+   * Helper: Check if promotion is out-of-turn / extraordinary ("ឡើងក្រៅវេន")
+   */
+  isOutOfTurnRecord(record) {
+    if (!record) return false;
+    const typeStr = (record.promotionType || '').toUpperCase();
+    const reasonStr = record.requestReason || '';
+    const remarkStr = record.remark || '';
+    const descStr = record.description || '';
+
+    return (
+      typeStr === 'OUT_OF_TURN' ||
+      typeStr.includes('ក្រៅវេន') ||
+      reasonStr.includes('ក្រៅវេន') ||
+      remarkStr.includes('ក្រៅវេន') ||
+      descStr.includes('ក្រៅវេន') ||
+      reasonStr.includes('ពិសេស')
+    );
+  }
+
+  /**
+   * Priority 1 (10-Digit ID) -> Priority 2 (Name) Staff & Request History Lookup Engine
+   */
+  findStaffAndRequestHistory(record) {
     const allStaff = dataStore.getStaffData() || [];
     const staffIdQ = record.staffId ? String(record.staffId).trim().toLowerCase() : '';
     const nameQ = record.fullName ? String(record.fullName).trim().toLowerCase() : '';
 
     let matchedStaff = null;
-    if (staffIdQ) {
-      matchedStaff = allStaff.find(s => String(s.staffId).trim().toLowerCase() === staffIdQ || String(s.secondaryId).trim().toLowerCase() === staffIdQ);
-    }
-    if (!matchedStaff && nameQ) {
-      matchedStaff = allStaff.find(s => String(s.khmerName).trim().toLowerCase() === nameQ || String(s.latinName).trim().toLowerCase() === nameQ);
+    let historyRecords = [];
+
+    // Priority 1: Match by 10-Digit Staff ID or Secondary ID
+    if (staffIdQ && staffIdQ.length >= 3) {
+      matchedStaff = allStaff.find(s => 
+        (s.staffId && String(s.staffId).trim().toLowerCase() === staffIdQ) ||
+        (s.secondaryId && String(s.secondaryId).trim().toLowerCase() === staffIdQ)
+      );
+      if (matchedStaff) {
+        historyRecords = allStaff.filter(s =>
+          (s.staffId && String(s.staffId).trim().toLowerCase() === staffIdQ) ||
+          (s.secondaryId && String(s.secondaryId).trim().toLowerCase() === staffIdQ)
+        );
+      }
     }
 
+    // Priority 2: Match by Khmer Name or Latin Name
+    if (!matchedStaff && nameQ) {
+      matchedStaff = allStaff.find(s =>
+        (s.khmerName && String(s.khmerName).trim().toLowerCase() === nameQ) ||
+        (s.latinName && String(s.latinName).trim().toLowerCase() === nameQ)
+      );
+      if (matchedStaff) {
+        historyRecords = allStaff.filter(s =>
+          (s.khmerName && String(s.khmerName).trim().toLowerCase() === nameQ) ||
+          (s.latinName && String(s.latinName).trim().toLowerCase() === nameQ)
+        );
+      }
+    }
+
+    return { matchedStaff, historyRecords };
+  }
+
+  /**
+   * Calculate Suspension / Work Leave & Re-instatement Pairs (Steps 1 to 5)
+   */
+  calculateSuspensionReinstatement(historyRecords, rules, basePromoDateStr) {
+    if (!historyRecords || historyRecords.length === 0) {
+      return { suspensionDays: 0, suspensionDurationText: '0 ថ្ងៃ', remainingSuspensionDays: 0, remainingSuspensionDurationText: '0 ថ្ងៃ', hasSuspension: false, historyPairs: [] };
+    }
+
+    let totalSuspensionDays = 0;
+    let totalRemainingDays = 0;
+    const historyPairs = [];
+
+    const basePromoDateObj = basePromoDateStr ? this.parseDateObject(basePromoDateStr) : null;
+
+    const suspensionRecs = historyRecords.filter(r => {
+      const corpus = `${r.requestReason || ''} ${r.description || ''} ${r.remark || ''}`.toLowerCase();
+      return corpus.includes('ព្យួរ') || corpus.includes('ឈប់បម្រើ') || corpus.includes('ព្យួរការងារ');
+    });
+
+    const reinstatementRecs = historyRecords.filter(r => {
+      const corpus = `${r.requestReason || ''} ${r.description || ''} ${r.remark || ''}`.toLowerCase();
+      return corpus.includes('ចូលបម្រើ') || corpus.includes('ធ្វើការវិញ') || corpus.includes('ចូលធ្វើការ');
+    });
+
+    if (suspensionRecs.length > 0) {
+      suspensionRecs.forEach(susp => {
+        if (StatusCalculator && StatusCalculator.calculateSuspensionCaseDetails) {
+          const caseDetails = StatusCalculator.calculateSuspensionCaseDetails(susp, reinstatementRecs);
+          if (caseDetails) {
+            // Rule: Check if this suspension period/early-return CROSSES the Base Promotion Date
+            let crossesBaseDate = true;
+            if (basePromoDateObj) {
+              const suspStartObj = this.parseDateObject(caseDetails.startDateStr);
+              // Effective end date is early return date if present and not '-', or original end date
+              const effectiveEndStr = (caseDetails.earlyReturnDateStr && caseDetails.earlyReturnDateStr !== '-') 
+                ? caseDetails.earlyReturnDateStr 
+                : caseDetails.originalEndDateStr;
+              const suspEndObj = this.parseDateObject(effectiveEndStr);
+
+              if (suspStartObj && suspEndObj) {
+                // Rule: If suspension / early-return ended ON OR BEFORE Base Promotion Date, it does NOT delay promotion (Count as Normal Promotion "រាប់ធម្មតា")
+                if (suspEndObj <= basePromoDateObj) {
+                  crossesBaseDate = false;
+                }
+              }
+            }
+
+            if (crossesBaseDate) {
+              totalSuspensionDays += caseDetails.usedDays;
+              totalRemainingDays += caseDetails.remainingDays;
+              historyPairs.push(caseDetails);
+            }
+          }
+        }
+      });
+    }
+
+    const hasSuspension = totalSuspensionDays > 0 || totalRemainingDays > 0;
+    const suspensionDurationText = totalSuspensionDays > 0
+      ? (this.formatTotalDaysYMD ? this.formatTotalDaysYMD(totalSuspensionDays) : `${totalSuspensionDays} ថ្ងៃ`)
+      : '0 ថ្ងៃ';
+
+    const remainingSuspensionDurationText = totalRemainingDays > 0
+      ? (this.formatTotalDaysYMD ? this.formatTotalDaysYMD(totalRemainingDays) : `${totalRemainingDays} ថ្ងៃ`)
+      : '0 ថ្ងៃ';
+
+    return {
+      suspensionDays: totalSuspensionDays,
+      suspensionDurationText,
+      remainingSuspensionDays: totalRemainingDays,
+      remainingSuspensionDurationText,
+      hasSuspension,
+      historyPairs
+    };
+  }
+
+  /**
+   * Core Calculation Engine: Compute promotion duration, suspension deductions, remaining quota, next eligible date, and status.
+   */
+  evaluateRecord(record, calculationDateStr) {
+    const rules = this.getPromotionSettings();
+    const isOutOfTurn = this.isOutOfTurnRecord(record);
+    const basePromoDate = record.promotionDate || record.serviceStartDate;
+
+    // 1. Staff Matching via Priority 1 (10-Digit ID) -> Priority 2 (Name)
+    const { matchedStaff, historyRecords } = this.findStaffAndRequestHistory(record);
     const hasStaffData = !!matchedStaff;
     const staffDepartment = matchedStaff ? (matchedStaff.department || record.department || '-') : (record.department || '-');
     const staffOffice = matchedStaff ? (matchedStaff.office || record.office || '-') : (record.office || '-');
 
-    // 2. Calculate Actual Duration from Last Promotion Date to Calculation Date
+    // 2. Next Salary Increment Date (+2 Years for Regular Rotation ONLY)
+    let individualNext2YearsDateStr = null;
+    let effectiveCalcDateStr = calculationDateStr;
+
+    if (!isOutOfTurn) {
+      individualNext2YearsDateStr = this.calculateExactNext2YearsDate(basePromoDate);
+      if (individualNext2YearsDateStr) {
+        effectiveCalcDateStr = individualNext2YearsDateStr;
+      }
+    }
+
+    const calcDateObj = this.parseDateObject(effectiveCalcDateStr) || this.parseDateObject(calculationDateStr) || new Date();
+    const promoDateObj = this.parseDateObject(basePromoDate);
+
+    const requiredDays = ((rules.requiredYears || 2) * 365.25) + ((rules.requiredMonths || 0) * 30.4375);
+
+    // 3. Calculate Duration Used (រយៈពេលបានប្រើ)
     let actualDays = 0;
     let actualDurationText = '0 ថ្ងៃ';
     let actualYears = 0;
@@ -151,40 +409,29 @@ class PromotionController {
       actualMonths = Math.floor((actualDays % 365.25) / 30.4375);
     }
 
-    // 3. Calculate Suspension / Deduction Duration from Staff Data & Case Summary
-    let suspensionDays = 0;
-    let suspensionDurationText = '0 ថ្ងៃ';
-    let hasSuspension = false;
+    // 4. Calculate Suspension / Leave & Re-instatement Pair Deductions
+    const { suspensionDays, suspensionDurationText, remainingSuspensionDays, remainingSuspensionDurationText, hasSuspension } = this.calculateSuspensionReinstatement(historyRecords, rules, basePromoDate);
 
-    if (rules.enableSuspensionDeduction && matchedStaff) {
-      // Find past suspension records in master staff records or eligibility engine
-      const staffKey = matchedStaff.staffId || matchedStaff.khmerName;
-      if (typeof eligibilityController !== 'undefined' && eligibilityController.checkEligibility) {
-        const suspVerdict = eligibilityController.checkEligibility(staffKey, 'ព្យួរការងារ');
-        if (suspVerdict && suspVerdict.usedDays > 0) {
-          suspensionDays = suspVerdict.usedDays;
-          suspensionDurationText = suspVerdict.usedText;
-          hasSuspension = true;
-        }
-      }
-    }
+    // 5. Effective Duration & Remaining Balance Carryover
+    const promoMatured2YearsDateStr = this.calculateExactNext2YearsDate(basePromoDate);
+    const promoMatured2YearsObj = this.parseDateObject(promoMatured2YearsDateStr);
+    const isCalendarMatured = (!hasSuspension && promoMatured2YearsObj && calcDateObj >= promoMatured2YearsObj);
 
-    // 4. Effective Duration = Actual Duration - Suspension Duration
     const effectiveDays = Math.max(0, actualDays - suspensionDays);
+    const isFullTermMatured = isCalendarMatured || (effectiveDays >= requiredDays) || (requiredDays - effectiveDays <= 3);
+    const remainingDays = isFullTermMatured ? 0 : Math.max(0, requiredDays - effectiveDays);
+    const remainingDurationText = (remainingSuspensionDays > 0 && remainingSuspensionDurationText && remainingSuspensionDurationText !== '0 ថ្ងៃ')
+      ? remainingSuspensionDurationText
+      : (StatusCalculator && remainingDays > 0 ? this.formatTotalDaysYMD(remainingDays) : '0 ថ្ងៃ');
 
-    // 5. Remaining Duration = Required Duration - Effective Duration
-    const remainingDays = Math.max(0, requiredDays - effectiveDays);
-    const remainingDurationText = StatusCalculator && remainingDays > 0 ? this.formatTotalDaysYMD(remainingDays) : '0 ថ្ងៃ';
+    // 6. Calculate 2-Stage New Promotion Maturity Date & Next Eligible Date
+    const { adjustedPromoDateStr, newMaturedPromotionDateStr, nextEligibleDateStr: calcNextEligibleDateStr } = this.calculateNewPromotionDates(basePromoDate, {
+      hasSuspension,
+      suspensionDays,
+      remainingSuspensionDays
+    }, rules);
 
-    // 6. Next Automatic Eligible Date
-    let nextEligibleDateObj = null;
-    let nextEligibleDateStr = '-';
-
-    if (promoDateObj) {
-      const totalDaysToWait = requiredDays + suspensionDays;
-      nextEligibleDateObj = new Date(promoDateObj.getTime() + (totalDaysToWait * 24 * 60 * 60 * 1000));
-      nextEligibleDateStr = this.formatDDMMMYYYY(nextEligibleDateObj);
-    }
+    let nextEligibleDateStr = isOutOfTurn ? '-' : (calcNextEligibleDateStr || '-');
 
     // 7. Status & Reason Verdict
     let statusKey = 'INELIGIBLE';
@@ -194,22 +441,47 @@ class PromotionController {
 
     const nearThresholdDays = (rules.nearEligibleMonthsThreshold || 6) * 30.4375;
 
-    if (effectiveDays >= requiredDays) {
+    if (isOutOfTurn) {
+      statusKey = 'OUT_OF_TURN';
+      statusLabel = '⚡ ឡើងក្រៅវេន';
+      statusCssClass = 'status-pending';
+      reason = 'ការស្នើសុំឡើងថ្នាក់ក្រៅវេន (មិនគណនាថ្ងៃឡើងបន្ទាប់តាមវេនឡើយ)';
+      nextEligibleDateStr = '-';
+    } else if (isFullTermMatured) {
       statusKey = 'ELIGIBLE';
       statusLabel = '🟢 អាចស្នើសុំបាន';
       statusCssClass = 'status-completed';
-      reason = `បានបម្រើការងារ/ឡើងថ្នាក់គ្រប់កំណត់រហូតដល់ ${actualDurationText}` + (hasSuspension ? ` (ដករយៈពេលព្យួរ ${suspensionDurationText} រួចរាល់)` : '');
-      nextEligibleDateStr = this.formatDDMMMYYYY(calcDateObj);
+      reason = `ចំនួនសរុបបានប្រើប្រាស់៖ ${actualDurationText}` + (hasSuspension ? ` | ដករយៈពេលព្យួរ៖ ${suspensionDurationText}` : '') + ` | ចំនួននៅសល់៖ 0 ថ្ងៃ`;
     } else if (remainingDays <= nearThresholdDays) {
       statusKey = 'NEAR_ELIGIBLE';
       statusLabel = '🟡 ជិតដល់កំណត់';
       statusCssClass = 'status-active';
-      reason = `នៅសល់តែ ${remainingDurationText} ទៀតប៉ុណ្ណោះ នឹងអាចស្នើសុំបាននៅថ្ងៃ ${nextEligibleDateStr}`;
+      reason = `ចំនួនសរុបបានប្រើ៖ ${actualDurationText} | ចំនួននៅសល់៖ ${remainingDurationText} នឹងអាចស្នើសុំបាននៅថ្ងៃ ${nextEligibleDateStr}`;
     } else {
       statusKey = 'INELIGIBLE';
       statusLabel = '🔴 មិនទាន់អាចស្នើសុំបាន';
       statusCssClass = 'status-expired';
-      reason = `មិនទាន់គ្រប់កំណត់ ${rules.requiredYears} ឆ្នាំ` + (hasSuspension ? ` ដោយត្រូវដករយៈពេលព្យួរការងារ ${suspensionDurationText}` : '') + ` (នៅសល់ ${remainingDurationText})`;
+      reason = `មិនទាន់គ្រប់កំណត់ ${rules.requiredYears} ឆ្នាំ` + (hasSuspension ? ` (ដករយៈពេលព្យួរ ${suspensionDurationText})` : '') + ` | នៅសល់៖ ${remainingDurationText}`;
+    }
+
+    // Determine historical Reason of Request (e.g. ចូលនិវត្តន៍, ព្យួរការងារ, មរណភាព...)
+    let historyReasonText = '-';
+    if (record.requestReason && record.requestReason !== 'undefined' && record.requestReason.trim()) {
+      historyReasonText = record.requestReason.trim();
+    } else if (record.remark && record.remark !== 'undefined' && record.remark.trim()) {
+      historyReasonText = record.remark.trim();
+    } else if (historyRecords && historyRecords.length > 0) {
+      const reasons = historyRecords
+        .map(h => h.requestReason || h.remark)
+        .filter(r => r && r !== 'undefined' && r.trim());
+      if (reasons.length > 0) {
+        historyReasonText = Array.from(new Set(reasons)).join(', ');
+      }
+    } else if (matchedStaff && (matchedStaff.requestReason || matchedStaff.remark)) {
+      const rText = matchedStaff.requestReason || matchedStaff.remark;
+      if (rText && rText !== 'undefined' && rText.trim()) {
+        historyReasonText = rText.trim();
+      }
     }
 
     return {
@@ -217,7 +489,8 @@ class PromotionController {
       department: staffDepartment,
       office: staffOffice,
       hasStaffData,
-      calcDate: calculationDateStr,
+      isOutOfTurn,
+      calcDate: isOutOfTurn ? '-' : effectiveCalcDateStr,
       actualDays,
       actualDurationText,
       actualYears,
@@ -229,11 +502,14 @@ class PromotionController {
       effectiveDays,
       remainingDays,
       remainingDurationText,
+      adjustedPromoDateStr: isOutOfTurn ? '-' : adjustedPromoDateStr,
+      newMaturedPromotionDateStr: isOutOfTurn ? '-' : newMaturedPromotionDateStr,
       nextEligibleDateStr,
       statusKey,
       statusLabel,
       statusCssClass,
-      reason
+      reason,
+      historyReasonText: historyReasonText || '-'
     };
   }
 
@@ -264,10 +540,27 @@ class PromotionController {
    * Retrieve all promotion records merged with evaluation metrics
    */
   getProcessedRecords() {
-    const rawRecords = dataStore.getPromotionRecords() || [];
-    const calcDateStr = this.calcDate || this.getTodayDDMMMYYYY();
+    try {
+      const rawRecords = dataStore.getPromotionRecords() || [];
+      const calcDateStr = this.calcDate || this.getTodayDDMMMYYYY();
 
-    let evaluated = rawRecords.map(r => this.evaluateRecord(r, calcDateStr));
+      let evaluated = rawRecords.map(r => {
+        try {
+          return this.evaluateRecord(r, calcDateStr);
+        } catch (err) {
+          console.error('Error evaluating record:', r, err);
+          return {
+            ...r,
+            department: r.department || '-',
+            office: r.office || '-',
+            hasStaffData: false,
+            statusKey: 'INELIGIBLE',
+            statusLabel: '🔴 មិនទាន់អាចស្នើសុំបាន',
+            statusCssClass: 'status-expired',
+            historyReasonText: r.requestReason || r.remark || '-'
+          };
+        }
+      });
 
     // Apply Batch Filter
     if (this.selectedBatchId && this.selectedBatchId !== 'all') {
@@ -287,15 +580,47 @@ class PromotionController {
       );
     }
 
-    if (this.filters.year !== 'all') evaluated = evaluated.filter(r => String(r.importYear) === String(this.filters.year));
-    if (this.filters.month !== 'all') evaluated = evaluated.filter(r => String(r.importMonth) === String(this.filters.month));
-    if (this.filters.department !== 'all') evaluated = evaluated.filter(r => String(r.department) === String(this.filters.department));
-    if (this.filters.office !== 'all') evaluated = evaluated.filter(r => String(r.office) === String(this.filters.office));
-    if (this.filters.position !== 'all') evaluated = evaluated.filter(r => String(r.position) === String(this.filters.position));
-    if (this.filters.promotionRank !== 'all') evaluated = evaluated.filter(r => String(r.requestedRank || r.currentRank) === String(this.filters.promotionRank));
-    if (this.filters.status !== 'all') evaluated = evaluated.filter(r => r.statusKey === this.filters.status);
-    if (this.filters.staffDataMatch !== 'all') evaluated = evaluated.filter(r => this.filters.staffDataMatch === 'matched' ? r.hasStaffData : !r.hasStaffData);
-    if (this.filters.hasSuspension !== 'all') evaluated = evaluated.filter(r => this.filters.hasSuspension === 'yes' ? r.hasSuspension : !r.hasSuspension);
+    if (this.filters.year && this.filters.year !== 'all') {
+      evaluated = evaluated.filter(r => {
+        const yr = r.importYear || (r.promotionDate ? String(r.promotionDate).slice(-4) : '') || (r.serviceStartDate ? String(r.serviceStartDate).slice(-4) : '');
+        return yr && String(yr) === String(this.filters.year);
+      });
+    }
+
+    if (this.filters.month && this.filters.month !== 'all') {
+      evaluated = evaluated.filter(r => {
+        const mo = r.importMonth || '';
+        return mo && String(mo) === String(this.filters.month);
+      });
+    }
+
+    if (this.filters.department && this.filters.department !== 'all') {
+      evaluated = evaluated.filter(r => String(r.department || '').toLowerCase() === String(this.filters.department).toLowerCase());
+    }
+
+    if (this.filters.office && this.filters.office !== 'all') {
+      evaluated = evaluated.filter(r => String(r.office || '').toLowerCase() === String(this.filters.office).toLowerCase());
+    }
+
+    if (this.filters.position && this.filters.position !== 'all') {
+      evaluated = evaluated.filter(r => String(r.position || '').toLowerCase() === String(this.filters.position).toLowerCase());
+    }
+
+    if (this.filters.promotionRank && this.filters.promotionRank !== 'all') {
+      evaluated = evaluated.filter(r => String(r.requestedRank || r.currentRank || '').toLowerCase() === String(this.filters.promotionRank).toLowerCase());
+    }
+
+    if (this.filters.status && this.filters.status !== 'all') {
+      evaluated = evaluated.filter(r => r.statusKey === this.filters.status);
+    }
+
+    if (this.filters.staffDataMatch && this.filters.staffDataMatch !== 'all') {
+      evaluated = evaluated.filter(r => this.filters.staffDataMatch === 'matched' ? r.hasStaffData : !r.hasStaffData);
+    }
+
+    if (this.filters.hasSuspension && this.filters.hasSuspension !== 'all') {
+      evaluated = evaluated.filter(r => this.filters.hasSuspension === 'yes' ? r.hasSuspension : !r.hasSuspension);
+    }
 
     // Apply Sorting
     evaluated.sort((a, b) => {
@@ -321,6 +646,10 @@ class PromotionController {
     }));
 
     return evaluated;
+    } catch (e) {
+      console.error('Error in getProcessedRecords:', e);
+      return [];
+    }
   }
 
   /**
@@ -407,8 +736,8 @@ class PromotionController {
     tbody.innerHTML = pageRecords.map((r, idx) => `
       <tr>
         <td style="text-align: center; font-weight: 700;">${startIdx + idx + 1}</td>
-        <td><strong style="color: var(--primary);">${StatusCalculator ? StatusCalculator.format4DigitId(r.staffId) : (r.staffId || '-')}</strong></td>
-        <td style="font-weight: 800; color: var(--text-primary);">${r.fullName || '-'}</td>
+        <td><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(r.staffId || r.fullName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិការស្នើសុំទាំងអស់"><strong style="color: var(--primary); text-decoration: underline;">${StatusCalculator ? StatusCalculator.format4DigitId(r.staffId) : (r.staffId || '-')}</strong></a></td>
+        <td style="font-weight: 800; color: var(--text-primary);"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(r.staffId || r.fullName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិការស្នើសុំទាំងអស់" style="color: inherit; text-decoration: none;">${r.fullName || '-'}</a></td>
         <td style="text-align: center;">${r.gender || '-'}</td>
         <td>${r.position || '-'}</td>
         <td>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.dob) : (r.dob || '-')}</td>
@@ -422,26 +751,21 @@ class PromotionController {
         <td style="font-size: 0.76rem; color: var(--text-muted);">${r.otherRemark || '-'}</td>
         
         <!-- System Calculated Fields -->
-        <td style="text-align: center; font-weight: 700;">${r.importYear || '-'}</td>
-        <td style="text-align: center; font-weight: 700;">${r.importMonth || '-'}</td>
         <td style="text-align: center; font-weight: 800; color: #2563eb; background: rgba(37, 99, 235, 0.05);">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || '-')}</td>
         <td style="font-weight: 800; color: var(--text-primary);">${r.actualDurationText}</td>
-        <td style="text-align: center; font-weight: 700;">${r.actualYears}</td>
-        <td style="text-align: center; font-weight: 700;">${r.actualMonths}</td>
-        <td style="text-align: center; font-weight: 700;">${r.requiredYears} ឆ្នាំ</td>
         <td style="font-weight: 800; color: ${r.hasSuspension ? '#dc2626' : 'var(--text-muted)'}; background: ${r.hasSuspension ? 'rgba(220, 38, 38, 0.08)' : 'transparent'};">
           ${r.hasSuspension ? `⚠️ ${r.suspensionDurationText}` : 'គ្មាន'}
         </td>
         <td style="font-weight: 800; color: ${r.remainingDays > 0 ? '#d97706' : '#059669'};">${r.remainingDurationText}</td>
+        <td style="font-weight: 800; color: #7c3aed; text-align: center;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.newMaturedPromotionDateStr) : (r.newMaturedPromotionDateStr || '-')}</td>
         <td style="font-weight: 800; color: #0284c7; text-align: center;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || '-')}</td>
         <td style="text-align: center;">
           <span class="status-badge ${r.statusCssClass}">
             ${r.statusLabel}
           </span>
         </td>
-        <td style="font-size: 0.76rem; line-height: 1.35; max-width: 220px;">
-          ${r.hasStaffData ? '<span class="badge" style="background: rgba(5, 150, 105, 0.12); color: #059669; font-weight: 800; margin-bottom: 2px;">🟢 មានក្នុង Staff Data</span>' : '<span class="badge" style="background: rgba(100, 116, 139, 0.12); color: #64748b; font-weight: 700; margin-bottom: 2px;">⚪ មិនមានក្នុង Staff Data</span>'}
-          <div style="color: var(--text-muted); font-weight: 600;">${r.reason}</div>
+        <td style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); text-align: center;">
+          ${r.historyReasonText || '-'}
         </td>
       </tr>
     `).join('');
@@ -584,7 +908,8 @@ class PromotionController {
     const ranksSet = new Set();
 
     rawRecords.forEach(r => {
-      if (r.importYear) yearsSet.add(String(r.importYear));
+      const yr = r.importYear || (r.promotionDate ? String(r.promotionDate).slice(-4) : '') || (r.serviceStartDate ? String(r.serviceStartDate).slice(-4) : '');
+      if (yr) yearsSet.add(String(yr));
       if (r.importMonth) monthsSet.add(String(r.importMonth));
       if (r.department) deptsSet.add(String(r.department));
       if (r.position) positionsSet.add(String(r.position));
@@ -594,7 +919,7 @@ class PromotionController {
     const populate = (id, set, label) => {
       const el = document.getElementById(id);
       if (!el) return;
-      const cur = el.value;
+      const cur = el.value || 'all';
       el.innerHTML = `<option value="all">🎯 ${label}</option>`;
       Array.from(set).sort().forEach(val => {
         const opt = document.createElement('option');
@@ -602,7 +927,11 @@ class PromotionController {
         opt.textContent = val;
         el.appendChild(opt);
       });
-      if (cur && Array.from(set).includes(cur)) el.value = cur;
+      if (cur && (cur === 'all' || Array.from(set).includes(cur))) {
+        el.value = cur;
+      } else {
+        el.value = 'all';
+      }
     };
 
     populate('promo-filter-year', yearsSet, 'គ្រប់ឆ្នាំ (All Years)');
@@ -840,16 +1169,9 @@ class PromotionController {
 
     const fileNameEl = document.getElementById('promo-meta-filename');
     const countEl = document.getElementById('promo-meta-count');
-    const monthEl = document.getElementById('promo-meta-month');
-    const yearEl = document.getElementById('promo-meta-year');
 
     if (fileNameEl) fileNameEl.textContent = fileName;
     if (countEl) countEl.textContent = `${totalRows} ជួរ`;
-    
-    const now = new Date();
-    const monthsKh = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
-    if (monthEl) monthEl.value = monthsKh[now.getMonth()];
-    if (yearEl) yearEl.value = now.getFullYear();
 
     this.populateRemarkDroplist();
 
@@ -865,14 +1187,11 @@ class PromotionController {
    * STEP 4 — Process Import Data and Check Duplicates
    */
   submitImportMeta() {
-    const monthVal = document.getElementById('promo-meta-month')?.value || 'សីហា';
-    const yearVal = document.getElementById('promo-meta-year')?.value || '2026';
-    
     const selectEl = document.getElementById('promo-meta-remark-select');
     const textEl = document.getElementById('promo-meta-remark-text');
     let remarkVal = textEl?.value?.trim() || selectEl?.value;
     if (!remarkVal || remarkVal === '__CUSTOM__') {
-      remarkVal = `ស្នើសុំឡើងឋានន្តរស័ក្តិប្រចាំខែ${monthVal} ឆ្នាំ${yearVal}`;
+      remarkVal = 'ស្នើសុំឡើងឋានន្តរស័ក្តិ';
     }
 
     this.closeImportMetaModal();
@@ -1148,8 +1467,8 @@ class PromotionController {
       'ល.រ', 'អត្តលេខ', 'គោត្តនាម និងនាម', 'ភេទ', 'តួនាទី', 'ថ្ងៃខែឆ្នាំកំណើត',
       'ថ្ងៃខែឆ្នាំចូលបម្រើការងារ', 'ថ្ងៃខែឆ្នាំឡើងឋានន្តរស័ក្តិ', 'ឋានន្តរស័ក្តិ និងថ្នាក់បច្ចុប្បន្ន',
       'ការស្នើសុំ', 'បានដំឡើង', 'ប្រកាសដំឡើង', 'តាមកម្រិត', 'ផ្សេងៗ',
-      'ឆ្នាំ', 'ខែ', 'ថ្ងៃខែឆ្នាំគិតគូរ', 'រយៈពេលចាប់ពីការឡើងឋានន្តរស័ក្តិ', 'ចំនួនឆ្នាំ', 'ចំនួនខែ',
-      'រយៈពេលត្រូវការ', 'រយៈពេលព្យួរ/បាត់បង់សិទ្ធិ', 'រយៈពេលនៅសល់', 'ថ្ងៃខែឆ្នាំអាចស្នើសុំបាន', 'ស្ថានភាព', 'Reason / Remark'
+      'ថ្ងៃខែឆ្នាំគិតគូរ', 'រយៈពេលបានប្រើ',
+      'រយៈពេលព្យួរ/បាត់បង់សិទ្ធិ', 'រយៈពេលនៅសល់', 'ថ្ងៃគ្រប់កាលកំណត់ថ្មី', 'ថ្ងៃខែឆ្នាំអាចស្នើសុំបាន', 'ស្ថានភាព', 'Reason / Remark'
     ];
 
     const rows = records.map((r, i) => [
@@ -1159,12 +1478,11 @@ class PromotionController {
       StatusCalculator ? StatusCalculator.formatDateDisplay(r.promotionDate) : (r.promotionDate || ''),
       r.currentRank || '', r.requestedRank || '',
       r.promotedRank || '', r.prakasNo || '', r.degree || '', r.otherRemark || '',
-      r.importYear || '', r.importMonth || '',
       StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || ''),
-      r.actualDurationText || '', r.actualYears || 0,
-      r.actualMonths || 0, `${r.requiredYears} ឆ្នាំ`, r.suspensionDurationText || 'គ្មាន', r.remainingDurationText || '',
+      r.actualDurationText || '', r.suspensionDurationText || 'គ្មាន', r.remainingDurationText || '',
+      StatusCalculator ? StatusCalculator.formatDateDisplay(r.newMaturedPromotionDateStr) : (r.newMaturedPromotionDateStr || ''),
       StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || ''),
-      r.statusLabel || '', r.reason || ''
+      r.statusLabel || '', r.historyReasonText || '-'
     ]);
 
     const wsData = [
@@ -1183,6 +1501,88 @@ class PromotionController {
 
     if (typeof app !== 'undefined' && app.showToast) {
       app.showToast(`📊 បានទាញយករបាយការណ៍ឡើងឋានន្តរស័ក្តិ ${fileName} ដោយជោគជ័យ!`, 'success');
+    }
+  }
+
+  /**
+   * Export CSV File for Eligible, Ineligible or All records
+   */
+  exportCSV(filterType = 'all') {
+    const allRecords = this.getProcessedRecords();
+    let recordsToExport = allRecords;
+    let fileSuffix = 'All';
+
+    if (filterType === 'eligible') {
+      recordsToExport = allRecords.filter(r => r.statusKey === 'ELIGIBLE');
+      fileSuffix = 'Eligible_អាចស្នើបាន';
+    } else if (filterType === 'ineligible') {
+      recordsToExport = allRecords.filter(r => r.statusKey === 'INELIGIBLE' || r.statusKey === 'NEAR_ELIGIBLE');
+      fileSuffix = 'Ineligible_មិនទាន់អាច';
+    }
+
+    if (recordsToExport.length === 0) {
+      if (typeof app !== 'undefined' && app.showToast) {
+        app.showToast('⚠️ គ្មានទិន្នន័យសម្រាប់ Export ជា CSV ឡើយ!', 'warning');
+      }
+      return;
+    }
+
+    const headers = [
+      'ល.រ', 'អត្តលេខ', 'គោត្តនាម និងនាម', 'ភេទ', 'តួនាទី', 'ថ្ងៃខែឆ្នាំកំណើត',
+      'ថ្ងៃខែឆ្នាំចូលបម្រើការងារ', 'ថ្ងៃខែឆ្នាំឡើងឋានន្តរស័ក្តិ', 'ឋានន្តរស័ក្តិ និងថ្នាក់បច្ចុប្បន្ន',
+      'ការស្នើសុំ', 'បានដំឡើង', 'ប្រកាសដំឡើង', 'តាមកម្រិត', 'ផ្សេងៗ',
+      'ថ្ងៃខែឆ្នាំគិតគូរ', 'រយៈពេលបានប្រើ',
+      'រយៈពេលព្យួរ/បាត់បង់សិទ្ធិ', 'រយៈពេលនៅសល់', 'ថ្ងៃគ្រប់កាលកំណត់ថ្មី', 'ថ្ងៃខែឆ្នាំអាចស្នើសុំបាន', 'ស្ថានភាព', 'Reason / Remark'
+    ];
+
+    const escapeCSV = (str) => {
+      if (str === null || str === undefined) return '""';
+      const valStr = String(str).replace(/"/g, '""');
+      return `"${valStr}"`;
+    };
+
+    let csvContent = '\uFEFF'; // UTF-8 BOM for Khmer text support in MS Excel
+    csvContent += headers.map(escapeCSV).join(',') + '\r\n';
+
+    recordsToExport.forEach((r, i) => {
+      const rowData = [
+        i + 1,
+        r.staffId || '',
+        r.fullName || '',
+        r.gender || '',
+        r.position || '',
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.dob) : (r.dob || ''),
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.serviceStartDate) : (r.serviceStartDate || ''),
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.promotionDate) : (r.promotionDate || ''),
+        r.currentRank || '',
+        r.requestedRank || '',
+        r.promotedRank || '',
+        r.prakasNo || '',
+        r.degree || '',
+        r.otherRemark || '',
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || ''),
+        r.actualDurationText || '',
+        r.suspensionDurationText || 'គ្មាន',
+        r.remainingDurationText || '',
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.newMaturedPromotionDateStr) : (r.newMaturedPromotionDateStr || ''),
+        StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || ''),
+        r.statusLabel || '',
+        r.historyReasonText || '-'
+      ];
+      csvContent += rowData.map(escapeCSV).join(',') + '\r\n';
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const fileName = `Promotion_${fileSuffix}_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (typeof app !== 'undefined' && app.showToast) {
+      app.showToast(`📄 បានទាញយកឯកសារ CSV (${fileName}) ដោយជោគជ័យ!`, 'success');
     }
   }
 

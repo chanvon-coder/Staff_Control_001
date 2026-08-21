@@ -373,6 +373,119 @@ const StatusCalculator = {
   },
 
   /**
+   * Helper: Format aggregate total days into calendar Years, Months, and Days
+   */
+  formatTotalDaysYMD(totalDays) {
+    if (!totalDays || totalDays <= 0) return '0 ថ្ងៃ';
+    
+    let remainingDays = Math.round(totalDays);
+    const years = Math.floor(remainingDays / 365.25);
+    remainingDays -= Math.floor(years * 365.25);
+    
+    const months = Math.floor(remainingDays / 30.4375);
+    remainingDays -= Math.floor(months * 30.4375);
+    
+    const days = Math.round(remainingDays);
+
+    const parts = [];
+    if (years > 0) parts.push(`${years} ឆ្នាំ`);
+    if (months > 0) parts.push(`${months} ខែ`);
+    if (days > 0 || parts.length === 0) parts.push(`${days} ថ្ងៃ`);
+
+    return parts.join(' ');
+  },
+
+  /**
+   * Complete Suspension & Early Return Calculation Engine per Individual Case
+   * Implements 7 Rules specified by User:
+   * 1. Unique Staff ID + Case ID binding
+   * 2. Part 1: Used Period = Early Return Date − Original Start Date (01-07-2022 -> 01-05-2023 = 10 months)
+   * 3. Part 2: Remaining Period = Original End Date − Early Return Date (01-05-2023 -> 30-06-2024 = 1 year 1 month 29 days)
+   * 4. Part 3: New Remaining End Date = Early Return Date + Remaining Period (30-06-2024)
+   * 5. Validations: Early Return Date >= Start Date, calendar YMD accuracy, multi-case isolation.
+   */
+  calculateSuspensionCaseDetails(suspensionRecord, reinstatementRecords = []) {
+    if (!suspensionRecord) return null;
+
+    const staffId = suspensionRecord.staffId || '-';
+    const caseId = suspensionRecord.no || suspensionRecord.id || 'CASE_1';
+
+    const startDateStr = suspensionRecord.startDate || suspensionRecord.requestDate;
+    const originalEndDateStr = suspensionRecord.endDate;
+
+    if (!startDateStr || !originalEndDateStr) return null;
+
+    const startDateObj = new Date(this.normalizeDate(startDateStr));
+    const originalEndDateObj = new Date(this.normalizeDate(originalEndDateStr));
+
+    if (isNaN(startDateObj.getTime()) || isNaN(originalEndDateObj.getTime())) return null;
+
+    startDateObj.setHours(0, 0, 0, 0);
+    originalEndDateObj.setHours(0, 0, 0, 0);
+
+    // Find matched early return / reinstatement record for this specific staff ID & case
+    let matchedReturnRec = null;
+    if (Array.isArray(reinstatementRecords) && reinstatementRecords.length > 0) {
+      matchedReturnRec = reinstatementRecords.find(rein => {
+        const reinDateStr = rein.startDate || rein.requestDate || rein.receivedDate || rein.systemClosingDate;
+        if (!reinDateStr) return false;
+        const reinObj = new Date(this.normalizeDate(reinDateStr));
+        return !isNaN(reinObj.getTime()) && reinObj >= startDateObj;
+      });
+    }
+
+    let earlyReturnDateStr = matchedReturnRec ? (matchedReturnRec.startDate || matchedReturnRec.requestDate || matchedReturnRec.receivedDate || matchedReturnRec.systemClosingDate) : null;
+    let earlyReturnDateObj = earlyReturnDateStr ? new Date(this.normalizeDate(earlyReturnDateStr)) : null;
+
+    if (earlyReturnDateObj) earlyReturnDateObj.setHours(0, 0, 0, 0);
+
+    // Validation 1: Reject Early Return Date < Original Start Date
+    if (earlyReturnDateObj && earlyReturnDateObj < startDateObj) {
+      earlyReturnDateObj = null;
+      earlyReturnDateStr = null;
+    }
+
+    // Part 1: Used Duration ( Early Return Date || Original End Date − Start Date )
+    const effectiveUsedEndDateObj = earlyReturnDateObj || originalEndDateObj;
+    const effectiveUsedEndDateStr = earlyReturnDateStr || originalEndDateStr;
+
+    const usedDurationText = this.calculateExactDurationYMD(startDateStr, effectiveUsedEndDateStr);
+    const usedDays = Math.max(0, Math.round((effectiveUsedEndDateObj - startDateObj) / (1000 * 60 * 60 * 24)));
+
+    // Part 2: Remaining Duration ( Original End Date − Early Return Date )
+    let remainingDurationText = '0 ថ្ងៃ';
+    let remainingDays = 0;
+    let remainingStartDateStr = null;
+    let remainingEndDateStr = null;
+
+    if (earlyReturnDateObj && earlyReturnDateObj < originalEndDateObj) {
+      remainingDurationText = this.calculateExactDurationYMD(earlyReturnDateStr, originalEndDateStr);
+      remainingDays = Math.max(0, Math.round((originalEndDateObj - earlyReturnDateObj) / (1000 * 60 * 60 * 24)));
+      remainingStartDateStr = earlyReturnDateStr;
+      remainingEndDateStr = originalEndDateStr; // Early Return Date + Remaining Period = Original End Date
+    } else if (!earlyReturnDateObj) {
+      // No early return => full original period used, 0 remaining
+      remainingDurationText = '0 ថ្ងៃ';
+      remainingDays = 0;
+    }
+
+    return {
+      staffId,
+      caseId,
+      startDateStr,
+      originalEndDateStr,
+      earlyReturnDateStr: earlyReturnDateStr || '-',
+      usedDurationText: usedDurationText || '0 ថ្ងៃ',
+      usedDays,
+      remainingDurationText: remainingDurationText || '0 ថ្ងៃ',
+      remainingDays,
+      remainingStartDateStr: remainingStartDateStr || '-',
+      remainingEndDateStr: remainingEndDateStr || '-',
+      hasEarlyReturn: !!earlyReturnDateObj && earlyReturnDateObj < originalEndDateObj
+    };
+  },
+
+  /**
    * Calculate Date Alert metadata for Countdown, Badges & Progress Bars
    */
   getDateControlMeta(dateStr, baseRuleDays = 30) {

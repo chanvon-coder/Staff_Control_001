@@ -7,12 +7,12 @@ class DashboardController {
   constructor() {
     this.chartInstances = {};
     this.viewModes = {
-      department: 'progress',
-      staffType: 'progress',
-      office: 'progress',
-      position: 'progress',
-      reason: '3d-pie',
-      alerts: 'progress',
+      department: 'chart',
+      staffType: 'chart',
+      office: 'chart',
+      position: 'chart',
+      reason: 'chart',
+      alerts: 'chart',
       statusGender: 'chart'
     };
     this.cardFilters = {

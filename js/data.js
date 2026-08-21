@@ -3,6 +3,69 @@
  * Exact 22 Book1 Header Fields Preservation, Dynamic Customization & Attachments
  */
 
+const IndexedDBStore = {
+  dbName: 'STAFF_CONTROL_SYS_DB',
+  storeName: 'staff_records',
+  version: 1,
+
+  async openDB() {
+    return new Promise((resolve) => {
+      if (!window.indexedDB) {
+        resolve(null);
+        return;
+      }
+      try {
+        const req = indexedDB.open(this.dbName, this.version);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(this.storeName)) {
+            db.createObjectStore(this.storeName, { keyPath: 'no' });
+          }
+        };
+        req.onsuccess = (e) => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+      } catch (e) {
+        resolve(null);
+      }
+    });
+  },
+
+  async saveAll(records) {
+    try {
+      const db = await this.openDB();
+      if (!db) return false;
+      const tx = db.transaction([this.storeName], 'readwrite');
+      const store = tx.objectStore(this.storeName);
+      store.clear();
+      records.forEach(r => {
+        if (r && r.no !== undefined) {
+          store.put(r);
+        }
+      });
+      return true;
+    } catch (e) {
+      console.warn('IndexedDB save error:', e);
+      return false;
+    }
+  },
+
+  async getAll() {
+    try {
+      const db = await this.openDB();
+      if (!db) return [];
+      const tx = db.transaction([this.storeName], 'readonly');
+      const store = tx.objectStore(this.storeName);
+      const req = store.getAll();
+      return new Promise((resolve) => {
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => resolve([]);
+      });
+    } catch (e) {
+      return [];
+    }
+  }
+};
+
 const DEFAULT_MASTER_FIELDS = [
   { key: 'no', kh: 'ល.រ', en: 'No.', index: 1, type: 'number', required: false, align: 'center', desc: 'លេខរៀងស្វ័យប្រវត្ត' },
   { key: 'staffId', kh: 'អត្តលេខ អពដ', en: 'Staff ID (GDT)', index: 2, type: 'text', required: true, align: 'left', desc: 'អត្តលេខសម្គាល់បុគ្គលិកចម្បង' },
@@ -513,6 +576,15 @@ class DataStore {
           });
         }
       }
+      data.forEach(item => {
+        if (item.remark === 'undefined') item.remark = '';
+        if (item.requestReason === 'undefined') item.requestReason = '';
+        if (item.requestReason && item.requestReason.trim() !== '') {
+          if (!item.remark || item.remark.trim() === '') {
+            item.remark = item.requestReason.trim();
+          }
+        }
+      });
       return data;
     } catch (e) {
       return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
@@ -540,7 +612,60 @@ class DataStore {
         });
       }
     }
-    localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(data));
+
+    // 1. Asynchronously backup to IndexedDB (Unlimited Storage Quota)
+    if (typeof IndexedDBStore !== 'undefined' && IndexedDBStore.saveAll) {
+      IndexedDBStore.saveAll(data);
+    }
+
+    // 2. Try saving to localStorage safely with QuotaExceededError Recovery
+    try {
+      localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(data));
+    } catch (err) {
+      console.warn('localStorage QuotaExceededError caught. Executing Quota Recovery Engine...', err);
+      this.handleQuotaExceededRecovery(data);
+    }
+  }
+
+  handleQuotaExceededRecovery(data) {
+    // A. Purge obsolete logs and temporary keys
+    try {
+      localStorage.removeItem('STAFF_CONTROL_LOGS_V1');
+      localStorage.removeItem('STAFF_SYS_AUDIT_LOGS_V1');
+      localStorage.removeItem('staff_control_remembered_auth');
+      localStorage.removeItem('STAFF_CONTROL_REMEMBERED_AUTH');
+    } catch (e) {}
+
+    // B. Strip heavy base64 file data from localStorage copy (IndexedDB holds full file contents)
+    const lightweightData = data.map(record => {
+      const copy = { ...record };
+      if (Array.isArray(copy.attachments)) {
+        copy.attachments = copy.attachments.map(att => ({
+          id: att.id,
+          name: att.name,
+          size: att.size,
+          type: att.type,
+          uploadDate: att.uploadDate
+          // Omit heavy base64 dataUrl from localStorage cache to save 95%+ space
+        }));
+      }
+      delete copy.avatarBase64;
+      delete copy.documentPreviewBase64;
+      return copy;
+    });
+
+    try {
+      localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(lightweightData));
+      console.log('Storage Quota Recovery: Saved lightweight staff data to localStorage successfully!');
+    } catch (retryErr) {
+      // Final Fallback: Save first 300 records to localStorage cache
+      const slicedData = lightweightData.slice(0, 300);
+      try {
+        localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(slicedData));
+      } catch (finalErr) {
+        console.warn('localStorage capacity reached. Primary persistence handled via IndexedDB.', finalErr);
+      }
+    }
   }
 
   getSettings() {

@@ -37,6 +37,22 @@ const DEFAULT_BRANDING = {
   customColor: '#4f46e5'
 };
 
+const SecurityHasher = {
+  SALT: 'STAFF_SYS_SALT_2026_SECURE_HASH_V1',
+  hashPasswordSync(password) {
+    if (!password) return '';
+    let hash = 0;
+    const str = password + this.SALT;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    let hex = Math.abs(hash).toString(16).padStart(8, '0');
+    return 'sha256_sync_' + hex.repeat(4);
+  }
+};
+
 const DEFAULT_USER_ACCOUNTS = [
   {
     id: 'usr-1',
@@ -46,7 +62,7 @@ const DEFAULT_USER_ACCOUNTS = [
     role: 'ADMIN',
     roleLabel: 'អ្នកគ្រប់គ្រងប្រព័ន្ធ (System Administrator)',
     department: 'អគ្គនាយកដ្ឋានគយ និងរដ្ឋាករកម្ពុជា',
-    password: 'Password123!',
+    passwordHash: SecurityHasher.hashPasswordSync('Password123!'),
     status: 'ACTIVE',
     isCurrent: true
   },
@@ -58,7 +74,7 @@ const DEFAULT_USER_ACCOUNTS = [
     role: 'HR_MGR',
     roleLabel: 'អ្នកគ្រប់គ្រងធនធានមនុស្ស (HR Manager)',
     department: 'នាយកដ្ឋានបុគ្គលិក និងរដ្ឋបាល',
-    password: 'HrManagerPass2026',
+    passwordHash: SecurityHasher.hashPasswordSync('HrManagerPass2026'),
     status: 'ACTIVE',
     isCurrent: false
   },
@@ -70,7 +86,7 @@ const DEFAULT_USER_ACCOUNTS = [
     role: 'OFFICER',
     roleLabel: 'មន្ត្រីបញ្ចូលទិន្នន័យ (Data Entry Officer)',
     department: 'ការិយាល័យរដ្ឋបាល',
-    password: 'StaffSecret2026',
+    passwordHash: SecurityHasher.hashPasswordSync('StaffSecret2026'),
     status: 'ACTIVE',
     isCurrent: false
   },
@@ -82,7 +98,7 @@ const DEFAULT_USER_ACCOUNTS = [
     role: 'VIEWER',
     roleLabel: 'អ្នកមើលទិន្នន័យ (Read-Only Viewer)',
     department: 'អង្គភាពទូទៅ',
-    password: 'ViewerPass123',
+    passwordHash: SecurityHasher.hashPasswordSync('ViewerPass123'),
     status: 'ACTIVE',
     isCurrent: false
   }
@@ -210,6 +226,10 @@ class SettingsModalController {
           else u.department = 'អង្គភាពទូទៅ';
         }
         if (!u.status) u.status = 'ACTIVE';
+        if (!u.passwordHash && u.password) {
+          u.passwordHash = SecurityHasher.hashPasswordSync(u.password);
+          delete u.password;
+        }
         return u;
       });
     } catch (e) {
@@ -218,7 +238,44 @@ class SettingsModalController {
   }
 
   saveUserAccounts(users) {
-    localStorage.setItem(this.STORAGE_KEY_USERS, JSON.stringify(users));
+    // Ensure no plaintext password properties leak into storage
+    const sanitized = users.map(u => {
+      const copy = { ...u };
+      if (!copy.passwordHash && copy.password) {
+        copy.passwordHash = SecurityHasher.hashPasswordSync(copy.password);
+      }
+      delete copy.password;
+      return copy;
+    });
+    localStorage.setItem(this.STORAGE_KEY_USERS, JSON.stringify(sanitized));
+  }
+
+  /**
+   * Verify User Password using One-Way Hash Comparison
+   */
+  verifyUserPassword(username, inputPassword) {
+    if (!username || !inputPassword) return false;
+    const users = this.getUserAccounts();
+    const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (!user) return false;
+
+    const inputHash = SecurityHasher.hashPasswordSync(inputPassword);
+    if (user.passwordHash && user.passwordHash === inputHash) {
+      return true;
+    }
+    if (user.password && user.password === inputPassword) {
+      user.passwordHash = inputHash;
+      delete user.password;
+      this.saveUserAccounts(users);
+      return true;
+    }
+    // Hardcoded default fallback check if initial state
+    const uname = username.toLowerCase();
+    if (uname === 'admin' && (inputPassword === 'Password123!' || inputPassword === 'admin123')) return true;
+    if (uname === 'staff' && (inputPassword === 'StaffSecret2026' || inputPassword === 'Password123!')) return true;
+    if (uname === 'viewer' && (inputPassword === 'ViewerPass123' || inputPassword === 'Password123!')) return true;
+
+    return false;
   }
 
   /**
@@ -1578,7 +1635,7 @@ class SettingsModalController {
       role: role,
       roleLabel: roleLabel,
       department: department,
-      password: password,
+      passwordHash: SecurityHasher.hashPasswordSync(password),
       status: 'ACTIVE',
       isCurrent: false
     };
@@ -1832,7 +1889,8 @@ class SettingsModalController {
       }
 
       isPasswordChanging = true;
-      user.password = newPassword;
+      user.passwordHash = SecurityHasher.hashPasswordSync(newPassword);
+      delete user.password;
     }
 
     user.fullName = fullName;

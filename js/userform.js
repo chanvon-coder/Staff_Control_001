@@ -1419,10 +1419,12 @@ class UserFormController {
       const saveBtn = document.getElementById('btn-uf-save');
       const updateBtn = document.getElementById('btn-uf-update');
       const deleteBtn = document.getElementById('btn-uf-delete');
+      const duplicateBtn = document.getElementById('btn-uf-duplicate');
 
       if (saveBtn) saveBtn.style.display = 'inline-flex';
       if (updateBtn) updateBtn.style.display = 'none';
       if (deleteBtn) deleteBtn.style.display = 'none';
+      if (duplicateBtn) duplicateBtn.style.display = 'none';
 
       // Unlock all inputs unconditionally for NEW registration
       const banner = document.getElementById('uf-locked-banner');
@@ -1549,10 +1551,12 @@ class UserFormController {
     const saveBtn = document.getElementById('btn-uf-save');
     const updateBtn = document.getElementById('btn-uf-update');
     const deleteBtn = document.getElementById('btn-uf-delete');
+    const duplicateBtn = document.getElementById('btn-uf-duplicate');
 
     if (saveBtn) saveBtn.style.display = 'none';
     if (updateBtn) updateBtn.style.display = isViewer ? 'none' : 'inline-flex';
     if (deleteBtn) deleteBtn.style.display = (isViewer || !role.canDelete) ? 'none' : 'inline-flex';
+    if (duplicateBtn) duplicateBtn.style.display = isViewer ? 'none' : 'inline-flex';
 
     // Update maturityBase radio selection
     const maturityBase = record.maturityBase || 'endDate';
@@ -1563,6 +1567,119 @@ class UserFormController {
 
     this.updateFormLockState();
     this.showModal();
+  }
+
+  /**
+   * Helper: Open Edit mode then trigger duplicate
+   */
+  duplicateFromRecord(recordNo) {
+    this.openEdit(recordNo);
+    setTimeout(() => {
+      this.handleDuplicateRecord();
+    }, 150);
+  }
+
+  /**
+   * Duplicate existing record to quickly create a new request record for the same officer.
+   * Pre-fills personal/organizational info, resets request dates/reasons, and focuses user on new request entry.
+   */
+  handleDuplicateRecord() {
+    try {
+      const currentNo = this.selectedRecordNo;
+      const list = dataStore.getStaffData();
+      const record = list.find(item => String(item.no) === String(currentNo));
+
+      if (!record) {
+        if (typeof app !== 'undefined') app.showToast('⚠️ រកមិនឃើញទិន្នន័យដើម្បីចម្លងទេ', 'warning');
+        return;
+      }
+
+      const officerName = record.khmerName || record.latinName || 'បុគ្គលិក';
+      const staffId = record.staffId || '';
+
+      // Switch mode to NEW registration
+      this.currentMode = 'NEW';
+      this.selectedRecordNo = null;
+      
+      // Auto-assign next serial number
+      const nextNo = dataStore.getNextSerialNo();
+      const noEl = document.getElementById('uf-no');
+      if (noEl) noEl.value = nextNo;
+
+      // Update Modal Title
+      const titleEl = document.getElementById('modal-title-text');
+      if (titleEl) {
+        titleEl.innerHTML = `<i data-lucide="copy"></i> <span>📋 ចម្លងបង្កើតសំណើថ្មីសម្រាប់៖ ${officerName} (${staffId})</span>`;
+      }
+
+      // Update button visibility (Switch to Save Mode)
+      const saveBtn = document.getElementById('btn-uf-save');
+      const updateBtn = document.getElementById('btn-uf-update');
+      const deleteBtn = document.getElementById('btn-uf-delete');
+      const duplicateBtn = document.getElementById('btn-uf-duplicate');
+
+      if (saveBtn) saveBtn.style.display = 'inline-flex';
+      if (updateBtn) updateBtn.style.display = 'none';
+      if (deleteBtn) deleteBtn.style.display = 'none';
+      if (duplicateBtn) duplicateBtn.style.display = 'none';
+
+      // Unlock form inputs
+      const banner = document.getElementById('uf-locked-banner');
+      if (banner) banner.style.display = 'none';
+
+      const inputIds = [
+        'uf-staffId', 'uf-secondaryId', 'uf-latinName', 'uf-khmerName',
+        'uf-dob', 'uf-serviceStartDate', 'uf-gender',
+        'uf-department', 'uf-office', 'uf-position', 'uf-staffType',
+        'uf-requestDate', 'uf-startDate', 'uf-endDate', 'uf-annualPeriod',
+        'uf-requestReason', 'uf-prakasNo', 'uf-refDocument', 'uf-receivedDate',
+        'uf-systemClosingDate', 'uf-description', 'uf-remark', 'uf-remark-select'
+      ];
+      inputIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = false;
+          el.readOnly = false;
+        }
+      });
+
+      // Reset request-specific fields for new request entry
+      const resetFields = ['uf-requestReason', 'uf-requestDate', 'uf-startDate', 'uf-endDate', 'uf-prakasNo', 'uf-refDocument', 'uf-description', 'uf-systemClosingDate'];
+      resetFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+
+      // Clear attachments for new request or keep attachments if desired
+      this.currentAttachments = [];
+      this.renderAttachmentsList();
+      this.renderUpdateMetadata(null);
+
+      // Set today's date for new requestDate as default
+      const todayISO = StatusCalculator ? StatusCalculator.normalizeDate(new Date()) : new Date().toISOString().slice(0, 10);
+      const reqDateEl = document.getElementById('uf-requestDate');
+      if (reqDateEl) reqDateEl.value = todayISO;
+
+      const startDateEl = document.getElementById('uf-startDate');
+      if (startDateEl) startDateEl.value = todayISO;
+
+      // Toast notification and focus on requestReason or requestDate
+      if (typeof app !== 'undefined') {
+        app.showToast(`📋 បានចម្លងព័ត៌មានបុគ្គលិក «${officerName}» រួចរាល់! សូមបញ្ចូលមូលហេតុ និងថ្ងៃខែឆ្នាំសំណើថ្មី`, 'info');
+      }
+
+      const focusEl = document.getElementById('uf-requestReason') || document.getElementById('uf-requestDate');
+      if (focusEl) {
+        focusEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        focusEl.focus();
+      }
+
+      if (typeof app !== 'undefined' && app.refreshIcons) {
+        app.refreshIcons();
+      }
+    } catch (err) {
+      console.error('handleDuplicateRecord error:', err);
+    }
   }
 
   showModal() {
@@ -1657,6 +1774,17 @@ class UserFormController {
         record[f.key] = '';
       }
     });
+
+    // Auto-map Reason of Request -> Reason/Remark for individual request record
+    if (record.requestReason && record.requestReason.trim() !== '') {
+      if (!record.remark || record.remark.trim() === '' || record.remark === 'undefined') {
+        record.remark = record.requestReason.trim();
+      }
+    } else {
+      if (record.remark === 'undefined') {
+        record.remark = '';
+      }
+    }
 
     const staffTypeSelect = document.getElementById('uf-staffType');
     if (staffTypeSelect) {
@@ -1806,6 +1934,19 @@ class UserFormController {
       }
     } catch (err) {
       console.error('Save error:', err);
+      if (err && (err.name === 'QuotaExceededError' || (err.message && err.message.includes('exceeded the quota')))) {
+        try {
+          dataStore.handleQuotaExceededRecovery(existingList);
+          if (typeof app !== 'undefined') {
+            app.showToast(`បានរក្សាទុកបុគ្គលិក ${newRecord.khmerName} ដោយជោគជ័យ (រក្សាទុកក្នុង IndexedDB Storage)!`, 'success');
+            this.closeModal();
+            app.refreshAll();
+            return;
+          }
+        } catch (retryErr) {
+          console.error('Retry save failed:', retryErr);
+        }
+      }
       alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ៖ ' + err.message);
     }
   }
@@ -1920,7 +2061,7 @@ class UserFormController {
       }
 
       if (typeof auditLogger !== 'undefined') {
-        auditLogger.log('UPDATE', updatedRecord.staffId, `បានកែប្រែទិន្នន័យ ${updatedRecord.khmerName} (v${newVersion})`, { old: oldRecord, updated: updatedRecord });
+        auditLogger.log('UPDATE', updatedRecord.staffId, `បានកែប្រែទិន្នន័យ ${updatedRecord.khmerName} (v${newVersion})`, `អត្តលេខ៖ ${updatedRecord.staffId}`);
       }
 
       if (typeof app !== 'undefined') {

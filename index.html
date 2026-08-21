@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Staff Control & Document Management System</title>
-  <meta name="description" content="Professional Staff Management and Document Control System built on the 22-field Excel Book1 structure with Khmer and English support.">
+  <!-- Enterprise Security & Cache Protection Headers -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   
   <!-- Stylesheets -->
   <link rel="stylesheet" href="css/khmer-fonts.css">
@@ -503,11 +506,11 @@
         <div class="dash-filters-group">
           <!-- 1-Click Master Toggle All Bars / All Charts -->
           <div class="dash-master-toggle-box" title="ប្តូរទម្រង់បង្ហាញគ្រប់ផ្ទាំងស្ថិតិទាំងអស់ (Global View Switcher)">
-            <button type="button" class="btn-dash-view-all active" id="btn-dash-all-bars" onclick="dashboardController.setAllViewModes('progress')" title="ប្តូរផ្ទាំងទាំងអស់ជាបញ្ជីរបារ (Change All to Progress Bars)">
+            <button type="button" class="btn-dash-view-all" id="btn-dash-all-bars" onclick="dashboardController.setAllViewModes('progress')" title="ប្តូរផ្ទាំងទាំងអស់ជាបញ្ជីរបារ (Change All to Progress Bars)">
               <i data-lucide="bar-chart-horizontal" style="width: 14px; height: 14px;"></i>
               <span>របារទាំងអស់ (All Bars)</span>
             </button>
-            <button type="button" class="btn-dash-view-all" id="btn-dash-all-charts" onclick="dashboardController.setAllViewModes('chart')" title="ប្តូរផ្ទាំងទាំងអស់ជាក្រាហ្វិក (Change All to Charts)">
+            <button type="button" class="btn-dash-view-all active" id="btn-dash-all-charts" onclick="dashboardController.setAllViewModes('chart')" title="ប្តូរផ្ទាំងទាំងអស់ជាក្រាហ្វិក (Change All to Charts)">
               <i data-lucide="pie-chart" style="width: 14px; height: 14px;"></i>
               <span>ក្រាហ្វិកទាំងអស់ (All Charts)</span>
             </button>
@@ -1788,6 +1791,16 @@
             <span>📊 Excel</span>
           </button>
 
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.exportCSV('eligible')" style="font-weight: 700; color: #059669; border-color: rgba(5, 150, 105, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="ទាញយកឯកសារ CSV បញ្ជីអ្នកអាចស្នើសុំបាន">
+            <i data-lucide="file-text"></i>
+            <span>📄 CSV (អាចស្នើបាន)</span>
+          </button>
+
+          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.exportCSV('ineligible')" style="font-weight: 700; color: #dc2626; border-color: rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="ទាញយកឯកសារ CSV បញ្ជីអ្នកមិនទាន់អាចស្នើសុំបាន">
+            <i data-lucide="file-text"></i>
+            <span>📄 CSV (មិនទាន់អាច)</span>
+          </button>
+
           <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.printReport('eligible')" style="font-weight: 700; color: #059669; border-color: rgba(5, 150, 105, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="បោះពុម្ពបញ្ជីអ្នកអាចស្នើសុំបាន">
             <i data-lucide="printer"></i>
             <span>🖨️ Report A (អាចស្នើបាន)</span>
@@ -1807,14 +1820,15 @@
 
 
 
-      <!-- CALCULATION REFERENCE DATE CONTROL & FILTER TOOLBAR -->
+      <!-- SEARCH & FILTER TOOLBAR -->
       <div class="doc-search-toolbar" style="margin-bottom: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
-          <!-- Global Calculation Reference Date Input -->
-          <div style="display: flex; align-items: center; gap: 0.65rem; background: rgba(139, 92, 246, 0.08); border: 1.5px solid rgba(139, 92, 246, 0.3); border-radius: 10px; padding: 0.45rem 0.85rem;">
-            <i data-lucide="calendar" style="color: #8b5cf6; width: 18px; height: 18px;"></i>
-            <span style="font-weight: 800; font-size: 0.85rem; color: #6d28d9;">ថ្ងៃខែឆ្នាំគិតគូរ (Calculation Date) ៖</span>
-            <input type="date" id="promotion-calc-date-input" class="form-control form-control-sm" value="2026-08-20" style="width: 145px; font-weight: 800; font-size: 0.82rem;" onchange="promotionController.handleCalcDateChange(this.value)">
+          <!-- Quick Status Chips Filter -->
+          <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+            <button type="button" class="case-chip-btn" onclick="promotionController.handleFilterChange('status', 'all')" style="font-weight: 700;">🎯 ទាំងអស់</button>
+            <button type="button" class="case-chip-btn" onclick="promotionController.handleFilterChange('status', 'ELIGIBLE')" style="color: #059669; font-weight: 800; border-color: rgba(5, 150, 105, 0.3);">🟢 អាចស្នើសុំបាន</button>
+            <button type="button" class="case-chip-btn" onclick="promotionController.handleFilterChange('status', 'INELIGIBLE')" style="color: #dc2626; font-weight: 800; border-color: rgba(220, 38, 38, 0.3);">🔴 មិនទាន់អាចស្នើសុំបាន</button>
+            <button type="button" class="case-chip-btn" onclick="promotionController.handleFilterChange('status', 'NEAR_ELIGIBLE')" style="color: #d97706; font-weight: 700;">🟡 ជិតដល់កំណត់</button>
           </div>
 
           <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted);" id="promotion-records-count-badge">
@@ -1856,15 +1870,15 @@
             <option value="all">🎖️ គ្រប់ឋានន្តរស័ក្តិ (All Ranks)</option>
           </select>
 
-          <select class="doc-filter-select" id="promo-filter-match" onchange="promotionController.handleFilterChange('staffDataMatch', this.value)">
-            <option value="all">👥 Staff Data: ទាំងអស់</option>
-            <option value="matched">🟢 មានក្នុង Staff Data</option>
-            <option value="unmatched">⚪ មិនមានក្នុង Staff Data</option>
+          <select class="doc-filter-select" id="promo-filter-match" onchange="promotionController.handleFilterChange('staffDataMatch', this.value)" style="font-weight: 700;">
+            <option value="all">👥 គ្រប់ Staff Data (All Staff Data)</option>
+            <option value="matched">🟢 មានក្នុង Staff Data (In Staff Data)</option>
+            <option value="unmatched">⚪ មិនមានក្នុង Staff Data (Not in Staff Data)</option>
           </select>
         </div>
       </div>
 
-      <!-- MASTER 27-COLUMN PROMOTION TABLE CARD -->
+      <!-- MASTER PROMOTION TABLE CARD -->
       <div class="master-table-card" style="margin-bottom: 1.75rem;">
         <div class="chart-header" style="padding: 0.85rem 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
           <h3 style="margin: 0; font-size: 0.98rem; font-weight: 800; display: flex; align-items: center; gap: 0.45rem;">
@@ -1895,16 +1909,12 @@
                 <th>តាមកម្រិត</th>
                 <th>ផ្សេងៗ</th>
 
-                <!-- Calculated Columns 16-27 -->
-                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ឆ្នាំ</th>
-                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ខែ</th>
+                <!-- Calculated Columns -->
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #2563eb;">ថ្ងៃគិតគូរ</th>
                 <th style="background: rgba(139, 92, 246, 0.08);">រយៈពេលបានប្រើ</th>
-                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ឆ្នាំ</th>
-                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ខែ</th>
-                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ត្រូវការ</th>
                 <th style="background: rgba(220, 38, 38, 0.08); color: #dc2626;">រយៈពេលព្យួរ</th>
                 <th style="background: rgba(139, 92, 246, 0.08);">នៅសល់</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #7c3aed; font-weight: 800;">ថ្ងៃគ្រប់កាលកំណត់ថ្មី</th>
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #0284c7;">ថ្ងៃអាចស្នើបាន</th>
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ស្ថានភាព</th>
                 <th style="background: rgba(139, 92, 246, 0.08); min-width: 200px;">Reason / Remark</th>
@@ -3398,6 +3408,10 @@
         </div>
 
         <div class="footer-right-actions">
+          <button class="btn btn-warning" id="btn-uf-duplicate" onclick="userformController.handleDuplicateRecord()" style="display: none; font-weight: 700; background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; border: none;" title="ចម្លងព័ត៌មានបុគ្គលិកនេះ ដើមី្បបង្កើតកំណត់ត្រាសំណើថ្មី">
+            <i data-lucide="copy"></i>
+            <span>📋 ចម្លង (Duplicate)</span>
+          </button>
           <button class="btn btn-danger" id="btn-uf-delete" onclick="userformController.handleDelete()" style="display: none;">
             <i data-lucide="trash-2"></i>
             <span>លុប (Delete)</span>
@@ -3485,7 +3499,7 @@
             <div class="auth-input-icon">
               <i data-lucide="user"></i>
             </div>
-            <select class="auth-input-field" id="auth-login-username" onchange="app.handleAuthUserSelected(this.value)" style="cursor: pointer; font-weight: 600; width: 100%;">
+            <select class="auth-input-field" id="auth-login-username" autocomplete="username" onchange="app.handleAuthUserSelected(this.value)" style="cursor: pointer; font-weight: 600; width: 100%;">
               <option value="admin">admin</option>
               <option value="staff">staff</option>
               <option value="viewer">viewer</option>
@@ -3506,18 +3520,7 @@
           </div>
         </div>
 
-        <!-- Remember Password Tickbox (Point/Tick Option) -->
-        <div class="auth-remember-wrap">
-          <label class="auth-remember-label" for="auth-remember-password">
-            <input type="checkbox" id="auth-remember-password" class="auth-remember-input" onchange="app.handleRememberCheckboxChange(this.checked)">
-            <span class="auth-remember-box">
-              <i data-lucide="check" class="auth-remember-tick-icon"></i>
-            </span>
-            <span class="auth-remember-text">ចងចាំលេខសម្ងាត់</span>
-          </label>
-        </div>
-
-        <button type="button" class="btn-auth-primary" onclick="app.handleAuthLogin();" style="cursor: pointer;">
+        <button type="button" class="btn-auth-primary" onclick="app.handleAuthLogin();" style="cursor: pointer; margin-top: 1rem;">
           <span>ចូលប្រព័ន្ធ</span>
           <span>➔</span>
         </button>
@@ -4501,30 +4504,7 @@ function doGet(e) {
           <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-weight: 800;" id="promo-meta-count">0 ជួរ</span>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
-          <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; display: block;">ខែ (Month) <span style="color: #ef4444;">*</span></label>
-            <select class="form-control" id="promo-meta-month" style="font-weight: 700;">
-              <option value="មករា">មករា (January)</option>
-              <option value="កុម្ភៈ">កុម្ភៈ (February)</option>
-              <option value="មីនា">មីនា (March)</option>
-              <option value="មេសា">មេសា (April)</option>
-              <option value="ឧសភា">ឧសភា (May)</option>
-              <option value="មិថុនា">មិថុនា (June)</option>
-              <option value="កក្កដា">កក្កដា (July)</option>
-              <option value="សីហា" selected>សីហា (August)</option>
-              <option value="កញ្ញា">កញ្ញា (September)</option>
-              <option value="តុលា">តុលា (October)</option>
-              <option value="វិច្ឆិកា">វិច្ឆិកា (November)</option>
-              <option value="ធ្នូ">ធ្នូ (December)</option>
-            </select>
-          </div>
 
-          <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; display: block;">ឆ្នាំ (Year) <span style="color: #ef4444;">*</span></label>
-            <input type="number" class="form-control" id="promo-meta-year" value="2026" min="2010" max="2050" style="font-weight: 800;">
-          </div>
-        </div>
 
         <!-- Droplist Selector & Write-in for Remark -->
         <div class="form-group" style="margin-bottom: 0;">
@@ -4755,6 +4735,54 @@ function doGet(e) {
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- INDIVIDUAL REQUEST BINDING HISTORY & TIMELINE MODAL -->
+  <div class="modal-backdrop" id="staff-request-history-modal" style="display: none; align-items: center; justify-content: center; z-index: 100000;">
+    <div class="modal-card" style="width: 92%; max-width: 920px; max-height: 90vh; display: flex; flex-direction: column; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid var(--border-color); background: var(--bg-card); overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div class="modal-header" style="padding: 1.15rem 1.5rem; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08)); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.65rem;">
+          <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); color: #6366f1; display: flex; align-items: center; justify-content: center;">
+            <i data-lucide="history" style="width: 22px; height: 22px;"></i>
+          </div>
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: var(--text-primary);" id="history-modal-staff-name">
+              ប្រវត្តិការស្នើសុំដាច់ដោយឡែកតាមបុគ្គល (Individual Request Binding)
+            </h3>
+            <div style="font-size: 0.76rem; color: var(--text-muted);" id="history-modal-staff-id">
+              អត្តលេខ៖ - • អង្គភាព៖ -
+            </div>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="app.closeRequestHistoryModal()" style="border: none; background: transparent; cursor: pointer; color: var(--text-muted); font-size: 1.2rem; padding: 4px;">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+        <div style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 10px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5;">
+          💡 <strong>គោលការណ៍រក្សាទុកដាច់ដោយឡែក (Individual Request Binding)</strong> ៖ រាល់ការស្នើសុំនីមួយៗ (Request 001, Request 002...) រក្សាទុកតម្លៃ <strong>Reason of Request ➔ Reason/Remark</strong> ដាច់ដោយឡែកតាម Request ID របស់ខ្លួន ដោយមិនលាយឡំ ឬ Overwrite ការស្នើសុំចាស់ៗឡើយ។
+        </div>
+
+        <div id="history-requests-cards-container" style="display: flex; flex-direction: column; gap: 1rem;">
+          <!-- Dynamically populated request history cards -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 0.85rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 0.65rem; background: var(--bg-card-subtle);">
+        <button type="button" class="btn btn-primary btn-sm" onclick="app.returnToPromotionTable()" style="font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); border: none; padding: 0.5rem 1.2rem; display: inline-flex; align-items: center; gap: 0.4rem;" title="ត្រឡប់ទៅតារាងគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ">
+          <i data-lucide="award"></i>
+          <span>🎖️ ត្រឡប់ទៅតារាងឡើងថ្នាក់ (Return to Promotion Table)</span>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="app.closeRequestHistoryModal()" style="font-weight: 700; padding: 0.5rem 1.25rem;">
+          <span>បិទ (Close)</span>
+        </button>
+      </div>
     </div>
   </div>
 

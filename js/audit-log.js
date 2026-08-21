@@ -10,85 +10,96 @@ class AuditLogger {
   }
 
   init() {
-    const existing = localStorage.getItem(this.STORAGE_KEY_LOGS);
-    if (!existing || existing === '[]') {
-      const initialLogs = [
-        {
-          id: 'LOG-1004',
-          timestamp: '2026-01-15 08:30',
-          user: 'admin',
-          action: 'CREATE',
-          staffId: 'GDCE-0189',
-          staffName: 'សុខ សំណាង',
-          description: 'Created initial staff record (ដោយ admin)',
-          details: 'នាយកដ្ឋានបុគ្គលិក និងរដ្ឋបាល'
-        },
-        {
-          id: 'LOG-1003',
-          timestamp: '2026-02-15 09:00',
-          user: 'admin',
-          action: 'UPDATE',
-          staffId: 'GDCE-0245',
-          staffName: 'ចាន់ សុផល',
-          description: 'Updated request reason for doctorate scholarship (ដោយ admin)',
-          details: 'មូលហេតុ៖ ស្នើសុំបន្តការសិក្សា'
-        },
-        {
-          id: 'LOG-1002',
-          timestamp: '2026-03-12 11:45',
-          user: 'staff_officer',
-          action: 'CREATE',
-          staffId: 'GDCE-0312',
-          staffName: 'កែវ វិសាល',
-          description: 'Added leave request profile (ដោយ staff_officer)',
-          details: 'ការិយាល័យរដ្ឋបាល'
-        },
-        {
-          id: 'LOG-1001',
-          timestamp: '2026-02-01 16:00',
-          user: 'admin',
-          action: 'LOCK',
-          staffId: 'GDCE-0418',
-          staffName: 'ហេង ធីតា',
-          description: 'Locked transferred record and closed system date (ដោយ admin)',
-          details: 'បានបិទប្រព័ន្ធ (Closed)'
+    try {
+      const existing = localStorage.getItem(this.STORAGE_KEY_LOGS);
+      if (!existing || existing === '[]') {
+        const initialLogs = [
+          {
+            id: 'LOG-1004',
+            timestamp: new Date().toISOString(),
+            user: 'admin',
+            action: 'CREATE',
+            staffId: 'GDCE-0189',
+            description: 'Created initial staff record',
+            details: 'នាយកដ្ឋានបុគ្គលិក និងរដ្ឋបាល'
+          }
+        ];
+        this.safeSave(initialLogs);
+      } else {
+        const logs = this.getLogs();
+        if (logs.length > 80) {
+          this.safeSave(logs.slice(0, 80));
         }
-      ];
-      localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify(initialLogs));
+      }
+    } catch (e) {
+      console.warn('AuditLogger init warning:', e);
     }
   }
 
   getLogs() {
     try {
-      const logs = JSON.parse(localStorage.getItem(this.STORAGE_KEY_LOGS));
+      const raw = localStorage.getItem(this.STORAGE_KEY_LOGS);
+      if (!raw) return [];
+      const logs = JSON.parse(raw);
       return Array.isArray(logs) ? logs : [];
     } catch (e) {
       return [];
     }
   }
 
-  log(action, staffId, description, details = '', user = 'Admin') {
-    const logs = this.getLogs();
-    const newLog = {
-      id: 'LOG-' + (Date.now() % 1000000),
-      timestamp: new Date().toISOString(),
-      user: user || 'Admin',
-      action: action, // CREATE, UPDATE, DELETE, EXPORT, IMPORT
-      staffId: staffId || 'N/A',
-      description: description,
-      details: typeof details === 'object' ? JSON.stringify(details) : details
-    };
-
-    logs.unshift(newLog); // latest on top
-    // Keep max 500 records
-    if (logs.length > 500) {
-      logs.length = 500;
+  safeSave(logsArray) {
+    try {
+      const trimmed = logsArray.slice(0, 80);
+      localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify(trimmed));
+    } catch (err) {
+      console.warn('Audit log QuotaExceededError detected, auto-pruning logs:', err);
+      try {
+        const minimal = logsArray.slice(0, 15);
+        localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify(minimal));
+      } catch (err2) {
+        try {
+          localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify([]));
+        } catch (err3) {
+          console.error('Critical quota error saving audit logs:', err3);
+        }
+      }
     }
-    localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify(logs));
+  }
+
+  log(action, staffId, description, details = '', user = 'Admin') {
+    try {
+      const logs = this.getLogs();
+
+      let cleanDetails = '';
+      if (typeof details === 'object' && details !== null) {
+        cleanDetails = `ព័ត៌មានអត្តលេខ៖ ${staffId || 'N/A'}`;
+      } else {
+        cleanDetails = String(details || '').slice(0, 200);
+      }
+
+      const newLog = {
+        id: 'LOG-' + (Date.now() % 1000000),
+        timestamp: new Date().toISOString(),
+        user: user || 'Admin',
+        action: action,
+        staffId: staffId || 'N/A',
+        description: String(description || '').slice(0, 200),
+        details: cleanDetails
+      };
+
+      logs.unshift(newLog);
+      this.safeSave(logs);
+    } catch (e) {
+      console.warn('AuditLogger log error ignored safely:', e);
+    }
   }
 
   clearLogs() {
-    localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify([]));
+    try {
+      localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify([]));
+    } catch (e) {
+      console.warn('clearLogs error:', e);
+    }
   }
 }
 

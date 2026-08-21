@@ -32,13 +32,18 @@ class StaffApp {
     this.sortAsc = true;
   }
 
-  init() {
+  async init() {
     // 1. Initialize active session: Check if user is authenticated
     const isAuthed = typeof UserControl !== 'undefined' && UserControl.isLoggedIn();
     if (!isAuthed) {
       document.body.classList.add('app-auth-locked');
     } else {
       document.body.classList.remove('app-auth-locked');
+    }
+
+    // Attempt data recovery from IndexedDB or Permanent Storage before initial render
+    if (typeof dataStore !== 'undefined' && dataStore.getStaffDataAsync) {
+      await dataStore.getStaffDataAsync();
     }
 
     // Initialize Subsystems
@@ -193,6 +198,24 @@ class StaffApp {
   refreshIcons() {
     if (typeof lucide !== 'undefined' && lucide.createIcons) {
       lucide.createIcons();
+    }
+  }
+
+  handleTopCloudSyncAction(selectEl) {
+    if (!selectEl || !selectEl.value) return;
+    const val = selectEl.value;
+    selectEl.value = '';
+
+    if (val === 'sync_all') {
+      if (typeof CloudSyncService !== 'undefined') CloudSyncService.syncAllRecords();
+    } else if (val === 'open_sheet') {
+      if (typeof CloudSyncService !== 'undefined') CloudSyncService.openGoogleSheet();
+    } else if (val === 'open_drive') {
+      if (typeof CloudSyncService !== 'undefined') CloudSyncService.openGoogleDrive();
+    } else if (val === 'copy_vlookup') {
+      if (typeof CloudSyncService !== 'undefined') CloudSyncService.copyDataForGoogleSheetClipboard();
+    } else if (val === 'manage_droplists') {
+      this.switchTab('documents');
     }
   }
 
@@ -490,6 +513,7 @@ class StaffApp {
       } else {
         const firstRec = matchedRecords[0];
         const searchKeyStr = (firstRec ? (firstRec.staffId || firstRec.khmerName || '') : '').replace(/'/g, "\\'");
+        this._currentHistorySearchKey = searchKeyStr;
 
         container.innerHTML = matchedRecords.map((r, idx) => {
           const reqNoStr = String(idx + 1).padStart(3, '0');
@@ -571,12 +595,27 @@ class StaffApp {
                           <div style="font-weight: 800; color: #6d28d9; font-size: 0.84rem; margin-bottom: 0.35rem;">
                             🎯 គណនាថ្ងៃឡើងថ្នាក់ និងថ្ងៃអាចស្នើសុំបាន (2-Stage New Promotion Date Breakdown)
                           </div>
-                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 0.5rem; color: var(--text-primary);">
-                            <div>📅 ថ្ងៃឡើងថ្នាក់គោល (Base Date)៖ <strong>${StatusCalculator.formatDateDisplay(r.promotionDate || r.startDate)}</strong></div>
-                            <div>🔄 វដ្តឡើងថ្នាក់ (Cycle)៖ <strong style="color: #2563eb;">2 ឆ្នាំ</strong></div>
-                            <div>🗓️ ថ្ងៃកែសម្រួល (Adjusted Promo Date)៖ <strong style="color: #0284c7;">${StatusCalculator.formatDateDisplay(pDates.adjustedPromoDateStr)}</strong></div>
-                            <div>🎖️ ថ្ងៃគ្រប់កាលកំណត់ថ្មី (New Promotion Date)៖ <strong style="color: #7c3aed; font-size: 0.9rem;">${StatusCalculator.formatDateDisplay(pDates.newMaturedPromotionDateStr)}</strong></div>
-                            <div>🟢 ថ្ងៃអាចស្នើសុំបាន (Final Next Eligible Date)៖ <strong style="color: #059669; font-size: 0.9rem;">${StatusCalculator.formatDateDisplay(pDates.nextEligibleDateStr)}</strong></div>
+                          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 0.6rem; color: var(--text-primary);">
+                            <div style="background: var(--bg-card); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                              <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">📅 ថ្ងៃឡើងថ្នាក់គោល (Base Date) ៖</div>
+                              <strong style="font-size: 0.88rem; color: var(--text-primary); white-space: nowrap; display: block; margin-top: 2px;">${StatusCalculator.formatDateDisplay(r.promotionDate || r.startDate)}</strong>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                              <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700;">🔄 វដ្តឡើងថ្នាក់ (Cycle) ៖</div>
+                              <strong style="font-size: 0.88rem; color: #2563eb; white-space: nowrap; display: block; margin-top: 2px;">2 ឆ្នាំ</strong>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                              <div style="font-size: 0.72rem; color: #0284c7; font-weight: 700;">🗓️ ថ្ងៃកែសម្រួល (Adjusted Date) ៖</div>
+                              <strong style="font-size: 0.88rem; color: #0284c7; white-space: nowrap; display: block; margin-top: 2px;">${StatusCalculator.formatDateDisplay(pDates.adjustedPromoDateStr)}</strong>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                              <div style="font-size: 0.72rem; color: #7c3aed; font-weight: 700;">🎖️ ថ្ងៃគ្រប់កាលកំណត់ថ្មី (New Date) ៖</div>
+                              <strong style="font-size: 0.9rem; color: #7c3aed; white-space: nowrap; display: block; margin-top: 2px;">${StatusCalculator.formatDateDisplay(pDates.newMaturedPromotionDateStr)}</strong>
+                            </div>
+                            <div style="background: var(--bg-card); padding: 0.45rem 0.65rem; border-radius: 6px; border: 1px solid var(--border-color);">
+                              <div style="font-size: 0.72rem; color: #059669; font-weight: 700;">🟢 ថ្ងៃអាចស្នើសុំបាន (Next Eligible Date) ៖</div>
+                              <strong style="font-size: 0.9rem; color: #059669; white-space: nowrap; display: block; margin-top: 2px;">${StatusCalculator.formatDateDisplay(pDates.nextEligibleDateStr)}</strong>
+                            </div>
                           </div>
                         </div>
                       `;
@@ -599,9 +638,27 @@ class StaffApp {
   jumpToStaffDataRecord(recordNo) {
     this.closeRequestHistoryModal();
     this.switchTab('database');
+
+    const searchInput = document.getElementById('table-search-input');
+    if (searchInput) searchInput.value = '';
+    this.searchQuery = '';
+
+    const allRecords = this.getFilteredRecords();
+    const itemIndex = allRecords.findIndex(r => Number(r.no) === Number(recordNo));
+
+    if (itemIndex !== -1) {
+      this.currentPage = Math.floor(itemIndex / this.pageSize) + 1;
+    }
+    this.renderStaffTable();
+
     setTimeout(() => {
-      if (typeof userformController !== 'undefined' && userformController.openEdit) {
-        userformController.openEdit(recordNo);
+      const targetRow = document.querySelector(`#staff-table-body tr[data-no="${recordNo}"]`);
+      if (targetRow) {
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetRow.classList.remove('row-pulse-highlight');
+        void targetRow.offsetWidth;
+        targetRow.classList.add('row-pulse-highlight');
+        setTimeout(() => targetRow.classList.remove('row-pulse-highlight'), 3500);
       }
     }, 150);
   }
@@ -617,6 +674,51 @@ class StaffApp {
           promotionController.handleSearch(searchKey);
         }
       }, 150);
+    }
+  }
+
+  navigateToStaffDataFromHistory(searchKey = '') {
+    const keyToSearch = searchKey || this._currentHistorySearchKey || '';
+    this.closeRequestHistoryModal();
+    this.switchTab('database');
+
+    const searchInput = document.getElementById('table-search-input');
+    if (searchInput) searchInput.value = '';
+    this.searchQuery = '';
+
+    const allRecords = this.getFilteredRecords();
+    const keyLower = String(keyToSearch).trim().toLowerCase();
+    const targetRecord = allRecords.find(r =>
+      (r.staffId && String(r.staffId).trim().toLowerCase() === keyLower) ||
+      (r.secondaryId && String(r.secondaryId).trim().toLowerCase() === keyLower) ||
+      (r.khmerName && String(r.khmerName).trim().toLowerCase() === keyLower) ||
+      (r.latinName && String(r.latinName).trim().toLowerCase() === keyLower)
+    );
+
+    if (targetRecord) {
+      const itemIndex = allRecords.indexOf(targetRecord);
+      if (itemIndex !== -1) {
+        this.currentPage = Math.floor(itemIndex / this.pageSize) + 1;
+      }
+      this.renderStaffTable();
+
+      setTimeout(() => {
+        const targetRow = document.querySelector(`#staff-table-body tr[data-no="${targetRecord.no}"]`);
+        if (targetRow) {
+          targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetRow.classList.remove('row-pulse-highlight');
+          void targetRow.offsetWidth;
+          targetRow.classList.add('row-pulse-highlight');
+          setTimeout(() => targetRow.classList.remove('row-pulse-highlight'), 3500);
+        }
+      }, 150);
+    } else {
+      if (searchInput && keyToSearch) {
+        searchInput.value = keyToSearch;
+        this.searchQuery = keyToSearch;
+        this.currentPage = 1;
+        this.renderStaffTable();
+      }
     }
   }
 
@@ -1340,8 +1442,8 @@ class StaffApp {
             <td style="text-align: center; font-weight: 700;">${item.no}</td>
             <td style="text-align: ${fields[1]?.align || 'left'};"><strong style="color: var(--primary);">${StatusCalculator.format4DigitId(item.staffId) || '-'}</strong></td>
             <td style="text-align: ${fields[2]?.align || 'left'};">${StatusCalculator.format4DigitId(item.secondaryId) || '-'}</td>
-            <td style="text-align: ${fields[3]?.align || 'left'}; font-weight: 600;"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(item.staffId || item.latinName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិស្នើសុំទាំងអស់របស់បុគ្គលិកនេះ" style="color: inherit; text-decoration: none;">${item.latinName || '-'}</a></td>
-            <td style="text-align: ${fields[4]?.align || 'left'}; font-weight: 600;"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(item.staffId || item.khmerName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិស្នើសុំទាំងអស់របស់បុគ្គលិកនេះ" style="color: inherit; text-decoration: underline;">${item.khmerName || '-'}</a></td>
+            <td style="text-align: ${fields[3]?.align || 'left'}; font-weight: 600;">${item.latinName || '-'}</td>
+            <td style="text-align: ${fields[4]?.align || 'left'}; font-weight: 600;">${item.khmerName || '-'}</td>
             <td style="text-align: ${fields[5]?.align || 'left'};">${item.department || '-'}</td>
             <td style="text-align: ${fields[6]?.align || 'left'};">${item.office || '-'}</td>
             <td style="text-align: ${fields[7]?.align || 'left'};"><span class="status-badge" style="background: var(--bg-card-subtle); color: var(--text-primary);">${item.position || '-'}</span></td>

@@ -549,50 +549,9 @@ class DataStore {
     return { ...DEFAULT_TABLE_HEADER_TITLES };
   }
 
-  getStaffData() {
-    try {
-      let data = JSON.parse(localStorage.getItem(this.STORAGE_KEY_DATA));
-      if (!Array.isArray(data) || data.length === 0) {
-        data = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
-        this.saveStaffData(data);
-      }
-      if (typeof StatusCalculator !== 'undefined') {
-        if (StatusCalculator.sanitizeRecordDates) {
-          data.forEach(item => StatusCalculator.sanitizeRecordDates(item));
-        }
-        if (StatusCalculator.normalizeGender) {
-          data.forEach(item => {
-            if (item.gender) item.gender = StatusCalculator.normalizeGender(item.gender);
-          });
-        }
-        if (StatusCalculator.format4DigitId) {
-          data.forEach(item => {
-            if (item.staffId !== undefined && item.staffId !== null && item.staffId !== '') {
-              item.staffId = StatusCalculator.format4DigitId(item.staffId);
-            }
-            if (item.secondaryId !== undefined && item.secondaryId !== null && item.secondaryId !== '') {
-              item.secondaryId = StatusCalculator.format4DigitId(item.secondaryId);
-            }
-          });
-        }
-      }
-      data.forEach(item => {
-        if (item.remark === 'undefined') item.remark = '';
-        if (item.requestReason === 'undefined') item.requestReason = '';
-        if (item.requestReason && item.requestReason.trim() !== '') {
-          if (!item.remark || item.remark.trim() === '') {
-            item.remark = item.requestReason.trim();
-          }
-        }
-      });
-      return data;
-    } catch (e) {
-      return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
-    }
-  }
-
-  saveStaffData(data) {
-    if (Array.isArray(data) && typeof StatusCalculator !== 'undefined') {
+  sanitizeDataArray(data) {
+    if (!Array.isArray(data)) return;
+    if (typeof StatusCalculator !== 'undefined') {
       if (StatusCalculator.sanitizeRecordDates) {
         data.forEach(item => StatusCalculator.sanitizeRecordDates(item));
       }
@@ -612,14 +571,182 @@ class DataStore {
         });
       }
     }
+    data.forEach(item => {
+      if (item.remark === 'undefined') item.remark = '';
+      if (item.requestReason === 'undefined') item.requestReason = '';
+      if (item.requestReason && item.requestReason.trim() !== '') {
+        if (!item.remark || item.remark.trim() === '') {
+          item.remark = item.requestReason.trim();
+        }
+      }
+    });
+  }
 
-    // 1. Asynchronously backup to IndexedDB (Unlimited Storage Quota)
+  async getStaffDataAsync() {
+    try {
+      if (Array.isArray(this._cachedMemoryData) && this._cachedMemoryData.length > 0) {
+        return this._cachedMemoryData;
+      }
+
+      // 1. Priority 1: Check sessionStorage cache (Survives F5 refresh in current tab)
+      try {
+        const sessionRaw = sessionStorage.getItem('STAFF_CONTROL_SESSION_CACHE');
+        if (sessionRaw) {
+          const sessionData = JSON.parse(sessionRaw);
+          if (Array.isArray(sessionData) && sessionData.length > 0) {
+            this._cachedMemoryData = sessionData;
+            this.sanitizeDataArray(sessionData);
+            return sessionData;
+          }
+        }
+      } catch (e) {}
+
+      let data = JSON.parse(localStorage.getItem(this.STORAGE_KEY_DATA));
+      
+      // Step 2: Attempt recovery/sync from IndexedDB (Persistent browser storage across git push/pull/restarts)
+      if (typeof IndexedDBStore !== 'undefined' && IndexedDBStore.getAll) {
+        const idbRecords = await IndexedDBStore.getAll();
+        if (Array.isArray(idbRecords) && idbRecords.length > 0) {
+          if (!Array.isArray(data) || idbRecords.length >= data.length) {
+            console.log('Restored/synced full data from IndexedDB:', idbRecords.length, 'records');
+            this._cachedMemoryData = idbRecords;
+            this.sanitizeDataArray(idbRecords);
+            this.saveStaffData(idbRecords);
+            return idbRecords;
+          }
+        }
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        // Step 3: Attempt recovery from Permanent Storage Backup Key
+        const permBackup = localStorage.getItem('STAFF_CONTROL_PERMANENT_BACKUP_V1');
+        if (permBackup) {
+          try {
+            const parsedPerm = JSON.parse(permBackup);
+            if (Array.isArray(parsedPerm) && parsedPerm.length > 0) {
+              console.log('Restored data from Permanent Backup:', parsedPerm.length, 'records');
+              this._cachedMemoryData = parsedPerm;
+              this.sanitizeDataArray(parsedPerm);
+              return parsedPerm;
+            }
+          } catch (e) {}
+        }
+
+        data = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+        this.saveStaffData(data);
+      }
+
+      this._cachedMemoryData = data;
+      this.sanitizeDataArray(data);
+      return data;
+    } catch (e) {
+      return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+    }
+  }
+
+  getStaffData() {
+    try {
+      // 1. RAM memory cache priority
+      if (Array.isArray(this._cachedMemoryData) && this._cachedMemoryData.length > 0) {
+        this.sanitizeDataArray(this._cachedMemoryData);
+        return this._cachedMemoryData;
+      }
+
+      // 2. SessionStorage cache priority (Survives F5 page refresh in current tab)
+      try {
+        const sessionRaw = sessionStorage.getItem('STAFF_CONTROL_SESSION_CACHE');
+        if (sessionRaw) {
+          const sessionData = JSON.parse(sessionRaw);
+          if (Array.isArray(sessionData) && sessionData.length > 0) {
+            this._cachedMemoryData = sessionData;
+            this.sanitizeDataArray(sessionData);
+            return sessionData;
+          }
+        }
+      } catch (e) {}
+
+      // 3. LocalStorage & Permanent Backup Sync
+      let data = JSON.parse(localStorage.getItem(this.STORAGE_KEY_DATA));
+      const permBackup = localStorage.getItem('STAFF_CONTROL_PERMANENT_BACKUP_V1');
+      if (permBackup) {
+        try {
+          const parsedPerm = JSON.parse(permBackup);
+          if (Array.isArray(parsedPerm) && parsedPerm.length > 0) {
+            if (!Array.isArray(data) || parsedPerm.length > data.length) {
+              data = parsedPerm;
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (!Array.isArray(data) || data.length === 0) {
+        data = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+        this.saveStaffData(data);
+      }
+
+      this._cachedMemoryData = data;
+      this.sanitizeDataArray(data);
+      return data;
+    } catch (e) {
+      return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+    }
+  }
+
+  saveStaffData(data) {
+    if (!Array.isArray(data)) return;
+
+    // Cache in RAM memory immediately for 100% full dataset retrieval during session
+    this._cachedMemoryData = data;
+    this.sanitizeDataArray(data);
+
+    // Build ultra-light version for fast storage & session cache
+    const ultraLightData = data.map(record => ({
+      no: record.no,
+      staffId: record.staffId || '',
+      secondaryId: record.secondaryId || '',
+      latinName: record.latinName || '',
+      khmerName: record.khmerName || '',
+      department: record.department || '',
+      office: record.office || '',
+      position: record.position || '',
+      staffType: record.staffType || '',
+      gender: record.gender || '',
+      dob: record.dob || '',
+      serviceStartDate: record.serviceStartDate || '',
+      requestDate: record.requestDate || '',
+      startDate: record.startDate || '',
+      endDate: record.endDate || '',
+      annualPeriod: record.annualPeriod || '',
+      requestReason: record.requestReason || '',
+      prakasNo: record.prakasNo || '',
+      description: record.description || '',
+      systemClosingDate: record.systemClosingDate || '',
+      refDocument: record.refDocument || '',
+      receivedDate: record.receivedDate || '',
+      remark: record.remark || '',
+      customStatus: record.customStatus || 'AUTO'
+    }));
+
+    // Save to sessionStorage (Survives F5 page refresh in current tab)
+    try {
+      sessionStorage.setItem('STAFF_CONTROL_SESSION_CACHE', JSON.stringify(ultraLightData));
+    } catch (e) {}
+
+    // 1. Asynchronously backup ALL records to IndexedDB (Unlimited Storage Quota)
     if (typeof IndexedDBStore !== 'undefined' && IndexedDBStore.saveAll) {
       IndexedDBStore.saveAll(data);
     }
 
-    // 2. Try saving to localStorage safely with QuotaExceededError Recovery
+    // 2. Save Permanent Backup Key (lightweight copy)
     try {
+      localStorage.setItem('STAFF_CONTROL_PERMANENT_BACKUP_V1', JSON.stringify(ultraLightData));
+    } catch (e) {}
+
+    // 3. Purge obsolete keys & old truncated strings before setting item in localStorage
+    try {
+      localStorage.removeItem(this.STORAGE_KEY_DATA);
+      localStorage.removeItem('STAFF_CONTROL_LOGS_V1');
+      localStorage.removeItem('STAFF_SYS_AUDIT_LOGS_V1');
       localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(data));
     } catch (err) {
       console.warn('localStorage QuotaExceededError caught. Executing Quota Recovery Engine...', err);
@@ -636,35 +763,39 @@ class DataStore {
       localStorage.removeItem('STAFF_CONTROL_REMEMBERED_AUTH');
     } catch (e) {}
 
-    // B. Strip heavy base64 file data from localStorage copy (IndexedDB holds full file contents)
-    const lightweightData = data.map(record => {
-      const copy = { ...record };
-      if (Array.isArray(copy.attachments)) {
-        copy.attachments = copy.attachments.map(att => ({
-          id: att.id,
-          name: att.name,
-          size: att.size,
-          type: att.type,
-          uploadDate: att.uploadDate
-          // Omit heavy base64 dataUrl from localStorage cache to save 95%+ space
-        }));
-      }
-      delete copy.avatarBase64;
-      delete copy.documentPreviewBase64;
-      return copy;
-    });
+    // B. Strip heavy file data & metadata to fit ALL records into localStorage without slicing rows!
+    const ultraLightData = data.map(record => ({
+      no: record.no,
+      staffId: record.staffId || '',
+      secondaryId: record.secondaryId || '',
+      latinName: record.latinName || '',
+      khmerName: record.khmerName || '',
+      department: record.department || '',
+      office: record.office || '',
+      position: record.position || '',
+      staffType: record.staffType || '',
+      gender: record.gender || '',
+      dob: record.dob || '',
+      serviceStartDate: record.serviceStartDate || '',
+      requestDate: record.requestDate || '',
+      startDate: record.startDate || '',
+      endDate: record.endDate || '',
+      annualPeriod: record.annualPeriod || '',
+      requestReason: record.requestReason || '',
+      prakasNo: record.prakasNo || '',
+      description: record.description || '',
+      systemClosingDate: record.systemClosingDate || '',
+      refDocument: record.refDocument || '',
+      receivedDate: record.receivedDate || '',
+      remark: record.remark || '',
+      customStatus: record.customStatus || 'AUTO'
+    }));
 
     try {
-      localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(lightweightData));
-      console.log('Storage Quota Recovery: Saved lightweight staff data to localStorage successfully!');
+      localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(ultraLightData));
+      console.log(`Storage Quota Recovery: Saved ultra-lightweight records (${ultraLightData.length} rows) to localStorage successfully!`);
     } catch (retryErr) {
-      // Final Fallback: Save first 300 records to localStorage cache
-      const slicedData = lightweightData.slice(0, 300);
-      try {
-        localStorage.setItem(this.STORAGE_KEY_DATA, JSON.stringify(slicedData));
-      } catch (finalErr) {
-        console.warn('localStorage capacity reached. Primary persistence handled via IndexedDB.', finalErr);
-      }
+      console.warn('localStorage capacity reached. Full dataset preserved in memory & IndexedDB.', retryErr);
     }
   }
 

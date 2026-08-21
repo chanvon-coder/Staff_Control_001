@@ -218,16 +218,6 @@
               </div>
               <span class="nav-item-check">✓</span>
             </button>
-            <button class="nav-droplist-item" data-tab="reports" onclick="app.switchTab('reports')">
-              <div class="nav-item-icon-box" style="background: rgba(236, 72, 153, 0.12); color: #ec4899;">
-                <i data-lucide="file-spreadsheet"></i>
-              </div>
-              <div class="nav-item-text">
-                <div class="nav-item-title">របាយការណ៍ផ្លូវការ</div>
-                <div class="nav-item-desc">របាយការណ៍តាមមូលហេតុនៃសំណើ & បោះពុម្ព</div>
-              </div>
-              <span class="nav-item-check">✓</span>
-            </button>
 
             <button class="nav-droplist-item" data-tab="case-summary" onclick="app.switchTab('case-summary')">
               <div class="nav-item-icon-box" style="background: rgba(6, 182, 212, 0.12); color: #06b6d4;">
@@ -301,60 +291,6 @@
     </div>
   </header>
 
-  <!-- ==================== SUB ROW: QUICK STAT PILL BAR ==================== -->
-  <div class="top-utility-bar">
-    <div class="top-utility-container" style="justify-content: flex-start;">
-      
-      <!-- 4 Quick Stat Counter Pills -->
-      <div class="stat-pills-group">
-        <!-- Pill 1: Total Records (Blue) -->
-        <div class="stat-pill" style="--pill-color: #3b82f6; --pill-bg: #eff6ff;">
-          <div class="stat-pill-icon">
-            <i data-lucide="copy"></i>
-          </div>
-          <div class="stat-pill-content">
-            <span class="stat-pill-num" id="pill-total-records">4</span>
-            <span class="stat-pill-label">TOTAL RECORDS</span>
-          </div>
-        </div>
-
-        <!-- Pill 2: Doc Types / Department (Yellow/Amber) -->
-        <div class="stat-pill" style="--pill-color: #f59e0b; --pill-bg: #fffbeb;">
-          <div class="stat-pill-icon">
-            <i data-lucide="tag"></i>
-          </div>
-          <div class="stat-pill-content">
-            <span class="stat-pill-num" id="pill-doc-types">9</span>
-            <span class="stat-pill-label">DOC TYPES</span>
-          </div>
-        </div>
-
-        <!-- Pill 3: Attached Files / Active Docs (Purple) -->
-        <div class="stat-pill" style="--pill-color: #a855f7; --pill-bg: #faf5ff;">
-          <div class="stat-pill-icon">
-            <i data-lucide="paperclip"></i>
-          </div>
-          <div class="stat-pill-content">
-            <span class="stat-pill-num" id="pill-attached-files">4</span>
-            <span class="stat-pill-label">ATTACHED FILES</span>
-          </div>
-        </div>
-
-        <!-- Pill 4: Active Records (Emerald) -->
-        <div class="stat-pill" style="--pill-color: #10b981; --pill-bg: #ecfdf5;">
-          <div class="stat-pill-icon">
-            <i data-lucide="check-circle-2"></i>
-          </div>
-          <div class="stat-pill-content">
-            <span class="stat-pill-num" id="pill-active-records">0</span>
-            <span class="stat-pill-label">ACTIVE STAFF</span>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
   <!-- ==================== AUTO-HIDE RIGHT-SIDE NAVIGATION DOCK ==================== -->
   <aside class="right-autohide-nav-dock" id="right-autohide-nav-dock" title="ម៉ឺនុយរុករកស្វ័យប្រវត្ត (Auto-Hide Nav)">
     <!-- Slim Pinned Tab Handle on Right Edge -->
@@ -405,16 +341,6 @@
             <span class="right-nav-kh">ទិន្នន័យបុគ្គលិក</span>
             <span class="right-nav-en">Staff Data</span>
           </div>
-        <button class="right-nav-item" data-tab="reports" onclick="app.switchTab('reports')">
-          <div class="right-nav-item-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.12);">
-            <i data-lucide="file-spreadsheet"></i>
-          </div>
-          <div class="right-nav-item-text">
-            <span class="right-nav-kh">របាយការណ៍</span>
-            <span class="right-nav-en">Reports</span>
-          </div>
-        </button>
-
         <button class="right-nav-item" data-tab="case-summary" onclick="app.switchTab('case-summary')">
           <div class="right-nav-item-icon" style="color: #06b6d4; background: rgba(6, 182, 212, 0.12);">
             <i data-lucide="calendar-range"></i>
@@ -497,6 +423,57 @@
 
     <!-- ==================== TAB 1: DASHBOARD ==================== -->
     <section class="tab-pane active" id="tab-dashboard">
+
+      <!-- 4 Quick Stat Counter Pills (Dashboard Only) -->
+      <div class="top-utility-bar" style="margin-bottom: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); padding: 0.75rem 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+        <div class="top-utility-container" style="justify-content: flex-start;">
+          <div class="stat-pills-group">
+            <!-- Pill 1: Total Records (Blue) -->
+            <div class="stat-pill" style="--pill-color: #3b82f6; --pill-bg: #eff6ff;">
+              <div class="stat-pill-icon">
+                <i data-lucide="copy"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num" id="pill-total-records">4</span>
+                <span class="stat-pill-label">TOTAL RECORDS</span>
+              </div>
+            </div>
+
+            <!-- Pill 2: Doc Types / Department (Yellow/Amber) -->
+            <div class="stat-pill" style="--pill-color: #f59e0b; --pill-bg: #fffbeb;">
+              <div class="stat-pill-icon">
+                <i data-lucide="tag"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num" id="pill-doc-types">9</span>
+                <span class="stat-pill-label">DOC TYPES</span>
+              </div>
+            </div>
+
+            <!-- Pill 3: Attached Files / Active Docs (Purple) -->
+            <div class="stat-pill" style="--pill-color: #a855f7; --pill-bg: #faf5ff;">
+              <div class="stat-pill-icon">
+                <i data-lucide="paperclip"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num" id="pill-attached-files">4</span>
+                <span class="stat-pill-label">ATTACHED FILES</span>
+              </div>
+            </div>
+
+            <!-- Pill 4: Active Records (Emerald) -->
+            <div class="stat-pill" style="--pill-color: #10b981; --pill-bg: #ecfdf5;">
+              <div class="stat-pill-icon">
+                <i data-lucide="check-circle-2"></i>
+              </div>
+              <div class="stat-pill-content">
+                <span class="stat-pill-num" id="pill-active-records">0</span>
+                <span class="stat-pill-label">ACTIVE STAFF</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <!-- Global Dashboard Filter Toolbar -->
       <div class="dashboard-filter-bar">
         <div class="dash-filter-title">
@@ -918,6 +895,10 @@
           <button class="btn btn-secondary btn-sm" onclick="app.resetAllFilters()" title="សម្អាតតម្រងទាំងអស់ (Reset All Filters)">
             <i data-lucide="rotate-ccw"></i>
             <span>សម្អាត (Reset)</span>
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="app.switchTab('reports')" style="font-weight: 700; background: linear-gradient(135deg, #6366f1, #4f46e5); color: #ffffff; border: none; display: inline-flex; align-items: center; gap: 0.35rem;" title="មើលប្រព័ន្ធរបាយការណ៍ផ្លូវការ (Official Reports System)">
+            <i data-lucide="file-text"></i>
+            <span>របាយការណ៍ (Reports)</span>
           </button>
           <button class="btn btn-success" onclick="userformController.openNew()" id="btn-open-new-staff">
             <i data-lucide="user-plus"></i>
@@ -1801,16 +1782,6 @@
             <span>📄 CSV (មិនទាន់អាច)</span>
           </button>
 
-          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.printReport('eligible')" style="font-weight: 700; color: #059669; border-color: rgba(5, 150, 105, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="បោះពុម្ពបញ្ជីអ្នកអាចស្នើសុំបាន">
-            <i data-lucide="printer"></i>
-            <span>🖨️ Report A (អាចស្នើបាន)</span>
-          </button>
-
-          <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.printReport('ineligible')" style="font-weight: 700; color: #dc2626; border-color: rgba(220, 38, 38, 0.3); display: flex; align-items: center; gap: 0.35rem;" title="បោះពុម្ពបញ្ជីអ្នកមិនទាន់អាចស្នើសុំបាន">
-            <i data-lucide="printer"></i>
-            <span>🖨️ Report B (មិនទាន់អាច)</span>
-          </button>
-
           <button type="button" class="btn btn-secondary btn-sm" onclick="promotionController.resetFilters()" title="សម្អាតតម្រង">
             <i data-lucide="rotate-ccw"></i>
             <span>សម្អាត</span>
@@ -1836,41 +1807,33 @@
           </div>
         </div>
 
-        <!-- Search & Filter Controls -->
-        <div class="doc-search-row">
-          <div class="doc-search-input-box">
+        <!-- Search & Filter Controls (Single Horizontal Line, No Wrapping) -->
+        <div class="doc-search-row" style="display: flex; align-items: center; gap: 0.45rem; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px;">
+          <div class="doc-search-input-box" style="min-width: 180px; flex: 1 1 220px; flex-shrink: 0;">
             <i data-lucide="search"></i>
-            <input type="text" id="promo-search-input" placeholder="ស្វែងរកតាម អត្តលេខ, ឈ្មោះ, តួនាទី, ឋានន្តរស័ក្តិ, អង្គភាព, ប្រកាសលេខ..." oninput="promotionController.handleSearch(this.value)">
+            <input type="text" id="promo-search-input" placeholder="ស្វែងរកតាម អត្តលេខ, ឈ្មោះ, តួនាទី..." oninput="promotionController.handleSearch(this.value)" style="font-size: 0.78rem; padding-top: 0.38rem; padding-bottom: 0.38rem;">
           </div>
 
-          <select class="doc-filter-select" id="promo-filter-status" onchange="promotionController.handleFilterChange('status', this.value)" style="font-weight: 800; color: #6d28d9; background: rgba(139, 92, 246, 0.08);">
+          <select class="doc-filter-select" id="promo-filter-status" onchange="promotionController.handleFilterChange('status', this.value)" style="font-weight: 800; color: #6d28d9; background: rgba(139, 92, 246, 0.08); flex-shrink: 0; padding: 0.35rem 0.5rem; font-size: 0.74rem;">
             <option value="all">🎯 គ្រប់ស្ថានភាពសិទ្ធិ (All Status)</option>
             <option value="ELIGIBLE">🟢 អាចស្នើសុំបាន (Eligible)</option>
             <option value="NEAR_ELIGIBLE">🟡 ជិតដល់កំណត់ (Near Eligible)</option>
             <option value="INELIGIBLE">🔴 មិនទាន់អាចស្នើសុំបាន (Ineligible)</option>
           </select>
 
-          <select class="doc-filter-select" id="promo-filter-year" onchange="promotionController.handleFilterChange('year', this.value)">
-            <option value="all">📅 គ្រប់ឆ្នាំ (All Years)</option>
-          </select>
-
-          <select class="doc-filter-select" id="promo-filter-month" onchange="promotionController.handleFilterChange('month', this.value)">
-            <option value="all">🗓️ គ្រប់ខែ (All Months)</option>
-          </select>
-
-          <select class="doc-filter-select" id="promo-filter-dept" onchange="promotionController.handleFilterChange('department', this.value)">
+          <select class="doc-filter-select" id="promo-filter-dept" onchange="promotionController.handleFilterChange('department', this.value)" style="flex-shrink: 0; padding: 0.35rem 0.5rem; font-size: 0.74rem;">
             <option value="all">🏢 គ្រប់អង្គភាព (All Depts)</option>
           </select>
 
-          <select class="doc-filter-select" id="promo-filter-position" onchange="promotionController.handleFilterChange('position', this.value)">
+          <select class="doc-filter-select" id="promo-filter-position" onchange="promotionController.handleFilterChange('position', this.value)" style="flex-shrink: 0; padding: 0.35rem 0.5rem; font-size: 0.74rem;">
             <option value="all">💼 គ្រប់តួនាទី (All Positions)</option>
           </select>
 
-          <select class="doc-filter-select" id="promo-filter-rank" onchange="promotionController.handleFilterChange('promotionRank', this.value)">
+          <select class="doc-filter-select" id="promo-filter-rank" onchange="promotionController.handleFilterChange('promotionRank', this.value)" style="flex-shrink: 0; padding: 0.35rem 0.5rem; font-size: 0.74rem;">
             <option value="all">🎖️ គ្រប់ឋានន្តរស័ក្តិ (All Ranks)</option>
           </select>
 
-          <select class="doc-filter-select" id="promo-filter-match" onchange="promotionController.handleFilterChange('staffDataMatch', this.value)" style="font-weight: 700;">
+          <select class="doc-filter-select" id="promo-filter-match" onchange="promotionController.handleFilterChange('staffDataMatch', this.value)" style="font-weight: 700; flex-shrink: 0; padding: 0.35rem 0.5rem; font-size: 0.74rem;">
             <option value="all">👥 គ្រប់ Staff Data (All Staff Data)</option>
             <option value="matched">🟢 មានក្នុង Staff Data (In Staff Data)</option>
             <option value="unmatched">⚪ មិនមានក្នុង Staff Data (Not in Staff Data)</option>
@@ -1911,9 +1874,9 @@
 
                 <!-- Calculated Columns -->
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #2563eb;">ថ្ងៃគិតគូរ</th>
-                <th style="background: rgba(139, 92, 246, 0.08);">រយៈពេលបានប្រើ</th>
-                <th style="background: rgba(220, 38, 38, 0.08); color: #dc2626;">រយៈពេលព្យួរ</th>
-                <th style="background: rgba(139, 92, 246, 0.08);">នៅសល់</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">រយៈពេលបានប្រើ</th>
+                <th style="text-align: center; background: rgba(220, 38, 38, 0.08); color: #dc2626;">រយៈពេលព្យួរ</th>
+                <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">នៅសល់</th>
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #7c3aed; font-weight: 800;">ថ្ងៃគ្រប់កាលកំណត់ថ្មី</th>
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08); color: #0284c7;">ថ្ងៃអាចស្នើបាន</th>
                 <th style="text-align: center; background: rgba(139, 92, 246, 0.08);">ស្ថានភាព</th>
@@ -4775,10 +4738,16 @@ function doGet(e) {
 
       <!-- Modal Footer -->
       <div class="modal-footer" style="padding: 0.85rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 0.65rem; background: var(--bg-card-subtle);">
-        <button type="button" class="btn btn-primary btn-sm" onclick="app.returnToPromotionTable()" style="font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); border: none; padding: 0.5rem 1.2rem; display: inline-flex; align-items: center; gap: 0.4rem;" title="ត្រឡប់ទៅតារាងគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ">
-          <i data-lucide="award"></i>
-          <span>🎖️ ត្រឡប់ទៅតារាងឡើងថ្នាក់ (Return to Promotion Table)</span>
-        </button>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn btn-primary btn-sm" id="history-modal-btn-return-promo" onclick="app.returnToPromotionTable()" style="font-weight: 800; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #ffffff; border: none; padding: 0.5rem 1.1rem; display: inline-flex; align-items: center; gap: 0.4rem;" title="ត្រឡប់ទៅតារាងគ្រប់គ្រង និងត្រួតពិនិត្យការស្នើសុំឡើងឋានន្តរស័ក្តិ">
+            <i data-lucide="award"></i>
+            <span>🎖️ ត្រឡប់ទៅតារាងឡើងថ្នាក់</span>
+          </button>
+          <button type="button" class="btn btn-primary btn-sm" id="history-modal-btn-view-staffdata" onclick="app.navigateToStaffDataFromHistory()" style="font-weight: 800; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; border: none; padding: 0.5rem 1.1rem; display: inline-flex; align-items: center; gap: 0.4rem;" title="ចូលទៅមើល និងកែប្រែទិន្នន័យផ្ទាល់ក្នុង Staff Data">
+            <i data-lucide="search"></i>
+            <span>🔍 មើលក្នុង Staff Data</span>
+          </button>
+        </div>
         <button type="button" class="btn btn-secondary btn-sm" onclick="app.closeRequestHistoryModal()" style="font-weight: 700; padding: 0.5rem 1.25rem;">
           <span>បិទ (Close)</span>
         </button>

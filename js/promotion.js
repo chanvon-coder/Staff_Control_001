@@ -736,8 +736,12 @@ class PromotionController {
     tbody.innerHTML = pageRecords.map((r, idx) => `
       <tr>
         <td style="text-align: center; font-weight: 700;">${startIdx + idx + 1}</td>
-        <td><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(r.staffId || r.fullName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិការស្នើសុំទាំងអស់"><strong style="color: var(--primary); text-decoration: underline;">${StatusCalculator ? StatusCalculator.format4DigitId(r.staffId) : (r.staffId || '-')}</strong></a></td>
-        <td style="font-weight: 800; color: var(--text-primary);"><a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(r.staffId || r.fullName || '').replace(/'/g, "\\'")}')" title="ចុចដើម្បីមើលប្រវត្តិការស្នើសុំទាំងអស់" style="color: inherit; text-decoration: none;">${r.fullName || '-'}</a></td>
+        <td>
+          <a href="javascript:void(0)" onclick="app.showRequestHistoryModal('${(r.staffId || r.fullName || '').replace(/'/g, "\\'")}')" style="color: #2563eb; font-weight: 800; text-decoration: underline; cursor: pointer;" title="ចុចដើម្បីមើលប្រវត្តិស្នើសុំរបស់បុគ្គលិកនេះ (View Request History)">
+            ${StatusCalculator ? StatusCalculator.format4DigitId(r.staffId) : (r.staffId || '-')}
+          </a>
+        </td>
+        <td style="font-weight: 800; color: var(--text-primary);">${r.fullName || '-'}</td>
         <td style="text-align: center;">${r.gender || '-'}</td>
         <td>${r.position || '-'}</td>
         <td>${StatusCalculator ? StatusCalculator.formatDateDisplay(r.dob) : (r.dob || '-')}</td>
@@ -752,11 +756,11 @@ class PromotionController {
         
         <!-- System Calculated Fields -->
         <td style="text-align: center; font-weight: 800; color: #2563eb; background: rgba(37, 99, 235, 0.05);">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.calcDate) : (r.calcDate || '-')}</td>
-        <td style="font-weight: 800; color: var(--text-primary);">${r.actualDurationText}</td>
-        <td style="font-weight: 800; color: ${r.hasSuspension ? '#dc2626' : 'var(--text-muted)'}; background: ${r.hasSuspension ? 'rgba(220, 38, 38, 0.08)' : 'transparent'};">
+        <td style="text-align: center; font-weight: 800; color: var(--text-primary);">${r.actualDurationText}</td>
+        <td style="text-align: center; font-weight: 800; color: ${r.hasSuspension ? '#dc2626' : 'var(--text-muted)'}; background: ${r.hasSuspension ? 'rgba(220, 38, 38, 0.08)' : 'transparent'};">
           ${r.hasSuspension ? `⚠️ ${r.suspensionDurationText}` : 'គ្មាន'}
         </td>
-        <td style="font-weight: 800; color: ${r.remainingDays > 0 ? '#d97706' : '#059669'};">${r.remainingDurationText}</td>
+        <td style="text-align: center; font-weight: 800; color: ${r.remainingDays > 0 ? '#d97706' : '#059669'};">${r.remainingDurationText}</td>
         <td style="font-weight: 800; color: #7c3aed; text-align: center;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.newMaturedPromotionDateStr) : (r.newMaturedPromotionDateStr || '-')}</td>
         <td style="font-weight: 800; color: #0284c7; text-align: center;">${StatusCalculator ? StatusCalculator.formatDateDisplay(r.nextEligibleDateStr) : (r.nextEligibleDateStr || '-')}</td>
         <td style="text-align: center;">

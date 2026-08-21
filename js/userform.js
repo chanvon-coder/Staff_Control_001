@@ -354,34 +354,66 @@ class UserFormController {
       });
     }
 
-    // Auto-sync Request Date to Start Date with Custom Override option
+    // Auto-sync Request Date to Start Date & Annual Period with Custom Override option
     const reqDateInput = document.getElementById('uf-requestDate');
     const startDateInput = document.getElementById('uf-startDate');
+    const annualPeriodSelect = document.getElementById('uf-annualPeriod');
 
-    if (reqDateInput && startDateInput) {
+    const syncAnnualPeriodWithRequestDate = (reqDateVal) => {
+      if (!reqDateVal) return;
+      let yearStr = '';
+      if (reqDateVal.includes('-')) {
+        const parts = reqDateVal.split('-');
+        if (parts[0].length === 4) yearStr = parts[0];
+        else if (parts[2] && parts[2].length === 4) yearStr = parts[2];
+      }
+      if (yearStr && yearStr.length === 4 && !isNaN(yearStr)) {
+        if (annualPeriodSelect && (!this.isAnnualPeriodManuallyEdited || !annualPeriodSelect.value)) {
+          let optExists = Array.from(annualPeriodSelect.options).some(opt => opt.value === yearStr);
+          if (!optExists) {
+            const newOpt = document.createElement('option');
+            newOpt.value = yearStr;
+            newOpt.textContent = yearStr;
+            annualPeriodSelect.appendChild(newOpt);
+          }
+          annualPeriodSelect.value = yearStr;
+        }
+      }
+    };
+
+    if (reqDateInput) {
       const handleReqDateChange = (e) => {
         const val = e.target.value;
-        if (!this.isStartDateManuallyEdited || !startDateInput.value) {
+        if (startDateInput && (!this.isStartDateManuallyEdited || !startDateInput.value)) {
           startDateInput.value = val;
           this.updateStartDateIndicator(true);
         }
+        syncAnnualPeriodWithRequestDate(val);
       };
 
       reqDateInput.addEventListener('input', handleReqDateChange);
       reqDateInput.addEventListener('change', handleReqDateChange);
 
-      const handleStartDateChange = () => {
-        if (startDateInput.value && reqDateInput.value && startDateInput.value !== reqDateInput.value) {
-          this.isStartDateManuallyEdited = true;
-          this.updateStartDateIndicator(false);
-        } else {
-          this.isStartDateManuallyEdited = false;
-          this.updateStartDateIndicator(true);
-        }
-      };
+      if (startDateInput) {
+        const handleStartDateChange = () => {
+          if (startDateInput.value && reqDateInput.value && startDateInput.value !== reqDateInput.value) {
+            this.isStartDateManuallyEdited = true;
+            this.updateStartDateIndicator(false);
+          } else {
+            this.isStartDateManuallyEdited = false;
+            this.updateStartDateIndicator(true);
+          }
+        };
 
-      startDateInput.addEventListener('input', handleStartDateChange);
-      startDateInput.addEventListener('change', handleStartDateChange);
+        startDateInput.addEventListener('input', handleStartDateChange);
+        startDateInput.addEventListener('change', handleStartDateChange);
+      }
+
+      if (annualPeriodSelect) {
+        annualPeriodSelect.addEventListener('change', () => {
+          this.isAnnualPeriodManuallyEdited = true;
+        });
+      }
     }
 
     // Suspension Duration Live Calculation Listeners
@@ -1452,6 +1484,7 @@ class UserFormController {
       if (endRadio) endRadio.checked = true;
 
       this.isStartDateManuallyEdited = false;
+      this.isAnnualPeriodManuallyEdited = false;
       this.updateStartDateIndicator(true);
       this.showModal();
     } catch (err) {

@@ -30,12 +30,12 @@
 }
 
 :root {
-  --font-khmer: 'Kantumruy Pro', 'Khmer OS Siemreap', 'Siemreap', 'Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-latin: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-khmer: 'Khmer OS Siemreap', 'Siemreap', 'Kantumruy Pro', 'Battambang', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-latin: 'Inter', 'Khmer OS Siemreap', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'Consolas', 'Courier New', monospace;
 }
 
-body, button, input, select, textarea, table {
+body, button, input, select, textarea, table, th, td, .staff-table {
   font-family: var(--font-khmer);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

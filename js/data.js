@@ -582,113 +582,128 @@ class DataStore {
     });
   }
 
-  async getStaffDataAsync() {
-    try {
-      if (Array.isArray(this._cachedMemoryData) && this._cachedMemoryData.length > 0) {
-        return this._cachedMemoryData;
-      }
+  getAllStorageCandidates() {
+    const candidates = [];
 
-      // 1. Priority 1: Check sessionStorage cache (Survives F5 refresh in current tab)
-      try {
-        const sessionRaw = sessionStorage.getItem('STAFF_CONTROL_SESSION_CACHE');
-        if (sessionRaw) {
-          const sessionData = JSON.parse(sessionRaw);
-          if (Array.isArray(sessionData) && sessionData.length > 0) {
-            this._cachedMemoryData = sessionData;
-            this.sanitizeDataArray(sessionData);
-            return sessionData;
-          }
-        }
-      } catch (e) {}
-
-      let data = JSON.parse(localStorage.getItem(this.STORAGE_KEY_DATA));
-      
-      // Step 2: Attempt recovery/sync from IndexedDB (Persistent browser storage across git push/pull/restarts)
-      if (typeof IndexedDBStore !== 'undefined' && IndexedDBStore.getAll) {
-        const idbRecords = await IndexedDBStore.getAll();
-        if (Array.isArray(idbRecords) && idbRecords.length > 0) {
-          if (!Array.isArray(data) || idbRecords.length >= data.length) {
-            console.log('Restored/synced full data from IndexedDB:', idbRecords.length, 'records');
-            this._cachedMemoryData = idbRecords;
-            this.sanitizeDataArray(idbRecords);
-            this.saveStaffData(idbRecords);
-            return idbRecords;
-          }
-        }
-      }
-
-      if (!Array.isArray(data) || data.length === 0) {
-        // Step 3: Attempt recovery from Permanent Storage Backup Key
-        const permBackup = localStorage.getItem('STAFF_CONTROL_PERMANENT_BACKUP_V1');
-        if (permBackup) {
-          try {
-            const parsedPerm = JSON.parse(permBackup);
-            if (Array.isArray(parsedPerm) && parsedPerm.length > 0) {
-              console.log('Restored data from Permanent Backup:', parsedPerm.length, 'records');
-              this._cachedMemoryData = parsedPerm;
-              this.sanitizeDataArray(parsedPerm);
-              return parsedPerm;
-            }
-          } catch (e) {}
-        }
-
-        data = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
-        this.saveStaffData(data);
-      }
-
-      this._cachedMemoryData = data;
-      this.sanitizeDataArray(data);
-      return data;
-    } catch (e) {
-      return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+    // Candidate 1: RAM memory cache
+    if (Array.isArray(this._cachedMemoryData) && this._cachedMemoryData.length > 0) {
+      candidates.push(this._cachedMemoryData);
     }
+
+    // Candidate 2: SessionStorage cache
+    try {
+      const sRaw = sessionStorage.getItem('STAFF_CONTROL_SESSION_CACHE');
+      if (sRaw) {
+        const parsed = JSON.parse(sRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) candidates.push(parsed);
+      }
+    } catch (e) {}
+
+    // Candidate 3: LocalStorage Primary Key
+    try {
+      const lRaw = localStorage.getItem(this.STORAGE_KEY_DATA);
+      if (lRaw) {
+        const parsed = JSON.parse(lRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) candidates.push(parsed);
+      }
+    } catch (e) {}
+
+    // Candidate 4: LocalStorage Permanent Backup Key
+    try {
+      const pRaw = localStorage.getItem('STAFF_CONTROL_PERMANENT_BACKUP_V1');
+      if (pRaw) {
+        const parsed = JSON.parse(pRaw);
+        if (Array.isArray(parsed) && parsed.length > 0) candidates.push(parsed);
+      }
+    } catch (e) {}
+
+    // Candidate 5: Embedded Window Global Backup
+    if (typeof window !== 'undefined' && Array.isArray(window.EMBEDDED_STAFF_DATA) && window.EMBEDDED_STAFF_DATA.length > 0) {
+      candidates.push(window.EMBEDDED_STAFF_DATA);
+    }
+
+    return candidates;
   }
 
   getStaffData() {
     try {
-      // 1. RAM memory cache priority
-      if (Array.isArray(this._cachedMemoryData) && this._cachedMemoryData.length > 0) {
-        this.sanitizeDataArray(this._cachedMemoryData);
-        return this._cachedMemoryData;
+      const candidates = this.getAllStorageCandidates();
+      let bestData = null;
+
+      for (const cand of candidates) {
+        if (!bestData || cand.length > bestData.length) {
+          bestData = cand;
+        }
       }
 
-      // 2. SessionStorage cache priority (Survives F5 page refresh in current tab)
-      try {
-        const sessionRaw = sessionStorage.getItem('STAFF_CONTROL_SESSION_CACHE');
-        if (sessionRaw) {
-          const sessionData = JSON.parse(sessionRaw);
-          if (Array.isArray(sessionData) && sessionData.length > 0) {
-            this._cachedMemoryData = sessionData;
-            this.sanitizeDataArray(sessionData);
-            return sessionData;
-          }
-        }
-      } catch (e) {}
+      if (bestData && bestData.length > 0) {
+        this._cachedMemoryData = bestData;
+        this.sanitizeDataArray(bestData);
+        if (typeof window !== 'undefined') window.EMBEDDED_STAFF_DATA = bestData;
+        return bestData;
+      }
 
-      // 3. LocalStorage & Permanent Backup Sync
-      let data = JSON.parse(localStorage.getItem(this.STORAGE_KEY_DATA));
-      const permBackup = localStorage.getItem('STAFF_CONTROL_PERMANENT_BACKUP_V1');
-      if (permBackup) {
+      const defaultData = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+      this.saveStaffData(defaultData);
+      return defaultData;
+    } catch (e) {
+      return (this._cachedMemoryData && this._cachedMemoryData.length > 0)
+        ? this._cachedMemoryData
+        : JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+    }
+  }
+
+  async getStaffDataAsync() {
+    try {
+      const candidates = this.getAllStorageCandidates();
+
+      if (typeof IndexedDBStore !== 'undefined' && IndexedDBStore.getAll) {
         try {
-          const parsedPerm = JSON.parse(permBackup);
-          if (Array.isArray(parsedPerm) && parsedPerm.length > 0) {
-            if (!Array.isArray(data) || parsedPerm.length > data.length) {
-              data = parsedPerm;
-            }
+          const idbRecords = await IndexedDBStore.getAll();
+          if (Array.isArray(idbRecords) && idbRecords.length > 0) {
+            candidates.push(idbRecords);
           }
         } catch (e) {}
       }
 
-      if (!Array.isArray(data) || data.length === 0) {
-        data = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
-        this.saveStaffData(data);
+      let bestData = null;
+      for (const cand of candidates) {
+        if (!bestData || cand.length > bestData.length) {
+          bestData = cand;
+        }
       }
 
-      this._cachedMemoryData = data;
-      this.sanitizeDataArray(data);
-      return data;
+      if (bestData && bestData.length > 0) {
+        this._cachedMemoryData = bestData;
+        this.sanitizeDataArray(bestData);
+        if (typeof window !== 'undefined') window.EMBEDDED_STAFF_DATA = bestData;
+
+        try {
+          const ultraLight = bestData.map(r => ({
+            no: r.no, staffId: r.staffId || '', secondaryId: r.secondaryId || '',
+            latinName: r.latinName || '', khmerName: r.khmerName || '',
+            department: r.department || '', office: r.office || '', position: r.position || '',
+            staffType: r.staffType || '', gender: r.gender || '', dob: r.dob || '',
+            serviceStartDate: r.serviceStartDate || '', requestDate: r.requestDate || '',
+            startDate: r.startDate || '', endDate: r.endDate || '', annualPeriod: r.annualPeriod || '',
+            requestReason: r.requestReason || '', prakasNo: r.prakasNo || '', description: r.description || '',
+            systemClosingDate: r.systemClosingDate || '', refDocument: r.refDocument || '',
+            receivedDate: r.receivedDate || '', remark: r.remark || '', customStatus: r.customStatus || 'AUTO'
+          }));
+          sessionStorage.setItem('STAFF_CONTROL_SESSION_CACHE', JSON.stringify(ultraLight));
+          localStorage.setItem('STAFF_CONTROL_PERMANENT_BACKUP_V1', JSON.stringify(ultraLight));
+        } catch (e) {}
+
+        return bestData;
+      }
+
+      const defaultData = JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+      this.saveStaffData(defaultData);
+      return defaultData;
     } catch (e) {
-      return JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
+      return (this._cachedMemoryData && this._cachedMemoryData.length > 0)
+        ? this._cachedMemoryData
+        : JSON.parse(JSON.stringify(SAMPLE_STAFF_DATA));
     }
   }
 
@@ -698,6 +713,7 @@ class DataStore {
     // Cache in RAM memory immediately for 100% full dataset retrieval during session
     this._cachedMemoryData = data;
     this.sanitizeDataArray(data);
+    if (typeof window !== 'undefined') window.EMBEDDED_STAFF_DATA = data;
 
     // Build ultra-light version for fast storage & session cache
     const ultraLightData = data.map(record => ({
